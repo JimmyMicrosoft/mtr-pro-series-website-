@@ -34,7 +34,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           password: credentials.password as string,
         })
 
-        if (error || !data.user) return null
+        if (error || !data.user) {
+          console.error('[Auth] Supabase signInWithPassword error:', error?.message ?? 'no user returned')
+          return null
+        }
 
         return {
           id: data.user.id,

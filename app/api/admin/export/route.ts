@@ -55,7 +55,7 @@ function boxedTable({ borderColor, fill, margins = {}, children }: {
   const b = solidBorder(borderColor)
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: { top: b, bottom: b, left: b, right: b, insideH: noBorder(), insideV: noBorder() },
+    borders: { top: b, bottom: b, left: b, right: b, insideHorizontal: noBorder(), insideVertical: noBorder() },
     rows: [new TableRow({
       children: [new TableCell({
         shading: { type: ShadingType.CLEAR, fill, color: 'auto' },
@@ -687,7 +687,7 @@ function buildQuizSection(quizData: QuizData): (Paragraph | Table)[] {
     children.push(
       new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
-        borders: { top: borderConfig, bottom: borderConfig, left: borderConfig, right: borderConfig, insideH: noBorderStyle, insideV: noBorderStyle },
+        borders: { top: borderConfig, bottom: borderConfig, left: borderConfig, right: borderConfig, insideHorizontal: noBorderStyle, insideVertical: noBorderStyle },
         rows: [new TableRow({
           children: [new TableCell({
             shading: { type: ShadingType.CLEAR, fill: 'F5F3FF', color: 'auto' },

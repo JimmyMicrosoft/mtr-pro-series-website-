@@ -921,7 +921,7 @@ export async function GET(req: Request) {
     const doc = await buildTrackDocument(programSlug, trackSlug, lessons, contentDir)
     const buffer = await Packer.toBuffer(doc)
 
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="${programSlug}--${trackSlug}.docx"`,

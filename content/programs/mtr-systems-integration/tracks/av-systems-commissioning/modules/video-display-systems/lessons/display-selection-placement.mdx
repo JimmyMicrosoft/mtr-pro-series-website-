@@ -1,0 +1,258 @@
+---
+id: "p2-t3-m2-l2"
+slug: "display-selection-placement"
+title: "Display Selection and Room Placement"
+shortTitle: "Display Selection"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 2
+moduleSlug: "video-display-systems"
+moduleTitle: "Video and Display Systems"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Calculate the minimum and maximum viewing distances for a display of a given size"
+  - "Specify display size and quantity for a room based on seating layout and viewing angle requirements"
+  - "Identify Teams Rooms display configuration requirements for single, dual, and Front Row layouts"
+
+prerequisites:
+  - "p2-t3-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "video"
+  - "displays"
+
+vendorTags:
+  - "samsung"
+  - "lg"
+  - "nec"
+  - "sharp"
+
+relatedLessons:
+  - "p2-t3-m2-l1"
+  - "p2-t3-m2-l3"
+
+metaDescription: "Display selection and placement for Teams Rooms MTR — viewing distance calculation, display sizing, single vs. dual display configurations, Front Row layout requirements, aspect ratio, brightness specifications, and mounting height guidelines."
+
+keywords:
+  - "Teams Rooms display sizing"
+  - "MTR display selection"
+  - "conference room display placement"
+  - "Front Row display Teams Rooms"
+  - "dual display Teams Rooms"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Display selection and placement determines whether local participants can comfortably read content, see remote participant faces, and follow the meeting layout. A display that is too small creates a strained experience; a display placed too high forces participants to look upward for the duration of a meeting. Getting display size and placement right is straightforward with consistent calculation methodology.
+
+---
+
+## Viewing Distance Calculation
+
+The optimal viewing distance for a display depends on the display's height (H) — the vertical dimension of the active screen area, not the diagonal measurement.
+
+**AVIXA DISCAS formula (Display Image Size for 2D Content):**
+- **Minimum distance:** 1.5 × H (for typical meeting room content)
+- **Maximum distance:** 6 × H (standard criterion; 8× H for basic tasks)
+- **Optimal distance for video conferencing:** 2–4 × H
+
+**Example — 75" display:**
+- 75" diagonal 16:9 display has an active area of approximately 165cm × 93cm (H = 93cm)
+- Minimum viewing distance: 1.5 × 0.93m = 1.4m
+- Maximum viewing distance: 6 × 0.93m = 5.6m
+- Optimal range (video conference): 1.9m – 3.7m
+
+**Determining required display size from room depth:**
+Working backwards from the farthest seat:
+
+```
+H required = Farthest seat distance / 6 (maximum) = D / 6
+Diagonal ≈ H / 0.49 (for 16:9 aspect ratio)
+```
+
+For a 5m room depth:
+- H required ≥ 5m / 6 = 0.83m
+- Diagonal ≥ 0.83m / 0.49 = 1.70m = 67" — specify a 75" display
+
+**Sizing reference:**
+
+| Farthest Seat Distance | Minimum Display Diagonal |
+|------------------------|--------------------------|
+| 3m | 43" |
+| 4m | 55" |
+| 5m | 65"–75" |
+| 6m | 75"–86" |
+| 8m | 98"–105" |
+
+*These are minimum recommendations. Specify the next standard size up when in doubt.*
+
+---
+
+## Display Technology and Specification
+
+**Commercial vs. consumer displays:**
+Always specify commercial (professional) displays for conference rooms. Consumer TVs are designed for intermittent home use; commercial displays are rated for 16–24 hours/day continuous operation.
+
+| Specification | Commercial Display | Consumer TV |
+|---------------|-------------------|-------------|
+| Operating hours | 16–24h/day rated | 6–8h/day typical |
+| MTBF (Mean Time Between Failures) | 50,000+ hours | 10,000–20,000 hours |
+| Portrait mode support | Yes | Often not rated |
+| RS-232/LAN control | Yes (required for AV control) | Often not available |
+| Brightness | 400–700+ cd/m² | 250–400 cd/m² |
+| Warranty | 3–5 years commercial | 1–2 years consumer |
+
+**Brightness:**
+- Rooms without direct sunlight: 350–450 cd/m² is adequate
+- Rooms with ambient light or windows behind the display: 500–700 cd/m²
+- Outdoor or high-ambient installations: 700+ cd/m²
+
+**Aspect ratio:**
+Standard conference room displays are 16:9. Teams Rooms is designed for 16:9 displays. Ultrawide 21:9 or 32:9 displays are sometimes used for panoramic Front Row layouts — these require specific configuration.
+
+**Resolution:**
+- Minimum: 1080p (1920×1080) for displays up to 65"
+- Recommended: 4K (3840×2160) for displays 75" and larger, and for content sharing where text readability matters
+
+---
+
+## Display Placement
+
+**Mounting height:**
+The display should be mounted so that the center of the screen is at or slightly above seated eye level (1.1m from floor). For typical display sizes this means:
+
+- 55" display (H ≈ 69cm): Center at 1.1m → bottom edge at approximately 0.76m from floor
+- 75" display (H ≈ 93cm): Center at 1.15m → bottom edge at approximately 0.69m from floor
+- 86" display (H ≈ 107cm): Center at 1.2m → bottom edge at approximately 0.67m from floor
+
+*Many conference room displays end up mounted too high — above the credenza or rack that houses the AV equipment. This forces participants to look up, which is tiring and creates an awkward camera angle (participants appear to look down into the camera). Advocate for lower display mounting even if it requires equipment placement rethinking.*
+
+**Vertical tilt:**
+If the display must be mounted higher than ideal (e.g., above a credenza), tilt the display downward to reduce neck strain. Maximum comfortable tilt for viewers: 15°–20° from vertical.
+
+**Viewing angle — horizontal:**
+Participants at the sides of the table should be within 30°–40° of the display's horizontal center axis. Beyond 40°, most LCD displays show significant color shift and brightness reduction. Verify that the end seats of long tables fall within this range — if not, consider dual displays.
+
+---
+
+## Single vs. Dual Display Configurations
+
+**Single display:**
+- One display at the front of the room
+- Teams Rooms uses the single display for participant video (gallery view, large gallery, speaker view) and content sharing
+- When content is shared, Teams Rooms shows content on the main display; gallery view moves to a smaller portion of the screen
+
+**Dual display:**
+- Two displays at the front of the room
+- Teams Rooms dedicates Display 1 to participant video and Display 2 to shared content — when no content is shared, Display 2 shows the local camera preview
+- Significantly improves the meeting experience for content-heavy meetings (the content is full-screen while participant video remains visible)
+
+**Dual display configuration in Teams Rooms:**
+Configure via SkypeSettings.xml or TAC profile:
+```xml
+<DualScreenMode>true</DualScreenMode>
+```
+Or via TAC profile: Meetings → Dual display mode → On
+
+**Front Row layout:**
+Front Row is a Teams Rooms layout that places participant video in a horizontal strip along the bottom of the main display, with the content or whiteboard filling the upper portion. It is designed for in-room experience where participants face the display and want to see both content and remote participant faces simultaneously.
+
+*Front Row requirements:*
+- Teams Rooms Pro license
+- 21:9 ultra-wide display OR dual 16:9 displays (Front Row spans the full display width)
+- Enable in Teams Rooms app settings or XML: `<IsTeamFrontRowEnabled>true</IsTeamFrontRowEnabled>`
+
+---
+
+## Projectors
+
+Projectors are still common in larger conference rooms and training rooms, though direct-view displays (LED or LCD) are increasingly replacing them.
+
+**When to use a projector:**
+- Screen sizes above 130" where direct-view would be prohibitively expensive
+- Rooms with existing projector infrastructure being integrated with MTR
+
+**Projector considerations for MTR:**
+- Input connection: HDMI from MTR display output
+- Screen brightness: Minimum 3,500 lumens for ambient light control; 5,000+ lumens for rooms with windows
+- Contrast ratio matters more than peak brightness for room use
+- Projector control: RS-232 or IP control for room control system (power on/off, input selection)
+
+---
+
+<KnowledgeCheck id="p2-t3-m2-l2-kc">
+  <Question>
+    A 10-person conference room has a table depth (front to far seat) of 4.8m.
+    The client wants to use dual displays for participant video and content.
+    What is the minimum display size for each display to meet viewing distance
+    requirements for the farthest seat?
+  </Question>
+  <Answer>55" displays — adequate for most conference rooms</Answer>
+  <Answer>43" displays — the dual configuration compensates for smaller size</Answer>
+  <Answer correct>For a farthest seat distance of 4.8m, the minimum display diagonal is approximately: H required = 4.8 / 6 = 0.8m; Diagonal = 0.8 / 0.49 = 1.63m ≈ 64". Specify 65" as the minimum (or 75" for margin). Each display in a dual configuration must independently meet the viewing distance requirement — the second display does not compensate for the first being undersized</Answer>
+  <Answer>86" displays — the room requires extra-large displays for a dual configuration</Answer>
+  <Explanation>
+    Viewing distance calculations apply to each display independently. In a dual
+    display configuration, each display must be legible from the farthest seat.
+    Using the AVIXA formula: maximum viewing distance = 6 × H; for a 4.8m room
+    depth, H minimum = 4.8 / 6 = 0.8m, which corresponds to approximately
+    64" diagonal. A 65" display (H ≈ 81cm) marginally meets this; specifying
+    75" (H ≈ 93cm) provides comfortable margin and is common for this room size.
+    The dual configuration improves the meeting experience by separating content
+    and video, but it does not allow each display to be smaller than the single-
+    display requirement would be.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Viewing distance:** Optimal 2–4 × H; maximum 6 × H. For a 5m room depth, minimum 65"–75" display.
+- **Commercial displays:** Always specify commercial-grade for conference rooms (rated for continuous use, RS-232/LAN control).
+- **Placement:** Center of screen at ~1.1m seated eye level; avoid mounting too high.
+- **Dual display:** Splits participant video and content; configure via DualScreenMode in XML or TAC.
+- **Front Row:** Requires Pro license + 21:9 or dual 16:9; horizontal participant strip below content.
+
+---
+
+## What's Next
+
+[Video Signal Management →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/video-display-systems/lessons/video-signal-management/)

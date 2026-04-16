@@ -1,0 +1,122 @@
+---
+id: "p1-t3-m3"
+slug: "xml-configuration-profiles"
+title: "XML Configuration Profiles"
+shortTitle: "XML Configuration"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+moduleIndex: 3
+
+type: "module"
+duration: 85
+lessonCount: 3
+
+difficulty: "intermediate"
+bloomLevelRange: "understand–apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Describe the SkypeSettings.xml schema structure and the categories of configuration it controls"
+  - "Write valid XML configuration for common MTR Windows scenarios including dual display, content camera, and theming"
+  - "Deploy XML configuration via manual, USB, Intune script, and TAC config profile methods and explain their precedence order"
+
+prerequisites:
+  - "p1-t3-m1"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+  - "intune"
+
+roleTags:
+  - "installer"
+  - "architect"
+  - "support"
+
+topicTags:
+  - "xml-configuration"
+  - "skypesettings"
+  - "deployment"
+  - "intune"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m3-resource-pack.zip"
+    label: "Module 3.3 Resource Pack"
+    sizeKb: 420
+
+metaDescription: "MTR Windows XML configuration profiles — SkypeSettings.xml schema, common configuration scenarios (dual display, content camera, theming, Front Row), and deployment methods (manual, USB, Intune, TAC config profiles). 3 lessons, 85 minutes."
+
+keywords:
+  - "SkypeSettings.xml MTR"
+  - "Teams Rooms XML configuration"
+  - "MTR Windows configuration profile"
+  - "Teams Rooms dual display XML"
+  - "MTR Intune configuration deployment"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+XML configuration profiles are the advanced configuration layer for MTR Windows. While the Teams app settings interface covers the most common options, SkypeSettings.xml provides access to a broader set of parameters — including display behavior, meeting defaults, audio routing, content camera assignment, and custom branding — in a format that is portable, version-controllable, and deployable at scale across an entire fleet without touching each device individually.
+
+This module covers the SkypeSettings.xml schema, how to write XML for common configuration scenarios, and the deployment methods available — from manual file placement to fleet-wide deployment through Intune and Teams Admin Center.
+
+---
+
+## What you will learn
+
+By completing this module, you will be able to:
+
+- Read and write valid SkypeSettings.xml — understanding the root element, key configuration categories, case sensitivity requirements, and silent-fail behavior
+- Build XML configurations for the most common MTR deployment scenarios: dual display, content camera assignment, custom theming, and Front Row defaults
+- Deploy XML configuration using manual file copy, USB drive, Intune PowerShell script, and TAC config profiles — and explain the precedence order when multiple methods are in use simultaneously
+
+---
+
+## Lessons in this module
+
+This module contains **3 lessons** with an estimated total duration of **1 hour 25 minutes**.
+
+| # | Lesson | Format | Duration |
+|---|--------|--------|----------|
+| 1 | [SkypeSettings.xml Schema — Structure, Elements, and Validation](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/lessons/skypesettings-xml-schema/) | Reading | 30 min |
+| 2 | [Common Configuration Scenarios — Dual Display, Content Camera, Theming, Front Row](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/lessons/common-configuration-scenarios/) | Reading | 30 min |
+| 3 | [XML Deployment Methods — Manual, USB, Intune, TAC Config Profiles](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/lessons/xml-deployment-methods/) | Reading | 25 min |
+
+---
+
+## Downloadable resources
+
+<DownloadButton
+  file="p1-t3-m3-resource-pack.zip"
+  label="Module 3.3 Resource Pack"
+  sizeKb={420}
+  description="Contains all reference materials for this module: SkypeSettings.xml element reference, validated XML templates for common scenarios, Intune deployment script template, and TAC config profile deployment checklist."
+/>
+
+---
+
+## What's next
+
+Module 3.3 is the final module in Track 3: Device Configuration Essentials, and the final module in Program 1: MTR Foundations. Completing this module completes the MTR Foundations program.
+
+[View Program 1 Completion →](/programs/mtr-foundations/)

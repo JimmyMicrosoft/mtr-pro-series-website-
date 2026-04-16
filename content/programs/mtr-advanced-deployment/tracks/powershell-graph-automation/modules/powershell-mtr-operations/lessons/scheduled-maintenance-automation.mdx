@@ -1,0 +1,298 @@
+---
+id: "p3-t3-m1-l4"
+slug: "scheduled-maintenance-automation"
+title: "Scheduled Maintenance Automation"
+shortTitle: "Scheduled Maintenance Automation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 1
+moduleSlug: "powershell-mtr-operations"
+moduleTitle: "PowerShell for MTR Operations"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Query room calendars via Microsoft Graph to identify rooms that are safe to restart during a maintenance window"
+  - "Trigger remote device restarts via the TAC API and verify devices return online after the restart"
+  - "Generate a maintenance window log recording which devices were restarted and their post-restart health status"
+
+prerequisites:
+  - "p3-t3-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "powershell"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l3"
+  - "p3-t3-m1-l5"
+
+metaDescription: "Automated MTR maintenance window scripting with PowerShell — calendar-safe restart detection via Graph API, remote restarts via TAC, post-restart health verification, and maintenance window logging."
+
+keywords:
+  - "MTR scheduled maintenance PowerShell"
+  - "Teams Rooms remote restart automation"
+  - "MTR maintenance window script"
+  - "Teams Rooms calendar check PowerShell"
+  - "MTR automated restart"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+MTR devices accumulate stale state over time — memory leaks in peripheral drivers, cached credentials that have expired, HDMI handshake issues that a reboot clears instantly. Scheduled overnight restarts are a standard operational practice for enterprise MTR fleets, but restarting a room mid-meeting is unacceptable. This lesson builds a maintenance automation script that checks each room's calendar before triggering a restart, so maintenance windows only touch rooms that are genuinely idle. The script also verifies that each restarted device comes back online and logs the full maintenance run for accountability.
+
+---
+
+## Checking Room Calendars Before Restart
+
+The core safety check queries each room's calendar for bookings in the next two hours before issuing a restart command. A room with any upcoming meeting is skipped entirely:
+
+```powershell
+Connect-MgGraph -Scopes "Calendars.Read"
+Connect-MicrosoftTeams
+
+function Test-RoomSafeToRestart {
+    param(
+        [string]$RoomUPN,
+        [int]$LookaheadMinutes = 120
+    )
+
+    $startTime = (Get-Date).ToUniversalTime().ToString("o")
+    $endTime   = (Get-Date).AddMinutes($LookaheadMinutes).ToUniversalTime().ToString("o")
+
+    try {
+        $events = Get-MgUserCalendarView `
+            -UserId $RoomUPN `
+            -StartDateTime $startTime `
+            -EndDateTime $endTime `
+            -ErrorAction Stop
+
+        if ($events.Count -eq 0) {
+            return @{ Safe = $true; Reason = "No meetings in next $LookaheadMinutes minutes" }
+        } else {
+            $nextMeeting = $events | Sort-Object Start | Select-Object -First 1
+            $nextStart   = [datetime]$nextMeeting.Start.DateTime
+            return @{ Safe = $false; Reason = "Meeting at $($nextStart.ToString('HH:mm')) — $($nextMeeting.Subject)" }
+        }
+    } catch {
+        return @{ Safe = $false; Reason = "Calendar query failed: $($_.Exception.Message)" }
+    }
+}
+```
+
+Failing safely on a calendar query error (returning `Safe = $false`) means that if the Graph call fails for any reason — network timeout, permissions issue, invalid UPN — the device is not restarted. This is the conservative behavior appropriate for production.
+
+---
+
+## Triggering Remote Restarts via TAC API
+
+The `MicrosoftTeams` module provides `Invoke-CsTeamsRoomDeviceRemoteAction` for remote restart. For deployments where the PowerShell cmdlet is not yet available, the TAC Graph beta endpoint can be called directly:
+
+```powershell
+function Invoke-MTRRemoteRestart {
+    param(
+        [string]$DeviceId,      # TAC device ID (from Get-CsTeamsRoomDevice)
+        [string]$DeviceName
+    )
+
+    # Primary: PowerShell cmdlet (MicrosoftTeams module)
+    try {
+        Invoke-CsTeamsRoomDeviceRemoteAction `
+            -DeviceId $DeviceId `
+            -Action "Restart" `
+            -ErrorAction Stop
+        Write-Host "[$DeviceName] Restart command sent via TAC cmdlet"
+        return $true
+    } catch {
+        Write-Warning "[$DeviceName] TAC cmdlet failed ($($_.Exception.Message)) — trying Graph beta"
+    }
+
+    # Fallback: Graph beta endpoint
+    try {
+        $token   = (Get-MgContext).AuthToken
+        $uri     = "https://graph.microsoft.com/beta/teamwork/devices/$DeviceId/restart"
+        $headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
+        Invoke-RestMethod -Uri $uri -Method POST -Headers $headers -ErrorAction Stop
+        Write-Host "[$DeviceName] Restart command sent via Graph beta"
+        return $true
+    } catch {
+        Write-Warning "[$DeviceName] Restart failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+```
+
+<Callout type="note">
+`Invoke-CsTeamsRoomDeviceRemoteAction` availability varies by module version. Always include the Graph beta fallback for resilience. The Graph beta `/teamwork/devices/{id}/restart` endpoint requires the `TeamworkDevice.ReadWrite.All` permission.
+</Callout>
+
+---
+
+## The Full Maintenance Window Script
+
+Combining the calendar check and restart function into a complete maintenance run:
+
+```powershell
+# --- Configuration ---
+$maintenanceWindowStart = "01:00"   # Only run restarts between 01:00 and 04:00
+$maintenanceWindowEnd   = "04:00"
+$lookaheadMinutes       = 120
+$postRestartWaitSeconds = 600       # 10 minutes to verify health
+
+# --- Gate: only run during maintenance window ---
+$now = Get-Date
+$windowStart = [datetime]::ParseExact($maintenanceWindowStart, "HH:mm", $null)
+$windowEnd   = [datetime]::ParseExact($maintenanceWindowEnd,   "HH:mm", $null)
+if ($now.TimeOfDay -lt $windowStart.TimeOfDay -or $now.TimeOfDay -gt $windowEnd.TimeOfDay) {
+    Write-Host "Outside maintenance window ($maintenanceWindowStart–$maintenanceWindowEnd). Exiting."
+    exit 0
+}
+
+# --- Get all MTR devices ---
+$allDevices = Get-CsTeamsRoomDevice | Select-Object DisplayName, ResourceAccount,
+    DeviceId, HealthStatus
+
+$maintenanceLog = [System.Collections.Generic.List[PSObject]]::new()
+
+foreach ($device in $allDevices) {
+    $logEntry = [PSCustomObject]@{
+        DeviceName        = $device.DisplayName
+        ResourceAccount   = $device.ResourceAccount
+        PreRestartHealth  = $device.HealthStatus
+        CalendarCheck     = ""
+        RestartSent       = $false
+        PostRestartHealth = ""
+        Timestamp         = (Get-Date -Format "o")
+    }
+
+    # Calendar safety check
+    $calCheck = Test-RoomSafeToRestart -RoomUPN $device.ResourceAccount `
+        -LookaheadMinutes $lookaheadMinutes
+    $logEntry.CalendarCheck = $calCheck.Reason
+
+    if (-not $calCheck.Safe) {
+        Write-Host "[$($device.DisplayName)] Skipping — $($calCheck.Reason)"
+        $maintenanceLog.Add($logEntry)
+        continue
+    }
+
+    # Issue restart
+    $restartSent = Invoke-MTRRemoteRestart -DeviceId $device.DeviceId `
+        -DeviceName $device.DisplayName
+    $logEntry.RestartSent = $restartSent
+
+    $maintenanceLog.Add($logEntry)
+}
+
+# --- Wait then verify health ---
+$restarted = $maintenanceLog | Where-Object { $_.RestartSent -eq $true }
+if ($restarted.Count -gt 0) {
+    Write-Host "Waiting $postRestartWaitSeconds seconds for devices to reboot..."
+    Start-Sleep -Seconds $postRestartWaitSeconds
+
+    # Re-query TAC health for restarted devices
+    $postHealthLookup = @{}
+    Get-CsTeamsRoomDevice | ForEach-Object { $postHealthLookup[$_.DisplayName] = $_.HealthStatus }
+
+    foreach ($entry in $restarted) {
+        $entry.PostRestartHealth = $postHealthLookup[$entry.DeviceName] ?? "Not found in TAC"
+    }
+}
+
+# --- Export maintenance log ---
+$date = Get-Date -Format "yyyy-MM-dd"
+$logPath = "C:\Logs\MTR-Maintenance-$date.csv"
+$maintenanceLog | Export-Csv -Path $logPath -NoTypeInformation
+
+# --- Summary ---
+$restartCount  = ($maintenanceLog | Where-Object RestartSent -eq $true).Count
+$skippedCount  = ($maintenanceLog | Where-Object RestartSent -eq $false).Count
+$onlineAfter   = ($maintenanceLog | Where-Object { $_.PostRestartHealth -eq "Healthy" }).Count
+
+Write-Host "`n--- Maintenance Summary ---"
+Write-Host "Devices restarted:      $restartCount"
+Write-Host "Devices skipped:        $skippedCount"
+Write-Host "Healthy post-restart:   $onlineAfter / $restartCount"
+Write-Host "Log: $logPath"
+```
+
+---
+
+## Post-Restart Health Verification Table
+
+The maintenance log captures pre- and post-restart health for each device. A successful maintenance run shows most devices returning to **Healthy**. Devices that remain offline or Critical after 10 minutes warrant manual investigation.
+
+| Post-Restart Health | Meaning | Action |
+|---------------------|---------|--------|
+| Healthy | Device rebooted and signed in successfully | None required |
+| NonUrgent | Device online but a peripheral issue detected | Review TAC incidents |
+| Critical | Device online but major issue persists | Investigate — restart did not resolve the underlying fault |
+| Not found in TAC | Device did not re-appear in TAC after 10 minutes | Check device power and network; may need extended wait |
+| Offline | Device reported offline by TAC | Device may need longer boot time; re-query after 5 more minutes |
+
+---
+
+<KnowledgeCheck id="p3-t3-m1-l4-kc">
+  <Question>
+    The maintenance script ran last night and the log shows 18 devices with PostRestartHealth = "Not found in TAC" — they were Healthy before the restart. The other 82 devices returned to Healthy normally. What is the most likely cause and what should you do before raising a P1 incident?
+  </Question>
+  <Answer>The device restarts failed to execute — check TAC for whether the restart command was received by each device</Answer>
+  <Answer correct>The most likely cause is that the post-restart wait of 10 minutes was insufficient for these 18 devices — they may have a longer boot sequence, a pending Windows Update that extended the restart, or slower BIOS POST time. Before raising a P1 incident, re-query TAC health for those 18 device names immediately: if they now show as Healthy, they simply needed more time. Update the script's postRestartWaitSeconds to 15-20 minutes for future runs. Only escalate if re-querying confirms they remain offline.</Answer>
+  <Answer>The 18 rooms all had meetings start during the restart window — the calendar check has a race condition</Answer>
+  <Answer>The Graph API Calendars.Read permission expired overnight and returned false negatives for the calendar check</Answer>
+  <Explanation>
+    "Not found in TAC" after a restart most commonly means the device is still booting, not that it has failed permanently. MTR Windows devices can take 5-15 minutes to fully boot, authenticate, and re-register with the Teams service — and that time extends further if a Windows Update was waiting to apply. A single re-query of TAC health for the affected devices is the correct first diagnostic step. Raising a P1 incident for 18 rooms before performing this check would generate unnecessary noise and potentially dispatch field engineers to rooms that simply needed more time.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Calendar safety gate:** `Get-MgUserCalendarView` checks for bookings in the next N minutes before every restart — fail-safe defaults to not restarting if the query errors.
+- **Remote restart:** `Invoke-CsTeamsRoomDeviceRemoteAction` is the primary method; Graph beta `/teamwork/devices/{id}/restart` is the fallback.
+- **Maintenance window gate:** Time-of-day gating at the top of the script prevents accidental execution outside the approved window.
+- **Post-restart verification:** Re-query TAC after a 10-minute wait and record `PostRestartHealth` in the maintenance log.
+- **Logging:** Every device — whether restarted or skipped — gets a log entry with the reason, enabling full auditability of the maintenance run.
+
+---
+
+## What's Next
+
+[Webhook-Triggered Alert Response Automation →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/powershell-mtr-operations/lessons/webhook-alert-response/)

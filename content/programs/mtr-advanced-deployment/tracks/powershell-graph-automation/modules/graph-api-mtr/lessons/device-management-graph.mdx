@@ -1,0 +1,292 @@
+---
+id: "p3-t3-m2-l3"
+slug: "device-management-graph"
+title: "Teams Rooms Device Management via Graph"
+shortTitle: "Device Management via Graph"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 2
+moduleSlug: "graph-api-mtr"
+moduleTitle: "Microsoft Graph API for MTR"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Query Intune managed device compliance state and trigger device syncs via the Graph deviceManagement API"
+  - "Retrieve Entra ID device objects and correlate them with Intune and TAC data for a comprehensive device profile"
+  - "Use the Graph beta teamwork/devices endpoint to access Teams Rooms health data directly from Graph"
+
+prerequisites:
+  - "p3-t3-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "graph-api"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m2-l2"
+  - "p3-t3-m2-l4"
+
+metaDescription: "MTR device management via Microsoft Graph API — Intune compliance queries, device sync triggers, Entra ID device objects, Graph beta teamwork/devices for Teams Rooms health, and comprehensive device profile assembly."
+
+keywords:
+  - "Graph API Intune device management MTR"
+  - "Teams Rooms device Graph API"
+  - "Intune compliance Graph API PowerShell"
+  - "teamwork devices Graph beta"
+  - "MTR device profile Graph API"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The PowerShell `Microsoft.Graph` module wraps the same Graph API endpoints covered in this lesson — the value of calling Graph directly is precision: you can filter, select, and expand exactly the fields you need without retrieving entire objects, and you can use endpoints only available in the Graph beta that may not yet be surfaced in the PowerShell module. This lesson covers the three device management data layers available via Graph (Intune compliance, Entra ID device objects, and Teams Rooms health via Graph beta) and shows how to combine them into a comprehensive per-device profile.
+
+---
+
+## Querying Intune Managed Devices
+
+The `deviceManagement/managedDevices` endpoint returns Intune enrollment and compliance data:
+
+```powershell
+# Get all MTR Windows devices from Intune
+# Filter by device name prefix — adjust to match your naming convention
+$filter    = "operatingSystem eq 'Windows' and startswith(deviceName,'MTR-')"
+$select    = "deviceName,serialNumber,osVersion,complianceState," +
+             "complianceGracePeriodExpirationDateTime,lastSyncDateTime," +
+             "enrolledDateTime,managementState,id"
+
+$intuneUri = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices" +
+             "?`$filter=$filter&`$select=$select&`$top=999"
+
+$intuneDevices = Invoke-GraphRequest -Uri $intuneUri -Headers $headers
+
+foreach ($device in $intuneDevices) {
+    Write-Host "$($device.deviceName) | $($device.complianceState) | Last sync: $($device.lastSyncDateTime)"
+}
+```
+
+Key compliance-related fields returned:
+
+| Field | Description |
+|-------|-------------|
+| `complianceState` | `compliant`, `noncompliant`, `inGracePeriod`, `notEvaluated`, `unknown` |
+| `complianceGracePeriodExpirationDateTime` | When grace period ends for non-compliant devices |
+| `lastSyncDateTime` | When the device last checked in with Intune |
+| `managementState` | `managed`, `retirePending`, `wipePending` — flags pending actions |
+| `enrolledDateTime` | Initial enrollment date — useful for batch-enrolled cohorts |
+
+---
+
+## Triggering a Device Sync
+
+A device sync forces the device to re-evaluate its compliance state against current policies immediately, rather than waiting for the next scheduled check-in (default: every 8 hours for Windows):
+
+```powershell
+function Invoke-IntuneDeviceSync {
+    param(
+        [string]$DeviceId,    # Intune managed device ID
+        [string]$DeviceName,
+        [hashtable]$Headers
+    )
+
+    $uri = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/$DeviceId/syncDevice"
+
+    try {
+        # POST with empty body — returns 204 No Content on success
+        Invoke-RestMethod -Uri $uri -Method POST -Headers $Headers `
+            -ContentType "application/json" -Body "{}" -ErrorAction Stop
+        Write-Host "[$DeviceName] Sync triggered successfully"
+        return $true
+    } catch {
+        Write-Warning "[$DeviceName] Sync failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+# Trigger sync for all non-compliant devices
+$nonCompliant = $intuneDevices | Where-Object { $_.complianceState -eq "noncompliant" }
+foreach ($device in $nonCompliant) {
+    Invoke-IntuneDeviceSync -DeviceId $device.id -DeviceName $device.deviceName -Headers $headers
+    Start-Sleep -Milliseconds 500   # Basic throttle prevention
+}
+```
+
+<Callout type="tip">
+Triggering a sync is useful after a remediation action (policy fix, app update) to verify compliance is re-evaluated without waiting for the next scheduled check-in. Allow 10-15 minutes after triggering sync before re-querying compliance state.
+</Callout>
+
+---
+
+## Entra ID Device Objects
+
+The Entra ID device object is separate from the Intune managed device object. It represents the device's identity in the directory:
+
+```powershell
+# Query Entra ID devices — filter by display name prefix
+$deviceFilter = "startswith(displayName,'MTR-')"
+$deviceSelect = "id,displayName,deviceId,accountEnabled,registrationDateTime," +
+                "approximateLastSignInDateTime,operatingSystem,operatingSystemVersion," +
+                "profileType,trustType"
+
+$entraUri  = "https://graph.microsoft.com/v1.0/devices" +
+             "?`$filter=$deviceFilter&`$select=$deviceSelect"
+
+$entraDevices = Invoke-GraphRequest -Uri $entraUri -Headers $headers
+
+# Check for devices not seen recently (potential orphaned or offline devices)
+$staleThreshold = (Get-Date).AddDays(-30)
+$staleDevices = $entraDevices | Where-Object {
+    [datetime]$_.approximateLastSignInDateTime -lt $staleThreshold
+}
+Write-Host "$($staleDevices.Count) Entra ID device objects not seen in 30+ days"
+```
+
+| Field | Operational Use |
+|-------|-----------------|
+| `accountEnabled` | Disabled Entra device = cannot authenticate to Microsoft 365 |
+| `trustType` | `AzureAD` = Entra joined; `ServerAD` = hybrid joined |
+| `approximateLastSignInDateTime` | Proxy for whether device has been active recently |
+| `registrationDateTime` | Date the device joined Entra ID |
+
+---
+
+## Teams Rooms Health via Graph Beta
+
+The `beta/teamwork/devices` endpoint returns Teams-specific device health data directly from Graph, without requiring the MicrosoftTeams PowerShell module:
+
+```powershell
+# Note: beta endpoint — subject to change
+$teamworkUri = "https://graph.microsoft.com/beta/teamwork/devices" +
+               "?`$filter=deviceType eq 'teamsRoom'" +
+               "&`$select=id,displayName,currentUser,healthStatus,activityState," +
+               "deviceType,notes"
+
+$teamworkDevices = Invoke-GraphRequest -Uri $teamworkUri -Headers $headers
+
+foreach ($device in $teamworkDevices) {
+    [PSCustomObject]@{
+        DeviceName   = $device.displayName
+        HealthStatus = $device.healthStatus     # healthy, nonUrgent, critical, offline, unknown
+        Activity     = $device.activityState    # idle, inCall, notConfigured
+        DeviceType   = $device.deviceType
+        SignedInUser = $device.currentUser?.id
+    }
+}
+
+# Get detailed health information including peripheral status
+$deviceId   = $teamworkDevices[0].id
+$detailUri  = "https://graph.microsoft.com/beta/teamwork/devices/$deviceId/health"
+$healthDetail = Invoke-GraphRequest -Uri $detailUri -Headers $headers
+
+# healthDetail.peripheralsHealth contains camera, microphone, speaker, display status
+Write-Host "Camera health: $($healthDetail.peripheralsHealth.communicationSpeaker.isOptional)"
+```
+
+<Callout type="note">
+The `beta/teamwork/devices` endpoint requires `TeamworkDevice.Read.All` (application). Beta endpoints can change without notice — pin your script to the beta version with monitoring for deprecation announcements in the Microsoft Graph changelog.
+</Callout>
+
+---
+
+## Assembling a Comprehensive Device Profile
+
+Combining Intune, Entra ID, and Graph beta Teams data builds a complete device profile that cannot be obtained from any single endpoint:
+
+```powershell
+# Build lookup tables
+$intuneLookup  = @{}
+foreach ($d in $intuneDevices)  { $intuneLookup[$d.deviceName.ToLower()]  = $d }
+
+$entraLookup   = @{}
+foreach ($d in $entraDevices)   { $entraLookup[$d.displayName.ToLower()]  = $d }
+
+$teamworkLookup = @{}
+foreach ($d in $teamworkDevices) { $teamworkLookup[$d.displayName.ToLower()] = $d }
+
+# Assemble per-device profiles
+$deviceProfiles = foreach ($deviceName in ($intuneLookup.Keys)) {
+    $intune    = $intuneLookup[$deviceName]
+    $entra     = $entraLookup[$deviceName]
+    $teamwork  = $teamworkLookup[$deviceName]
+
+    [PSCustomObject]@{
+        DeviceName          = $intune.deviceName
+        OSVersion           = $intune.osVersion
+        ComplianceState     = $intune.complianceState
+        LastIntuneSync      = $intune.lastSyncDateTime
+        EntraEnabled        = $entra?.accountEnabled
+        EntraLastSignIn     = $entra?.approximateLastSignInDateTime
+        TeamsHealthStatus   = $teamwork?.healthStatus
+        TeamsActivityState  = $teamwork?.activityState
+        InIntune            = $true
+        InEntra             = ($null -ne $entra)
+        InTeamsRooms        = ($null -ne $teamwork)
+    }
+}
+```
+
+---
+
+<KnowledgeCheck id="p3-t3-m2-l3-kc">
+  <Question>
+    A device profile shows: ComplianceState = "compliant", TeamsHealthStatus = "critical", EntraEnabled = true, LastIntuneSync = 2 hours ago. What does this combination tell you about the device's current state?
+  </Question>
+  <Answer>The Intune compliance data is stale — trigger a sync and the compliance state will change to noncompliant to match the Teams health status</Answer>
+  <Answer>The device is offline — both the compliance and Teams health data are cached from before the device went down</Answer>
+  <Answer correct>This combination tells you the device is online and actively checking in with Intune (sync 2 hours ago, Entra enabled), it is meeting all Intune compliance policy requirements, but it has a Teams Rooms application-level or peripheral hardware issue that TAC/Teams is reporting as Critical. Compliance and Teams health are independent — a device can be fully Intune-compliant (OS patches applied, security baselines met) while simultaneously having a camera disconnect or network audio issue that Teams reports as Critical. The correct action is to investigate the TAC incident detail for the specific Critical signal, not to re-evaluate compliance</Answer>
+  <Answer>The Graph beta teamwork/devices endpoint is returning stale health data — beta endpoints have a 4-hour cache</Answer>
+  <Explanation>
+    Intune compliance state and Teams Rooms health status measure completely different things. Intune compliance reflects whether the device meets the security and configuration policies defined in Intune (OS version, encryption, antivirus status). Teams health status reflects whether the Teams Rooms application and its peripherals (camera, microphone, display) are functioning correctly. A device can satisfy all Intune compliance requirements while a camera cable is disconnected. Understanding which system is reporting what avoids false troubleshooting paths.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Intune managed devices:** `GET /deviceManagement/managedDevices` with `$filter` and `$select` retrieves compliance state, grace period, and last sync time; `POST .../syncDevice` triggers an immediate compliance re-evaluation.
+- **Entra ID devices:** `GET /devices` provides the directory identity layer — account enabled state, trust type, and last sign-in timestamp complement the Intune compliance picture.
+- **Graph beta teamwork/devices:** Returns Teams Rooms health status and peripheral activity state directly from Graph without requiring the MicrosoftTeams PowerShell module; requires `TeamworkDevice.Read.All`.
+- **Comprehensive profiles:** Join Intune, Entra, and Teams data on device name (normalized to lowercase) to build a single object per device covering compliance, identity, and application health.
+
+---
+
+## What's Next
+
+[Analytics and Reporting via Graph →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/graph-api-mtr/lessons/analytics-reporting-graph/)

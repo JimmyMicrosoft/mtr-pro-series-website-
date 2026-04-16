@@ -1,0 +1,318 @@
+---
+id: "p3-t2-m1-l3"
+slug: "cqd-advanced-analysis"
+title: "CQD Advanced Analysis for Teams Rooms"
+shortTitle: "CQD Advanced Analysis"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 1
+moduleSlug: "diagnostic-methodology"
+moduleTitle: "Diagnostic Methodology"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Upload a tenant building data file to CQD and explain how it enables room-level quality analysis"
+  - "Apply MTR-specific CQD filters to isolate Teams Rooms streams from general Teams client data"
+  - "Analyze Poor Call Rate trends by building to identify the onset of a network-related quality degradation"
+  - "Interpret TURN relay usage in CQD stream data and explain what it indicates about the network path"
+  - "Differentiate end-to-end network issues from last-mile issues using the CQD caller/callee stream split"
+
+prerequisites:
+  - "p3-t2-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "cqd"
+  - "network"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m1-l4"
+
+metaDescription: "Advanced CQD analysis for Microsoft Teams Rooms — building data upload, MTR-specific filters, Poor Call Rate trend analysis, stream-level packet loss and jitter, TURN relay vs direct media, caller/callee stream split for last-mile diagnosis, and exporting data for Excel visualization."
+
+keywords:
+  - "CQD Teams Rooms"
+  - "CQD building data upload"
+  - "Teams Rooms call quality dashboard"
+  - "MTR CQD filter"
+  - "CQD Poor Call Rate"
+  - "CQD TURN relay analysis"
+  - "Teams Rooms network troubleshooting"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Call Quality Dashboard (CQD) is Microsoft's tenant-level call quality analytics platform. At the basic level it provides aggregate quality metrics for all Teams calls and meetings in the tenant. At the advanced level — with building data uploaded and MTR-specific filters applied — it becomes a precise diagnostic tool that can pinpoint quality degradation to a specific building, a specific room type, a specific time window, and a specific network path. This lesson covers the CQD configuration and analysis techniques needed to work at that precision level for Teams Rooms deployments.
+
+---
+
+## Building Data Upload
+
+Without building data, CQD shows all calls aggregated by IP subnet — it cannot tell you that a set of IP addresses belongs to "Floor 3, Building A, New York." Uploading the tenant building file is the prerequisite step that enables room-level and site-level filtering.
+
+**Tenant upload file format:**
+
+The building data file is a tab-separated (.tsv) or CSV file with a specific column schema. The minimum required columns for useful room analysis:
+
+| Column | Description | Example |
+|--------|-------------|---------|
+| `Network` | IP subnet in CIDR notation | `10.10.5.0/24` |
+| `NetworkName` | Human-readable subnet name | `Building A Floor 3` |
+| `NetworkRange` | Subnet prefix length | `24` |
+| `BuildingName` | Building identifier | `New York HQ - Building A` |
+| `OwnershipType` | `Managed` or `Unmanaged` | `Managed` |
+| `BuildingType` | `Conference Room`, `Office`, etc. | `Conference Room` |
+| `Country` | Country name | `United States` |
+| `State` | State or region | `New York` |
+| `City` | City | `New York` |
+
+Map every subnet that contains MTR devices as a distinct entry. If MTR devices share a subnet with user workstations, note this — CQD will attribute all calls from that subnet to the same building/network label, and you will need to filter by `ClientType` to isolate room streams from user streams.
+
+**Uploading to the CQD portal:**
+
+1. Navigate to [cqd.teams.microsoft.com](https://cqd.teams.microsoft.com) and sign in with a Teams Administrator or Global Reader account.
+2. Select **Tenant Data Upload** from the left navigation.
+3. Upload the building data file (**.tsv** format). Choose the data type **Building** and set the effective date to the date the network assignment is valid from.
+4. Allow **24 to 48 hours** for the data to appear in CQD reports. New uploads do not backfill historical data — calls recorded before the upload date will not have building enrichment applied until the data processing cycle completes.
+
+Once uploaded, CQD reports will show **Building Name**, **Network Name**, and **Ownership Type** as filterable dimensions alongside IP and subnet data.
+
+---
+
+## MTR-Specific CQD Filters
+
+Without filtering, CQD shows data for all Teams calls across the tenant — desktop clients, mobile clients, web clients, and Teams Rooms all mixed together. MTR-specific analysis requires isolating the room device streams.
+
+**Filtering by client type:**
+
+In any CQD report, add a filter on `First Client Type` or `Second Client Type`:
+
+| Teams Rooms Platform | CQD ClientType Value |
+|---------------------|---------------------|
+| Teams Rooms on Windows | `Teams Rooms on Windows` |
+| Teams Rooms on Android | `Teams Rooms on Android` |
+| Teams Phone devices | `Teams Phone` |
+
+Apply the filter as: `First Client Type = "Teams Rooms on Windows"` **OR** `First Client Type = "Teams Rooms on Android"` to capture both platforms. Because CQD records each stream from both the caller and callee perspective, also check `Second Client Type` when analyzing end-to-end quality.
+
+**Filtering by building/subnet:**
+
+After building data upload, filter by `First Building Name` to isolate rooms in a specific building:
+
+```
+First Building Name = "New York HQ - Building A"
+AND First Client Type = "Teams Rooms on Windows"
+```
+
+This combination shows all streams where a Windows MTR device in Building A was one endpoint — enabling per-building room quality analysis.
+
+**Filtering by date range:**
+
+Set the date range to cover the period when the issue was first reported. CQD retains data for **90 days** — beyond that, historical stream data is not available.
+
+---
+
+## Quality Trend Analysis
+
+With MTR-specific filters applied, trend analysis reveals when a quality degradation started and whether it is improving, stable, or worsening.
+
+**Poor Call Rate (PCR) by building:**
+
+PCR is CQD's primary quality metric — a call is "poor" if any of the following thresholds are exceeded in any 20-second measurement window:
+
+| Metric | Poor Threshold |
+|--------|---------------|
+| Packet loss | > 10% |
+| Jitter | > 30 ms |
+| Round-trip time | > 500 ms |
+
+PCR is expressed as a percentage of total streams: a PCR of 5% means 5 in 100 streams had at least one poor measurement window.
+
+**Identifying quality degradation onset:**
+
+1. In CQD, open the **Location Enhanced Reports** section (or build a custom report).
+2. Set `First Client Type` to Teams Rooms on Windows/Android.
+3. Chart `Poor Call Rate` by **Week** or **Day** over a 60-day window.
+4. Look for the inflection point: the date when PCR rises above the historical baseline.
+5. Cross-reference the inflection date with network change records, Windows Update history from Intune, or Microsoft 365 service health alerts for that date.
+
+A PCR baseline for a well-configured MTR fleet in a managed network is typically below 3%. A sustained PCR above 5% for a specific building warrants investigation. A sudden spike affecting multiple buildings simultaneously points to a platform or network infrastructure change rather than a room-specific issue.
+
+**Week-over-week trend visualization:**
+
+Export the filtered PCR-by-building data to Excel (see the export section below) and create a line chart with each building as a series. This quickly identifies which buildings are outliers versus a fleet-wide trend.
+
+---
+
+## Drilling Into Specific Stream Data
+
+When trend analysis identifies a problem building or time window, the next step is drilling into individual stream data to identify the specific network metric driving poor quality.
+
+**Stream-level metrics:**
+
+In CQD, navigate to **Stream Details** for a filtered call. Key metrics:
+
+| Metric | What It Reveals |
+|--------|----------------|
+| `Audio Packet Loss Rate` | Percentage of audio RTP packets lost end-to-end |
+| `Audio Jitter` | Variation in packet arrival time (ms) |
+| `Audio Round Trip Time` | Full network RTT for audio stream (ms) |
+| `Video Packet Loss Rate` | Percentage of video RTP packets lost |
+| `Video Frame Rate Avg` | Average received video frame rate — drops when bandwidth is insufficient |
+| `Audio Network Jitter` | Jitter at the network layer specifically (vs. application-layer jitter buffer output) |
+
+**Correlating with time-of-day patterns:**
+
+Filter stream data for a specific building and plot **Audio Packet Loss Rate** and **Audio Round Trip Time** against the **Hour of Day**. Quality degradation that appears consistently between 09:00–10:00 and 14:00–15:00 (when meetings are most dense) indicates congestion-driven loss rather than a persistent infrastructure fault. If the degradation occurs at the same time every day, the root cause is capacity-related — not a random hardware fault.
+
+---
+
+## Media Path Analysis: Direct vs. TURN Relay
+
+One of the most diagnostic fields in CQD stream data is the media transport path — whether the MTR connected to media directly (peer-to-peer or server direct) or via a TURN (relay) server.
+
+**Direct media (UDP):**
+
+When network conditions allow, Teams Rooms establishes a direct UDP media path between the device and the Microsoft media server. Direct UDP paths have the lowest latency and are the ideal operating mode. In CQD this shows as `Transport = UDP` with relay usage not indicated.
+
+**TURN relay (TCP or UDP through relay):**
+
+When direct UDP is blocked (by firewall, NAT, or QoS policy), Teams Rooms falls back to TURN relay servers — the client establishes a connection to a Microsoft TURN server, which relays media between the endpoint and the Teams media plane. TURN relay introduces additional latency (because media traverses an extra hop) and is a common cause of elevated RTT and jitter in restrictive network environments.
+
+In CQD:
+- `Connectivity Ice = Relay` indicates the stream used TURN relay
+- `Transport = TCP` for a media stream almost always indicates UDP was blocked and fallback to TCP relay occurred
+
+**What TURN usage indicates:**
+
+| CQD Relay/Transport | Interpretation | Action |
+|--------------------|---------------|--------|
+| `Ice = Direct, Transport = UDP` | Normal — direct UDP path | No action |
+| `Ice = Relay, Transport = UDP` | TURN relay used, but UDP available | Investigate whether direct UDP should be permitted; check firewall rules for UDP 3478–3481 |
+| `Ice = Relay, Transport = TCP` | UDP blocked — TCP fallback | Firewall is blocking UDP; open UDP 3478–3481 to `*.turn.teams.microsoft.com` |
+| `Ice = Failed` | ICE negotiation failed entirely | Critical — no media path established; check network connectivity to Teams infrastructure |
+
+A fleet where most MTR streams show `Ice = Relay, Transport = TCP` has a network configuration issue (UDP blocked) that is degrading call quality across all rooms — this is a network infrastructure fix, not a per-room fix.
+
+---
+
+## Differentiating End-to-End from Last-Mile Issues
+
+CQD records every stream from both the caller and callee perspectives simultaneously. This dual-stream view is the key to distinguishing whether a quality problem is at the MTR device's last-mile network segment or somewhere in the end-to-end path.
+
+**How the caller/callee split works:**
+
+For a meeting where an MTR device (Room A) is speaking to a remote participant (Participant B):
+- **First Stream (MTR as first endpoint):** records what the MTR device experienced sending and receiving media.
+- **Second Stream (Participant B as first endpoint):** records what Participant B experienced.
+
+**Diagnosis pattern:**
+
+| First Stream (MTR) | Second Stream (Participant) | Interpretation |
+|-------------------|-----------------------------|---------------|
+| High packet loss | Low packet loss | MTR's outbound path is lossy — problem is at the MTR site's network uplink |
+| Low packet loss | High packet loss | Participant's path is lossy — problem is NOT at the MTR site |
+| High packet loss | High packet loss | Loss is between the two endpoints at the media server layer, or a Microsoft infrastructure issue |
+| High RTT | Normal RTT | MTR's WAN path to Microsoft media servers is congested or distant |
+
+If all MTR streams in a building show high first-stream packet loss but second-stream (participant side) packet loss is normal, the problem is definitively at the MTR building's network uplink — not with Microsoft's infrastructure or the remote participants. This finding directly focuses the remediation effort on the local network at that site.
+
+---
+
+## Exporting CQD Data for Excel Analysis
+
+For stakeholder reporting and trend visualization beyond what the CQD portal provides natively, export stream data to Excel:
+
+1. In any CQD report, select the **three-dot menu** on a chart or table and choose **Export to Excel** or **Export to CSV**.
+2. For large datasets (> 100,000 rows), use the **CQD Power BI connector** — download the CQD Power BI query templates from Microsoft's documentation and connect directly to the CQD OData endpoint using your Teams Administrator credentials.
+3. In Excel, create a pivot table with **Building Name** as rows, **Week** as columns, and **Poor Call Rate** as values to produce a site-by-site trend matrix.
+4. Apply conditional formatting (red = PCR > 5%, yellow = PCR 3–5%, green = PCR < 3%) to create a fleet health heatmap at a glance.
+
+The exported data is the foundation for escalation to network teams — concrete packet loss percentages and trend data is far more actionable for a network engineer than a verbal report of "the rooms sound bad."
+
+---
+
+<KnowledgeCheck id="p3-t2-m1-l3-kc">
+  <Question>
+    A CQD analysis of a 200-room MTR fleet shows that rooms in the Chicago
+    office have a Poor Call Rate of 18% over the last 30 days, while all other
+    buildings show PCR below 3%. The Chicago streams show: Audio Packet Loss
+    Rate = 12% on the First Stream (MTR side), Audio Packet Loss Rate = 1% on
+    the Second Stream (participant side), and Connectivity Ice = Relay with
+    Transport = TCP for 94% of Chicago room streams. What do these findings
+    indicate, and what is the most likely remediation?
+  </Question>
+  <Answer>The issue is with Microsoft's media servers closest to Chicago — the high first-stream loss indicates Microsoft infrastructure problems on that media path; escalate to Microsoft Support</Answer>
+  <Answer>The Chicago MTR devices have a Teams app bug causing excessive packet retransmission — update the Teams Rooms app to the latest version</Answer>
+  <Answer correct>The combination of findings points to a local network issue at the Chicago site: (1) First-stream packet loss of 12% with second-stream packet loss of only 1% confirms the loss is on the MTR device's outbound path — not in Microsoft's infrastructure or on the participant side. (2) 94% of streams using TCP relay (Ice = Relay, Transport = TCP) indicates that UDP is being blocked at the Chicago network — the devices cannot establish direct UDP media paths and are falling back to TCP TURN relay, which adds latency and is more sensitive to congestion. The most likely remediation is working with the Chicago network team to open UDP ports 3478–3481 outbound to Microsoft's TURN server range (*.turn.teams.microsoft.com), which will allow direct UDP media paths, reduce relay hop latency, and likely resolve most of the packet loss that is occurring because TCP retransmission is introducing delay on what should be a low-latency media stream</Answer>
+  <Answer>The Chicago rooms are on a subnet not included in the building data file — the PCR is artificially high because unmanaged network traffic is being included in the Chicago building filter</Answer>
+  <Explanation>
+    The two key evidence points work together here. First-stream loss much
+    higher than second-stream loss confirms the loss is at the MTR device's
+    network segment — if it were a Microsoft infrastructure or end-to-end
+    issue, both streams would show similar loss. TCP relay usage at 94%
+    confirms UDP is blocked — Teams media is designed for UDP, and TCP
+    relay fallback introduces retransmission delays that manifest as
+    packet loss in the quality metrics. These two findings together form
+    a coherent root cause: UDP is blocked at the Chicago site, forcing
+    TCP relay, which then exhibits loss under congestion. Opening UDP
+    3478–3481 to Microsoft's media infrastructure addresses both symptoms
+    at the root cause level.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Building data upload:** Required for site-level analysis — upload a subnet-to-building mapping TSV file via the CQD Tenant Data Upload portal; allow 24–48 hours for data to appear; does not backfill historical calls.
+- **MTR filters:** Use `First Client Type = "Teams Rooms on Windows"` or `"Teams Rooms on Android"` combined with `First Building Name` to isolate room streams in a specific location.
+- **Poor Call Rate trend analysis:** Plot PCR by building over time; identify the inflection date; cross-reference with change records; a PCR baseline below 3% is the target for a well-managed MTR fleet.
+- **Stream-level metrics:** Drill into packet loss, jitter, and RTT at the stream level; correlate with time-of-day to distinguish congestion-driven from persistent infrastructure issues.
+- **TURN relay:** `Ice = Relay, Transport = TCP` indicates UDP is blocked; rooms in this state have higher latency and are more susceptible to quality degradation; fix by opening UDP 3478–3481.
+- **Caller/callee split:** First-stream loss higher than second-stream loss confirms the issue is at the MTR site's network; equal loss on both streams suggests a Microsoft infrastructure or mid-path issue.
+- **Export:** Use Excel export or Power BI connector for stakeholder trend reports; a PCR heatmap by building and week is the most effective format for communicating fleet-wide quality status.
+
+---
+
+## What's Next
+
+[Network Trace Analysis for MTR →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/diagnostic-methodology/lessons/network-trace-analysis-mtr/)

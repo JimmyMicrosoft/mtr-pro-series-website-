@@ -1,0 +1,269 @@
+---
+id: "p3-t3-m2-l5"
+slug: "room-management-dashboard"
+title: "Building a Room Management Dashboard"
+shortTitle: "Room Management Dashboard"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 2
+moduleSlug: "graph-api-mtr"
+moduleTitle: "Microsoft Graph API for MTR"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design and build a Power BI dashboard connecting to Graph API data sources for MTR fleet health visibility"
+  - "Evaluate the Power BI direct connector approach versus the Power Automate + SharePoint list backend approach for different organizational contexts"
+  - "Define dashboard KPIs with green/amber/red thresholds that give stakeholders at-a-glance fleet status"
+
+prerequisites:
+  - "p3-t3-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "graph-api"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m2-l4"
+  - "p3-t3-m3-l1"
+
+metaDescription: "Building an MTR room management dashboard with Power BI — connecting to Graph API data, key visualizations, scheduled refresh, Power Automate SharePoint backend alternative, stakeholder sharing, and KPI definitions."
+
+keywords:
+  - "MTR Power BI dashboard"
+  - "Teams Rooms management dashboard Power BI"
+  - "MTR fleet health dashboard"
+  - "Power BI Graph API Teams Rooms"
+  - "MTR reporting dashboard"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Operational data is only valuable if the people who need to act on it can see it. A Power BI dashboard transforms the raw data collected from Graph API, TAC, and Intune into visual signals that management and operations teams can interpret at a glance without requiring PowerShell access. This lesson covers building a practical MTR operations dashboard: connecting Power BI to Graph API data, selecting the right visualizations for each KPI, configuring automated refresh, and sharing with stakeholders. It also compares the Power BI direct connector approach with a lighter Power Automate + SharePoint List alternative for teams without Power BI Premium.
+
+---
+
+## Connecting Power BI to Graph API Data
+
+Power BI can query Graph API directly using the **Web connector** with OAuth2 authentication:
+
+1. In Power BI Desktop: **Get Data → Web → Advanced**
+2. Enter the Graph endpoint URL (e.g., `https://graph.microsoft.com/v1.0/places/microsoft.graph.room`)
+3. Select **Organizational account** authentication and sign in with an account that has the required Graph permissions
+4. Power BI's M query handles OAuth token refresh automatically for the signed-in account
+
+For automated scripts that write data to a structured format, using the **SharePoint List** or **Azure SQL** connector is more reliable than querying Graph directly from Power BI — this avoids token expiry issues in unattended scheduled refreshes:
+
+```powershell
+# Example: PowerShell script writes fleet health snapshot to SharePoint List
+# Power BI connects to SharePoint List — no direct Graph auth needed in Power BI
+
+function Write-FleetSnapshotToSharePoint {
+    param(
+        [array]$FleetData,
+        [string]$SiteId,
+        [string]$ListId,
+        [hashtable]$Headers
+    )
+
+    foreach ($room in $FleetData) {
+        $fields = @{
+            Title            = $room.DisplayName
+            HealthStatus     = $room.HealthStatus
+            ComplianceState  = $room.ComplianceState
+            TeamsAppVersion  = $room.TeamsAppVersion
+            Building         = $room.Building
+            FleetHealthScore = $room.FleetHealthScore
+            LastUpdated      = (Get-Date -Format "o")
+        }
+
+        $body = @{ fields = $fields } | ConvertTo-Json -Depth 5
+
+        # Upsert: check if item exists (by Title), update or create
+        $existingUri = "https://graph.microsoft.com/v1.0/sites/$SiteId/lists/$ListId/items" +
+                       "?`$filter=fields/Title eq '$($room.DisplayName)'"
+        $existing    = Invoke-GraphRequest -Uri $existingUri -Headers $Headers
+
+        if ($existing.Count -gt 0) {
+            $itemId = $existing[0].id
+            Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites/$SiteId/lists/$ListId/items/$itemId/fields" `
+                -Method PATCH -Headers $Headers -Body ($fields | ConvertTo-Json) -ContentType "application/json"
+        } else {
+            Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/sites/$SiteId/lists/$ListId/items" `
+                -Method POST -Headers $Headers -Body $body -ContentType "application/json"
+        }
+    }
+}
+```
+
+---
+
+## Key Dashboard Visualizations
+
+A practical MTR operations dashboard needs five core visuals:
+
+**1. Fleet Health Donut Chart**
+- Values: Healthy / NonUrgent / Critical / Offline counts
+- Colors: Green / Amber / Red / Grey
+- Card visual above it showing total room count
+
+**2. Compliance Gauge**
+- Single number: % compliant of total enrolled devices
+- Target line at 95% (SLA threshold)
+- Conditional color: green ≥ 95%, amber 85-94%, red < 85%
+
+**3. Teams App Version Bar Chart**
+- X-axis: version numbers; Y-axis: room count
+- Highlights in red any version more than 2 releases behind current
+
+**4. Room Utilization Heat Map by Building**
+- Matrix visual: rows = buildings, columns = weekdays
+- Values = average utilization %
+- Background color scale: white (0%) → blue (100%)
+
+**5. Weekly Incident Trend Line**
+- Line chart: X = week number, Y = incident count by severity
+- Three lines: Critical (red), NonUrgent (amber), Informational (grey)
+- Shows whether the fleet health is improving or degrading over time
+
+---
+
+## Configuring Scheduled Refresh
+
+Power BI scheduled refresh requires either a **Data Gateway** (for on-premises or hybrid data sources) or **Power BI Premium** (for cloud-based refresh without a gateway). For Graph API connections authenticated with an organizational account:
+
+| Scenario | Refresh Mechanism |
+|----------|------------------|
+| Power BI Desktop (manual) | Manual refresh only |
+| Power BI Service + Web connector (OAuth) | Requires Power BI Premium or per-capacity for cloud refresh |
+| Power BI + SharePoint List backend | Scheduled refresh works on Pro license without gateway |
+| Power BI + Azure SQL backend | Scheduled refresh via Gateway |
+
+The **SharePoint List backend** approach — where a PowerShell script (Task Scheduler or Azure Automation) writes data to SharePoint, and Power BI reads from SharePoint — works with standard Power BI Pro licenses and avoids Gateway complexity:
+
+```powershell
+# Azure Automation runbook: runs daily at 06:30, writes to SharePoint
+# Power BI dataset refreshes daily at 07:00 after the data is written
+# Result: stakeholders see current-day data when they open the dashboard at 08:00
+```
+
+---
+
+## Power Automate Alternative
+
+For teams without dedicated Power BI licenses or development capacity, Power Automate can build a lighter-weight dashboard backend:
+
+**Scheduled Flow (daily 06:00):**
+1. HTTP action → `GET /places/microsoft.graph.room` (room list)
+2. HTTP action → `GET /deviceManagement/managedDevices` (compliance)
+3. Apply to each room → update SharePoint List row with current health + compliance
+4. HTTP action → Power BI API → trigger dataset refresh
+
+**Webhook Flow (on Pro Management alert):**
+1. HTTP trigger receives Pro Management webhook
+2. Update SharePoint List row for the affected room (change HealthStatus field)
+3. Power BI auto-refreshes from SharePoint on the next scheduled refresh
+
+This approach requires no custom PowerShell infrastructure — the entire pipeline runs in Power Automate with standard connectors (SharePoint is a standard connector; HTTP is premium).
+
+---
+
+## Sharing and Row-Level Security
+
+```powershell
+# Publishing the dashboard:
+# 1. Publish from Power BI Desktop to a Power BI Workspace
+# 2. Share workspace with stakeholders (Viewer role for read-only)
+# 3. Pin dashboard to SharePoint Intranet page via "Embed" → SharePoint Online
+
+# Row-level security for multi-building stakeholders:
+# Create RLS roles in Power BI Desktop:
+# Role "LON-Stakeholders": Building = "LON-HQ" filter on the room table
+# Role "NYC-Stakeholders": Building = "NYC-HQ" filter on the room table
+# Assign Azure AD groups to roles in Power BI Service
+```
+
+Without row-level security, a building facilities manager in London would see data for all global rooms — which may be inappropriate for a large enterprise deployment with regional data boundaries.
+
+---
+
+## Dashboard KPIs with Green/Amber/Red Thresholds
+
+Define the thresholds before building the dashboard — they represent your operational SLAs:
+
+| KPI | Green | Amber | Red |
+|-----|-------|-------|-----|
+| Fleet Health Score | ≥ 90 | 75–89 | < 75 |
+| % Rooms Healthy (TAC) | ≥ 95% | 85–94% | < 85% |
+| % Rooms Compliant (Intune) | ≥ 95% | 85–94% | < 85% |
+| % Rooms on Current App Version | ≥ 85% | 70–84% | < 70% |
+| Rooms with Active Critical Incident | 0 | 1–3 | > 3 |
+
+Display these five KPIs as **KPI cards** at the top of the dashboard so any stakeholder can see fleet status in under 5 seconds without reading any chart.
+
+---
+
+<KnowledgeCheck id="p3-t3-m2-l5-kc">
+  <Question>
+    Your organization uses Power BI Pro (not Premium) licenses. The team wants the dashboard to refresh automatically every morning at 07:00 using data from the Graph API. A colleague suggests connecting Power BI directly to the Graph API Web connector. What problem will they encounter, and what is the recommended alternative architecture?
+  </Question>
+  <Answer>The Graph API Web connector is not supported in Power BI — you must use the Microsoft Graph connector from AppSource instead</Answer>
+  <Answer>Power BI Pro supports scheduled refresh for Web connectors — the colleague's approach will work without modification</Answer>
+  <Answer correct>With Power BI Pro (non-Premium), cloud-based scheduled refresh for Web connectors authenticated with OAuth (organizational account) requires Power BI Premium or a Data Gateway. Without these, the scheduled refresh will fail because Power BI Service cannot re-authenticate to Graph on behalf of the user without the user being present. The recommended alternative is to use a PowerShell script (via Azure Automation or Task Scheduler) to pull data from Graph and write it to a SharePoint List or Azure SQL database, then configure Power BI to read from that data store. SharePoint List is a standard connector that supports scheduled refresh on Pro licenses without a gateway</Answer>
+  <Answer>The Graph API rate limits will block Power BI's refresh — implement exponential backoff in the Power Query M code to handle throttling</Answer>
+  <Explanation>
+    Power BI Service's cloud-based scheduled refresh can only re-authenticate to data sources that support service principal or key-based authentication without interactive OAuth. The Web connector with organizational account (OAuth) authentication requires a user to be present for token renewal, which is not possible in a scheduled, unattended refresh context. Power BI Premium bypasses this limitation. For Pro licenses, the cleanest pattern is to separate the data collection responsibility (a PowerShell script that runs on a schedule) from the reporting responsibility (Power BI reading from a structured data store that doesn't require OAuth refresh). SharePoint List is the lowest-friction option because it uses the SharePoint connector, which handles authentication transparently.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Connection approach:** Power BI Web connector works for interactive development; for automated refresh on Pro licenses, write data to SharePoint List or Azure SQL via PowerShell and connect Power BI to that store.
+- **Core visuals:** Fleet health donut, compliance gauge, version distribution bar chart, utilization heat map, and incident trend line cover the five dimensions of fleet health.
+- **Power Automate alternative:** Standard connectors (SharePoint + HTTP with premium) can replace a full PowerShell infrastructure for teams prioritizing low-code maintenance.
+- **Row-level security:** Define RLS roles by building before sharing with regional stakeholders to enforce appropriate data boundaries.
+- **KPI cards:** Define five key metrics with green/amber/red thresholds at the dashboard top for at-a-glance stakeholder consumption.
+
+---
+
+## What's Next
+
+[Integrating MTR with ITSM: ServiceNow API Automation →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/advanced-automation-integration/lessons/itsm-servicenow-automation/)

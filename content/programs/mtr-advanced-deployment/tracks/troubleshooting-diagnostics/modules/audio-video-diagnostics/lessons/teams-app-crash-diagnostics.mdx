@@ -1,0 +1,387 @@
+---
+id: "p3-t2-m2-l4"
+slug: "teams-app-crash-diagnostics"
+title: "Teams App Crash Diagnostics for MTR"
+shortTitle: "Teams App Crash Diagnostics"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 2
+moduleSlug: "audio-video-diagnostics"
+moduleTitle: "Audio and Video Diagnostics"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Distinguish between a Teams Rooms app crash, a hang, and an intentional restart based on observable evidence"
+  - "Locate and collect Windows Error Reporting crash dump files from an MTR device for escalation"
+  - "Identify common Teams Rooms app crash patterns and their associated root causes"
+  - "Use Windows Event Log to find crash events and identify the faulting module"
+  - "Determine when a crash frequency threshold warrants escalation and how to collect a ProcDump memory dump"
+  - "Reset the Teams Rooms app local state to resolve persistent crash-on-start without a factory reset"
+
+prerequisites:
+  - "p3-t2-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "troubleshooting"
+  - "teams-app"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m2-l3"
+  - "p3-t2-m2-l5"
+
+metaDescription: "Teams Rooms app crash diagnostics — distinguishing crash from hang from restart, Windows Error Reporting dump collection, crash pattern identification, Event Log analysis, crash frequency thresholds, ProcDump memory capture, and app state reset procedures."
+
+keywords:
+  - "Teams Rooms app crash"
+  - "MTR crash diagnostics"
+  - "Teams Rooms Windows Error Reporting"
+  - "MTR app hang"
+  - "Teams Rooms crash dump"
+  - "ProcDump MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+When the Teams Rooms application stops functioning, the first diagnostic task is understanding exactly what type of failure occurred. A crash, a hang, and an intentional restart are three fundamentally different events that require different diagnostic approaches and different remediation paths. A crash produces a dump file that can identify the faulting code module; a hang leaves the process running but unresponsive and requires a different collection method; an intentional restart leaves a specific trace in the Windows Event Log that distinguishes it from the other two. This lesson covers how to distinguish these failure types, where crash evidence lives in Windows, the most common Teams Rooms app crash patterns and their root causes, when to escalate, and how to collect the data that Microsoft support needs for a crash investigation.
+
+---
+
+## Crash vs. Hang vs. Restart
+
+**Crash (unhandled exception):**
+
+A crash occurs when the Teams Rooms app process encounters an unhandled exception — an error condition that the application code does not catch and handle. The result:
+- The process terminates abruptly
+- Windows Error Reporting (WER) captures a crash dump file automatically
+- Windows Event Log Application log records Event ID 1000 (Application Error) and Event ID 1001 (Windows Error Reporting)
+- Pro Management detects the app as not running and may raise a "Teams app not running" incident
+
+The Teams Rooms app typically auto-restarts via the `Microsoft.SkypeRoomSystem` service, so the room may recover within 30–90 seconds without user intervention. This makes crashes easy to miss unless monitoring is in place.
+
+**Hang (application freeze):**
+
+A hang occurs when the app process is still running (consuming memory and CPU) but is unresponsive — the app's UI does not update, calls cannot be joined, and the device appears to be in a frozen state.
+
+- Windows does NOT automatically generate a crash dump for a hung process
+- Event Log does NOT record a hang unless the hang persists long enough for Windows to trigger an Application Hang event (Event ID 1002 in the Application log)
+- Pro Management may detect the app as unresponsive if health check calls time out
+- A hang can self-resolve (if the app recovers from the blocking condition) or require a manual process kill and restart
+
+**Intentional restart:**
+
+The Teams Rooms app restarts intentionally in two scenarios:
+1. The nightly maintenance window (typically 02:00–03:00 local time) — the Teams Rooms app and the Windows device perform a scheduled restart for updates
+2. An app update is pushed via the Microsoft Store or Windows Update and the app restarts to apply the update
+
+Evidence for intentional restart:
+- Windows Event Log System log: Event ID 1074 (source: User32) — "The process Teams Rooms was shut down for the following reason: Application: Maintenance (Planned)"
+- Pro Management: the "Teams app not running" incident duration is very short (typically 1–5 minutes), matching the normal restart duration
+- The restart time aligns with the configured maintenance window
+
+If the Event Log does NOT show Event ID 1074 and the crash dump files exist, the restart was not intentional — it was a crash.
+
+---
+
+## Windows Error Reporting for MTR
+
+When the Teams Rooms app crashes, Windows Error Reporting (WER) automatically collects diagnostic data and stores it locally before (optionally) uploading it to Microsoft.
+
+**Crash dump file location:**
+
+```
+C:\ProgramData\Microsoft\Windows\WER\ReportQueue\
+```
+
+Within this directory, each crash produces a subdirectory named with the pattern:
+```
+AppCrash_<ProcessName>_<timestamp>_<hash>\
+```
+
+For Teams Rooms crashes, look for subdirectories containing `SkypeRoomSystem` or `msteamsapp` in the name.
+
+**Files to collect from each crash report directory:**
+
+| File | Contents | Use |
+|---|---|---|
+| `*.hdmp` | Heap dump — full process heap at crash time | Microsoft support analysis |
+| `*.mdmp` | Mini dump — stack trace and key process state | Microsoft support analysis; faulting module identification |
+| `Report.wer` | WER metadata — crash time, process name, exception type, faulting module | First review — identifies faulting module without needing a debugger |
+
+**Reading Report.wer for quick diagnosis:**
+
+The `Report.wer` file is a plain-text file. Open it in Notepad. Key fields:
+
+```
+FriendlyEventName=APPCRASH
+EventType=APPCRASH
+...
+sig[0].Name=Application Name
+sig[0].Value=SkypeRoomSystem.exe
+sig[2].Name=Faulting Module Name
+sig[2].Value=ntdll.dll
+sig[3].Name=Faulting Module Version
+sig[4].Name=Exception Code
+sig[4].Value=0xc0000005
+```
+
+- **Faulting Module Name:** The DLL or EXE where the crash occurred. If it is `ntdll.dll` or `kernelbase.dll`, the crash originated in the app but was caught at the OS call boundary — the faulting module here is not the root cause; it is where the exception was raised. Look for app-specific DLLs (Teams SDK modules) for more specific attribution.
+- **Exception Code:** `0xc0000005` = Access Violation (most common crash cause — reading or writing invalid memory); `0xc000000d` = Invalid Parameter.
+
+**Collecting WER files remotely:**
+
+If the device is accessible via the Pro Management log collection, the WER ReportQueue directory is included in the collected log package. Alternatively, copy the directory manually using robocopy from an elevated command prompt:
+
+```cmd
+robocopy "C:\ProgramData\Microsoft\Windows\WER\ReportQueue" "C:\Temp\WERLogs" /E
+```
+
+---
+
+## Teams Rooms App Crash Patterns
+
+**Crash at startup:**
+
+The app crashes immediately on launch, before reaching the Teams Rooms home screen. Causes:
+
+- **Corrupted configuration file:** The `SkypeSettings.xml` file has invalid XML (often caused by a failed write during a previous crash). Symptom: crash occurs every time the app starts; WER faulting module is the XML parsing component. Remediation: validate and repair the XML file (see App State Reset section below).
+- **Corrupted app state:** Local app data (cache, credential store, settings database) has become corrupted. Symptom: crash at startup; `Report.wer` does not point to a specific configuration file but shows a memory access violation. Remediation: clear the app's local state (see App State Reset).
+- **Missing or corrupted app dependency:** A Teams Rooms app update partially completed and a DLL is missing. Symptom: crash at startup; WER faulting module is a specific DLL. Remediation: run a repair install via the Microsoft Store or via Windows Update.
+
+**Crash during a call:**
+
+The app is running, a call is in progress, and the app crashes mid-call. Causes:
+
+- **Codec fault:** A specific media stream state triggers a crash in the video or audio codec. This is typically a bug in a specific Teams app version. Evidence: WER faulting module is a media/codec DLL; crash reliably reproduces during calls with a specific configuration (e.g., using content sharing). Resolution: update to the latest Teams Rooms app version; if the latest version exhibits the crash, open a Microsoft support case with the crash dump.
+- **Memory issue:** The app has a memory leak that builds over the course of a meeting; after a meeting of sufficient length, available memory is exhausted and the app crashes. Evidence: crash duration correlates with meeting length; WER shows `0xc0000005` access violation in `ntdll.dll`. Resolution: Microsoft support with memory dump is required.
+
+**Crash after update:**
+
+A Teams Rooms app update is applied during the maintenance window, and the app crashes after the first restart with the new version. Causes:
+
+- **Version incompatibility:** The new Teams Rooms app version has a bug with a specific Windows version or hardware configuration. Check the Microsoft Teams Rooms app release notes for known issues with the current version.
+- **Prerequisite not met:** The new app version requires a newer Windows version or a specific Windows component update that has not been applied. Verify the Windows version on the device.
+
+---
+
+## Event Log Crash Diagnosis
+
+**Finding crash events with PowerShell:**
+
+```powershell
+# Find Teams Rooms app crash events (Event ID 1000) in the last 7 days
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'Application'
+    Id        = 1000
+    StartTime = (Get-Date).AddDays(-7)
+} | Where-Object {
+    $_.Message -match 'SkypeRoomSystem|msteamsapp|SkypeRoom'
+} | Select-Object TimeCreated, Message | Format-List
+```
+
+**Finding WER report events (Event ID 1001):**
+
+```powershell
+# Find Windows Error Reporting events — these reference the crash dump file path
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'Application'
+    Id        = 1001
+    StartTime = (Get-Date).AddDays(-7)
+} | Where-Object {
+    $_.Message -match 'SkypeRoomSystem|msteamsapp'
+} | Select-Object TimeCreated, Message | Format-List
+```
+
+The Event ID 1001 message includes the path to the crash report directory in `C:\ProgramData\Microsoft\Windows\WER\ReportQueue\` — use this path to directly locate the relevant dump files.
+
+**Identifying the faulting module from Event ID 1000:**
+
+The Event ID 1000 message text includes the faulting module name and exception offset:
+
+```
+Faulting application name: SkypeRoomSystem.exe
+Faulting module name: ntdll.dll, version: 10.0.19041.xxxx
+Exception code: 0xc0000005
+Fault offset: 0x0000000000078dca
+```
+
+Document this exact text in your incident record. When opening a Microsoft support case, this information allows the support engineer to immediately search for known issues with that faulting module and exception code combination.
+
+---
+
+## Crash Frequency and Escalation Threshold
+
+A single crash resolved by an auto-restart is not necessarily a significant incident. The threshold for escalation is defined by frequency:
+
+| Crash Frequency | Response |
+|---|---|
+| Once in 30 days or less | Monitor — log the incident; verify it does not recur |
+| Once per week | Investigate — collect crash dump files; review WER Report.wer; check Teams app version for known issues |
+| More than once per week | Escalate — open a Microsoft support case; provide crash dump files; collect ProcDump on next occurrence if dumps are absent |
+| Continuous crash loop (app cannot stay running) | Emergency escalation — room is completely unavailable; proceed to App State Reset immediately; if App State Reset does not resolve, factory reset may be required |
+
+**Detecting crash frequency in Pro Management:**
+
+In Pro Management: **Incidents → Filter by Room → Filter by Type: "Teams app not running"** — count the incidents in the past 30 days. Each "Teams app not running" incident that lasted less than 5 minutes was likely caused by a crash-and-auto-restart (the room recovered but the app went down briefly). More than 4 such incidents per 30 days is the practical escalation threshold.
+
+---
+
+## Collecting a ProcDump Memory Dump
+
+For a hang (where no crash dump is automatically generated) or for a crash that does not produce a complete dump via WER, use Microsoft Sysinternals ProcDump to capture the process memory on the next occurrence.
+
+**Downloading and staging ProcDump:**
+
+ProcDump is available from Microsoft Sysinternals: `https://docs.microsoft.com/en-us/sysinternals/downloads/procdump`
+
+Stage `procdump64.exe` on the MTR device at `C:\Tools\procdump64.exe` (create the directory if needed).
+
+**To capture a dump when the process crashes (unhandled exception):**
+
+```cmd
+C:\Tools\procdump64.exe -ma -e SkypeRoomSystem.exe C:\Temp\MTRDumps
+```
+
+`-ma` captures a full memory dump; `-e` triggers on unhandled exceptions. ProcDump runs in the background and captures the dump automatically on next crash.
+
+**To capture a dump when the process hangs (not responding):**
+
+```cmd
+# First, find the PID of the Teams Rooms process
+tasklist | findstr SkypeRoom
+
+# Then capture a full dump of the hung process
+C:\Tools\procdump64.exe -ma <PID> C:\Temp\MTRDumps\mtr-hang-dump.dmp
+```
+
+Provide the resulting `.dmp` file to Microsoft support along with the `Report.wer` file from the crash, the Teams Rooms app version, and the Windows build version.
+
+---
+
+## App State Reset
+
+For a persistent crash-on-start caused by corrupted local app data or a corrupted configuration file, clearing the app's local state resolves the issue without requiring a full factory reset.
+
+**Step 1: Exit the Teams Rooms application.**
+
+Access the Windows desktop via the admin credentials on the console or via RDP (using the admin account, not the Skype account).
+
+**Step 2: Clear the Teams Rooms app local data.**
+
+The app's local state (including credential cache, settings database, and app cache) is stored at:
+
+```
+C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\
+```
+
+Back up this directory before clearing it:
+
+```cmd
+robocopy "C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState" "C:\Temp\MTRLocalStateBackup" /E
+```
+
+Then clear the LocalState directory contents (preserve the directory itself):
+
+```cmd
+del /S /Q "C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\*"
+```
+
+**Step 3: Restore the SkypeSettings.xml configuration file.**
+
+If a valid `SkypeSettings.xml` exists in the backup, copy it back (after verifying its XML is valid):
+
+```powershell
+# Validate XML before restoring
+[xml]$config = Get-Content "C:\Temp\MTRLocalStateBackup\SkypeSettings.xml"
+# If no error, XML is valid; copy back:
+Copy-Item "C:\Temp\MTRLocalStateBackup\SkypeSettings.xml" `
+    "C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\SkypeSettings.xml"
+```
+
+**Step 4: Restart the Teams Rooms application.**
+
+The app will start fresh without cached state. It will require re-authentication with the resource account credentials (have the resource account UPN and password ready). After sign-in, verify the room configuration (device name, calendar, peripheral settings) is restored from the XML file.
+
+---
+
+<KnowledgeCheck id="p3-t2-m2-l4-kc">
+  <Question>
+    A Pro Management alert indicates "Teams app not running" for room CONF-105
+    at 09:47. The alert clears automatically at 09:49. The support engineer
+    checks the Windows Event Log Application log and finds Event ID 1001 at
+    09:47 with the faulting module listed as `ntdll.dll` and exception code
+    `0xc0000005`. This is the third such incident for this room in the past
+    10 days. What is the correct next action?
+  </Question>
+  <Answer>Perform an immediate factory reset — three crashes in 10 days indicates the device hardware is failing and the operating system must be reinstalled</Answer>
+  <Answer>The incident cleared automatically after 2 minutes, indicating the auto-restart resolved the issue; no further action is required unless the frequency increases beyond once per week</Answer>
+  <Answer correct>Three crashes in 10 days (approximately three per two weeks) exceeds the once-per-week escalation threshold and warrants a proactive investigation rather than passive monitoring. The engineer should collect the crash dump files from `C:\ProgramData\Microsoft\Windows\WER\ReportQueue\` for each of the three incidents, review the `Report.wer` files to identify the faulting module pattern across all three crashes, and check the Teams Rooms app version against the Microsoft release notes for known crash issues at that version. If no known issue is identified, stage ProcDump to capture a full memory dump on the next crash occurrence before opening a Microsoft support case with all three dump files</Answer>
+  <Answer>Event ID 1001 with `ntdll.dll` as the faulting module confirms the crash is a Windows OS bug, not a Teams Rooms app bug — open a Windows support case rather than a Teams support case</Answer>
+  <Explanation>
+    Three incidents in 10 days is above the monitoring threshold and at the
+    boundary of the escalation threshold (more than once per week). Passive
+    monitoring is insufficient at this frequency — the next step is to gather
+    the crash evidence that already exists (WER dump files from all three
+    incidents) and begin analyzing the pattern. A factory reset is premature
+    and destructive when the crash dump files have not yet been reviewed.
+    The `ntdll.dll` faulting module does not indicate a Windows OS bug — it
+    indicates where the exception was raised (at the OS API boundary) not
+    where the fault originated; this is a standard crash dump characteristic,
+    not a diagnosis. ProcDump staging is appropriate as a next step to ensure
+    a full memory dump is captured on the next occurrence if the existing
+    mini dumps do not provide enough detail for Microsoft support.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Crash vs. hang vs. restart:** Crash = process terminates with WER dump and Event ID 1000/1001; hang = process running but unresponsive, no automatic dump, Event ID 1002 if persistent; intentional restart = Event ID 1074 with maintenance reason.
+- **WER crash dump location:** `C:\ProgramData\Microsoft\Windows\WER\ReportQueue\` — collect `*.hdmp`, `*.mdmp`, and `Report.wer` from the subdirectory matching the crash timestamp.
+- **Crash patterns:** Startup crashes (corrupted XML or app state); call crashes (codec fault or memory issue); post-update crashes (version incompatibility or missing prerequisite).
+- **Event Log:** Event ID 1000 (Application Error) identifies the faulting module and exception code; Event ID 1001 (WER) provides the crash report directory path; Event ID 1074 (System) identifies intentional restarts.
+- **Escalation threshold:** More than once per week warrants investigation and Microsoft escalation with dump files; continuous crash loop warrants immediate App State Reset.
+- **ProcDump:** Use `-ma -e` to capture automatically on next unhandled exception; use `-ma <PID>` to capture a hung process on demand.
+- **App State Reset:** Clear the LocalState directory, restore a valid `SkypeSettings.xml`, restart app, re-authenticate — resolves persistent crash-on-start without factory reset.
+
+---
+
+## What's Next
+
+[Intermittent Failure Investigation →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/audio-video-diagnostics/lessons/intermittent-failure-investigation/)

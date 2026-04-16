@@ -1,0 +1,334 @@
+---
+id: "p3-t2-m2-l5"
+slug: "intermittent-failure-investigation"
+title: "Intermittent Failure Investigation for MTR"
+shortTitle: "Intermittent Failure Investigation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 2
+moduleSlug: "audio-video-diagnostics"
+moduleTitle: "Audio and Video Diagnostics"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Explain why intermittent failures resist standard diagnostic techniques and what data strategies overcome this resistance"
+  - "Configure Pro Management alert rules to capture intermittent incidents at the moment of occurrence"
+  - "Perform correlation analysis between intermittent failure events and external variables to identify a triggering pattern"
+  - "Use tshark with a ring buffer to capture network traffic continuously without filling disk"
+  - "Define the evidence package required to support a 'cannot reproduce' escalation to Microsoft"
+
+prerequisites:
+  - "p3-t2-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "troubleshooting"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m3-l1"
+
+metaDescription: "Intermittent MTR failure investigation — data collection strategy for non-reproducible issues, Pro Management alert configuration, correlation analysis, tshark ring buffer capture, hypothesis testing on next occurrence, and cannot-reproduce escalation procedures."
+
+keywords:
+  - "MTR intermittent failure"
+  - "Teams Rooms intermittent issue"
+  - "MTR tshark capture"
+  - "Teams Rooms cannot reproduce"
+  - "intermittent MTR troubleshooting"
+  - "Pro Management alerts"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The most frustrating category of MTR support case is the intermittent failure: the room works perfectly when you are investigating it; every test passes; the problem only appears when you are not watching. Standard diagnostic techniques — running a test call, checking Device Manager, reviewing current log files — yield no evidence because the failure is not present at the time of investigation. Intermittent failures require a different approach: rather than investigating in the present, you set up systems to investigate the next occurrence, collect data that spans multiple days to find patterns, and analyze external events that correlate with the failure timing. This lesson covers the specific data collection and analysis strategies that make intermittent failures tractable.
+
+---
+
+## Why Intermittent Failures Are Hard
+
+Understanding the specific challenges of intermittent failures prevents the common mistake of applying standard diagnostic techniques and concluding "nothing is wrong."
+
+**The failure is not present during investigation:**
+
+Most diagnostic tools — Device Manager, DSP signal meters, CQD for a current call, netstat — show the system's current state. If the failure was two days ago and the system is healthy now, these tools show a healthy system. Collecting real-time data after the fact is not possible; the relevant data must have been collected during the failure.
+
+**Standard tests pass:**
+
+A test call made during investigation passes because the conditions that triggered the failure are not present. A room that drops audio during its 10:00 Monday meeting may have no issues during a 15:00 Wednesday test call — different time, different meeting type, different number of participants, different network conditions.
+
+**The problem disappears after a restart:**
+
+Many intermittent failures are resolved by the nightly maintenance restart, which occurs between incidents. By the time the support team investigates, the restart has cleared whatever state caused the failure. This makes it impossible to determine whether the failure was caused by accumulated state (memory, log, cache growth) or an external event.
+
+**Time pressure from the client:**
+
+The business expects the room to be available. A persistent investigation without visible progress generates pressure to "just fix it" — often resulting in a premature resolution (restarting the device, updating firmware, replacing a cable) that may or may not address the actual cause, and which resets the evidence base.
+
+The response to all of these challenges is the same: instrument the room to collect evidence automatically during the next occurrence, analyze historical patterns across multiple incidents, and resist the pressure to apply unconfirmed fixes that eliminate evidence.
+
+---
+
+## Data Collection Strategy
+
+**Enable Teams app verbose logging:**
+
+By default, the Teams Rooms app writes logs at the INFO level. For an actively investigated intermittent issue, enable verbose logging to capture more detail:
+
+1. Access the Teams Rooms app Settings → **Logs** (or navigate to the Windows admin mode and modify the `SkypeSettings.xml`).
+2. In `SkypeSettings.xml`, add or verify:
+
+```xml
+<SkypeSettings>
+  <Logging>
+    <LogLevel>verbose</LogLevel>
+  </Logging>
+</SkypeSettings>
+```
+
+Note: verbose logging increases the log file write rate and may fill the log directory faster. Monitor log disk space and be prepared to collect logs before the nightly maintenance window truncates them.
+
+**Configure Pro Management alert rules:**
+
+Pro Management can be configured to send immediate alert notifications when a new incident is created for a specific room. This ensures the support team is notified at the moment of occurrence — not hours later when someone files a complaint.
+
+To configure:
+1. In Pro Management portal: **Settings → Alert Rules → Create Rule**.
+2. Set the condition: **Incident created → Room = [affected room]**.
+3. Set the action: **Send email / Teams channel notification** to the support engineer responsible for the investigation.
+4. Set priority to **High** so that the alert bypasses any quiet-hour rules.
+
+The immediate notification allows the support engineer to connect to the device remotely (via Pro Management remote access or RDP) while the failure is still active — before the nightly restart clears the state.
+
+**Configure Wireshark or netsh trace to capture on next occurrence:**
+
+For suspected network-related intermittent failures, stage a network capture to run continuously using a ring buffer so it is ready when the failure occurs.
+
+Using Windows `netsh trace` (built into Windows — no additional software required):
+
+```cmd
+netsh trace start capture=yes tracefile=C:\Temp\mtr-trace.etl maxsize=500 overwrite=yes
+```
+
+This captures a rolling ETL trace file (500 MB maximum size, then overwrites). When the failure is reported, stop the trace immediately:
+
+```cmd
+netsh trace stop
+```
+
+The captured ETL file can be converted to a readable format with Microsoft Message Analyzer or Network Monitor, or provided directly to Microsoft support.
+
+---
+
+## Correlation Analysis
+
+The most powerful tool for intermittent failures is not a diagnostic command — it is correlation analysis: mapping the timing of the failures against external variables to identify a trigger.
+
+**Build a failure event list:**
+
+From Pro Management incident history, extract all incidents matching the failure type for the affected room over the past 30–90 days. Record:
+- Incident creation timestamp
+- Incident duration
+- Incident auto-resolution or manual resolution
+
+**External variables to correlate against:**
+
+| Variable | Where to Get Data | What to Look For |
+|---|---|---|
+| Time of day | Incident timestamps | Failures cluster between 09:00–10:00 (meeting rush), at 02:00 (maintenance window), or at a consistent hour |
+| Day of week | Incident timestamps | Failures only on Monday/Friday; failures correlate with recurring weekly meetings |
+| Building occupancy | Facilities data or badge system | Failures correlate with full building occupancy vs. low-occupancy days |
+| Meeting type | Calendar data for the resource account | Failures correlate with large meetings, content-sharing meetings, or external-participant meetings |
+| Teams app version | Pro Management device info at incident time | All failures occur on the same app version; resolved after a version update |
+| Windows Update day | Windows Update log on device | Failures appear the day after Patch Tuesday |
+| Network events | Network monitoring logs | Failures correlate with BGP route changes, WAN failover events, or certificate renewal events |
+
+**Documenting a correlation finding:**
+
+A correlation is not a confirmed root cause — it is an elevated hypothesis. Document it as:
+
+> "8 of 10 incidents occurred on Monday between 09:00 and 10:30. The room hosts a recurring 40-person all-hands meeting at 09:30 every Monday. Hypothesis: the large meeting participant count triggers a specific failure mode that does not occur in smaller meetings. Next test: monitor a second all-hands meeting with verbose logging and real-time DSP/network monitoring active."
+
+---
+
+## Using Pro Management Incident History to Establish a Baseline Pattern
+
+Before concluding that an intermittent failure is novel, use Pro Management to establish whether the failure has a history that has simply not been investigated.
+
+**Incident frequency baseline:**
+
+- Navigate to Pro Management: **Reports → Incident Summary → Filter by Room**.
+- Select a 90-day window.
+- Count incidents by type. A room that shows 12 "Camera not detected" incidents over 90 days has a pattern that was undetected because each individual incident resolved quickly.
+
+**Incident duration clustering:**
+
+Short-duration incidents (under 5 minutes) that resolved automatically suggest self-recovering failures — the failure is real but the auto-recovery mechanism is masking it. Long-duration incidents (over 30 minutes) that required manual intervention suggest the failure is more severe when it occurs.
+
+**Time clustering:**
+
+Export the incident list to CSV and sort by time-of-day (stripping the date). If incidents cluster in a specific time band, this is a strong trigger correlation signal.
+
+---
+
+## Long-Running Network Capture with tshark Ring Buffer
+
+For intermittent network failures where the failure duration is short and the occurrence is unpredictable, a standard Wireshark capture session is not practical — it cannot be left running indefinitely without filling disk, and the analyst cannot be at the keyboard to start a capture at the moment of failure.
+
+tshark (the command-line version of Wireshark) with a ring buffer solves both problems: it runs continuously, uses a fixed maximum disk allocation, and overwrites the oldest files when the limit is reached.
+
+**Installing tshark:**
+
+tshark is included with the Wireshark installer. Install Wireshark on the MTR device (in admin mode) and tshark will be available at `C:\Program Files\Wireshark\tshark.exe`.
+
+**Ring buffer capture command:**
+
+```cmd
+"C:\Program Files\Wireshark\tshark.exe" -i Ethernet -b duration:3600 -b files:24 -w C:\Temp\mtr-capture.pcapng
+```
+
+Breaking down the parameters:
+- `-i Ethernet` — capture on the wired Ethernet interface (use `tshark -D` to list interface names and find the correct one)
+- `-b duration:3600` — start a new capture file every 3600 seconds (1 hour)
+- `-b files:24` — keep at most 24 capture files (24 hours of rolling capture)
+- `-w C:\Temp\mtr-capture.pcapng` — write files with this base name, appended with a file number
+
+The result is a rolling 24-hour capture using approximately 1–3 GB of disk (depending on traffic volume). When a failure is reported, the relevant capture files covering the failure time window are preserved for analysis before the ring buffer overwrites them.
+
+**Stopping and collecting:**
+
+When the failure is confirmed to be captured in the ring buffer files, stop tshark (Ctrl+C if running in a terminal, or kill the process), then copy the relevant `.pcapng` files to a safe location before the ring buffer overwrites them.
+
+---
+
+## Testing a Hypothesis During the Next Occurrence
+
+Once a triggering pattern has been identified through correlation analysis, prepare a specific diagnostic action to execute during the next occurrence — before resolving it.
+
+**Pre-staging a diagnostic action:**
+
+Based on the hypothesis, determine what evidence would confirm it:
+
+| Hypothesis | Pre-staged Action | Evidence Collected |
+|---|---|---|
+| Monday all-hands meeting triggers network saturation | Stage Wireshark on MTR device; set up WAN utilization alert | Capture active video bitrate during the 09:30 meeting; WAN utilization graph |
+| Weekly firmware refresh resets camera enumeration | Stage ProcDump on camera driver; enable USB debug logging | Driver event log during the camera loss event |
+| App memory leak causes crash after 3 hours of meetings | Stage ProcDump `-ma -e` for the Teams Rooms process | Full memory dump at the crash moment |
+
+**The discipline of "capture before resolve":**
+
+The support team's instinct is to fix the problem as soon as possible. For an intermittent failure under active investigation, establish a protocol with the room's stakeholders: during the next occurrence, the support engineer will have a 15-minute window to collect evidence before remediating. This requires advance agreement — room users who restart the device immediately upon failure destroy the evidence.
+
+---
+
+## When to Declare "Cannot Reproduce" and What to Provide to Microsoft
+
+When multiple occurrences have been observed, correlation analysis has not identified a clear trigger, and the failure persists despite following the diagnostic methodology, the failure may require Microsoft support escalation as a "cannot reproduce" case.
+
+**Criteria for declaring "cannot reproduce":**
+
+- At least 5 documented occurrences have been logged
+- Correlation analysis has been performed across time, day, meeting type, app version, and network variables — no clear correlation found
+- Verbose logging has been collected for at least 2 occurrences without revealing a root cause in the logs
+- A network capture has been collected for at least 1 occurrence — reviewed and no anomaly found
+
+**Evidence package for Microsoft support:**
+
+Provide all of the following with the support case:
+
+1. **Incident summary:** Room name, resource account UPN, Teams Rooms app version, Windows build version, hardware model
+2. **Incident history:** The list of all occurrences with timestamps and duration
+3. **Correlation analysis summary:** What was checked, what was ruled out
+4. **Log files:** Teams Rooms app logs collected during each occurrence (verbose if enabled)
+5. **CQD call data:** Export for the affected call sessions
+6. **Network capture:** tshark pcapng files from at least one occurrence
+7. **WER crash dumps:** If any occurrences produced crashes, include the full WER ReportQueue contents
+8. **Problem statement:** A single precise sentence describing the symptom, the conditions, and the frequency
+
+Providing this complete evidence package at case open significantly accelerates Microsoft's investigation and avoids the back-and-forth that delays resolution when only a symptom description is provided.
+
+---
+
+<KnowledgeCheck id="p3-t2-m2-l5-kc">
+  <Question>
+    A Teams Rooms device in a large conference room has experienced "Teams
+    app not running" incidents 4 times in the past 30 days — each one
+    resolving automatically within 3 minutes. The incidents occurred on
+    the following days and times: Oct 2 at 14:05, Oct 9 at 13:58,
+    Oct 16 at 14:02, Oct 23 at 14:07. The support engineer runs a test
+    call at 10:00 on October 25 — the room is perfectly healthy.
+    What is the most appropriate next step?
+  </Question>
+  <Answer>Declare the issue resolved — the test call passed and the incidents are self-resolving within 3 minutes, which is within the acceptable auto-recovery threshold</Answer>
+  <Answer>Replace the network switch port — the consistent Thursday afternoon timing indicates a weekly network maintenance window that is disrupting the device</Answer>
+  <Answer correct>The four incidents show a highly consistent pattern: all four occurred on Thursday afternoons between 13:58 and 14:07 — a 9-minute window, on the same day each week, for four consecutive weeks. This is not a random failure; it is a triggered failure. The engineer should identify what occurs on Thursday afternoons at approximately 14:00: check the room's calendar for a recurring Thursday 14:00 meeting, check the network for any scheduled activity at that time (WAN failover tests, scheduled bandwidth-intensive jobs, certificate renewals), and check the Teams app or Windows scheduled tasks for anything triggered at that time. The engineer should also pre-stage verbose logging and a tshark ring buffer before the next Thursday to capture evidence during the next expected occurrence at approximately 14:00</Answer>
+  <Answer>Open a Microsoft support case immediately with the four incident timestamps as the only evidence — the pattern is clear enough for Microsoft to diagnose without additional data</Answer>
+  <Explanation>
+    Four incidents at the same time on four consecutive Thursdays is an
+    exceptionally clear correlation pattern — this is a reproducible trigger
+    disguised as an intermittent failure. The 10:00 Wednesday test call was
+    irrelevant because the triggering condition only exists on Thursday
+    afternoons. The correct approach is to identify what happens at that
+    specific time by checking the room calendar, network schedules, and
+    system task schedules, and to prepare to capture evidence during the
+    next Thursday occurrence. Opening a Microsoft case with only the four
+    timestamps is premature — the evidence package described in this lesson
+    (log files from an occurrence, network capture, verbose logs) is required
+    for an effective escalation. Replacing hardware based on timing alone,
+    without confirming a hardware fault, is a classic example of applying
+    a solution without confirming a root cause.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Why intermittent failures resist standard techniques:** Failure absent during investigation; tests pass under different conditions; restarts clear the failing state; time pressure encourages premature fixes.
+- **Data collection strategy:** Enable verbose app logging; configure Pro Management instant alerts; stage netsh trace or tshark ring buffer before the next occurrence.
+- **Correlation analysis:** Map each incident timestamp against time of day, day of week, building occupancy, meeting type, app version, and network events — a consistent correlation is an elevated hypothesis.
+- **Pro Management incident baseline:** 90-day incident history by type and time reveals patterns that individual incident reviews miss.
+- **tshark ring buffer:** `-b duration:3600 -b files:24` runs a 24-hour rolling capture at manageable disk cost; stop and preserve files immediately when the failure is reported.
+- **Capture before resolve:** Establish agreement with stakeholders for a 15-minute evidence collection window before remediation — failure to do this destroys the evidence.
+- **Cannot reproduce escalation:** At least 5 documented occurrences; correlation analysis exhausted; verbose logs and network capture from at least one occurrence; full evidence package (incident history, logs, CQD, pcapng, WER dumps, problem statement).
+
+---
+
+## What's Next
+
+[Authentication Failure Deep-Dive →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/network-auth-diagnostics/lessons/authentication-failure-deep-dive/)

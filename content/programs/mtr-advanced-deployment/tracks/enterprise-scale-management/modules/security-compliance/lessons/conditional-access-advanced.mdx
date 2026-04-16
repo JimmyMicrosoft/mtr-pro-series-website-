@@ -1,0 +1,354 @@
+---
+id: "p3-t1-m3-l2"
+slug: "conditional-access-advanced"
+title: "Conditional Access Advanced Patterns"
+shortTitle: "Conditional Access Advanced"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 3
+moduleSlug: "security-compliance"
+moduleTitle: "Security and Compliance for MTR"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Configure Named Locations and sign-in risk policies to restrict MTR room account access to known corporate network ranges"
+  - "Design a Conditional Access policy architecture that uses device compliance as the primary security signal for room accounts"
+  - "Configure persistent browser sessions for room accounts to prevent token expiry-driven sign-out"
+  - "Build alert rules to detect anomalous sign-in activity against MTR room accounts in Entra ID"
+
+prerequisites:
+  - "p3-t1-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+
+topicTags:
+  - "security"
+  - "conditional-access"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m3-l3"
+
+metaDescription: "Advanced Conditional Access patterns for MTR — Named Locations restricting room accounts to corporate IPs, sign-in risk policies, device compliance as a CA signal, persistent browser session configuration, guest meeting access, and monitoring room account sign-in anomalies in Entra ID."
+
+keywords:
+  - "Conditional Access MTR room accounts"
+  - "Teams Rooms Named Location Entra ID"
+  - "MTR Conditional Access device compliance"
+  - "room account sign-in risk policy"
+  - "Teams Rooms persistent browser session"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Conditional Access (CA) policy baseline for MTR — excluding room accounts from MFA, requiring device compliance — was established in the enterprise Intune module. This lesson builds on that foundation to harden the room account security posture further. The key insight is that MTR room accounts are highly predictable in their behavior: they always sign in from corporate network ranges, always from enrolled devices, and always access a narrow set of resources (Teams, Exchange Online, SharePoint for recording storage). Any deviation from this pattern is a signal worth investigating. This lesson covers the CA controls that enforce this predictability and the monitoring tools that detect when it is violated.
+
+---
+
+## Named Locations for MTR Room Accounts
+
+A Named Location in Entra ID defines a set of IP address ranges that represent a trusted network segment. For MTR, Named Locations can represent the organization's office locations — and room accounts can be restricted to sign in only from those locations.
+
+**Create a Named Location for corporate offices:**
+
+In Entra ID → Security → Conditional Access → Named Locations → New location → IP ranges location:
+
+```
+Name: Corporate-MTR-Locations
+Mark as trusted location: Yes
+IP ranges:
+  203.0.113.0/24        # Example: HQ egress range
+  198.51.100.0/24       # Example: Branch office egress range
+  192.0.2.0/24          # Example: Additional site egress range
+```
+
+Use the actual public egress IP ranges for each office location. If offices use split-tunnel VPN, include the VPN egress range as well.
+
+**Create a CA policy restricting room accounts to Named Locations:**
+
+```
+Policy name: MTR-Room-Accounts-Named-Location-Restriction
+State: On
+
+Assignments:
+  Users: [MTR Resource Accounts security group]
+  Cloud apps: All cloud apps (or scope to Teams + Exchange + SharePoint)
+  Conditions:
+    Locations:
+      Include: Any location
+      Exclude: Corporate-MTR-Locations (the Named Location created above)
+
+Access controls:
+  Grant: Block access
+
+Session: None
+```
+
+This policy blocks any sign-in from a room account that originates outside the defined corporate IP ranges. A room account sign-in attempt from a home network, a VPN not in the Named Location list, or an attacker's IP is blocked at the CA layer regardless of whether the password is correct.
+
+<Callout type="warning">
+Before enabling this policy, verify that all office locations where MTR devices are deployed have their public egress IPs documented in the Named Location. A room in a branch office whose egress IP is not in the Named Location will be blocked from signing in. Run the policy in Report-only mode for at least 14 days and review the sign-in logs before switching to On.
+</Callout>
+
+---
+
+## Sign-In Risk Policy for Room Accounts
+
+Microsoft Entra ID Protection assigns a sign-in risk level (None, Low, Medium, High) to each authentication event based on signals such as atypical travel, impossible travel, anonymous IP use, and known-malicious IP ranges. For room accounts, any elevated risk sign-in is suspicious — rooms sign in from fixed corporate locations.
+
+**Configure a sign-in risk policy for room accounts:**
+
+In Entra ID → Security → Conditional Access → Create new policy:
+
+```
+Policy name: MTR-Room-Accounts-Sign-In-Risk-Block
+State: On
+
+Assignments:
+  Users: [MTR Resource Accounts security group]
+  Cloud apps: All cloud apps
+
+Conditions:
+  Sign-in risk: Medium and above
+
+Access controls:
+  Grant: Block access
+```
+
+Unlike user accounts (where you might require MFA for medium-risk sign-ins), room accounts cannot satisfy MFA. The only appropriate response to elevated risk for a room account is to block the sign-in. If a room account is blocked due to risk, investigate the sign-in log before manually resetting the risk state — the risk signal may indicate a genuine credential compromise.
+
+**Resetting a room account's risk state after investigation:**
+
+```powershell
+# Requires: Microsoft Graph PowerShell, Identity Risk administrator role
+Connect-MgGraph -Scopes "IdentityRiskyUser.ReadWrite.All"
+
+# Find the risky user entry for the room account
+$riskyUser = Get-MgRiskyUser -Filter "userPrincipalName eq 'room-boardroom@contoso.com'"
+Write-Output "Risk level: $($riskyUser.RiskLevel)"
+Write-Output "Risk state: $($riskyUser.RiskState)"
+
+# After confirming the risk event is a false positive or has been remediated:
+Invoke-MgDismissRiskyUser -UserIds $riskyUser.Id
+```
+
+---
+
+## Device Compliance as a Conditional Access Signal
+
+The compliance policies deployed in module 1 (lesson 3 — `p3-t1-m1-l3`) produce a compliance state in Intune that Conditional Access can read as a signal. Requiring device compliance for room account sign-ins means that even if a room account password is compromised, the attacker cannot access resources from an unmanaged, non-compliant device.
+
+**CA policy requiring device compliance for room accounts:**
+
+```
+Policy name: MTR-Room-Accounts-Require-Compliance
+State: On
+
+Assignments:
+  Users: [MTR Resource Accounts security group]
+  Cloud apps: Microsoft Teams, Exchange Online, SharePoint Online
+
+Conditions:
+  Device platforms: Windows, Android
+
+Access controls:
+  Grant: Require device to be marked as compliant
+  (Do NOT also require MFA — room accounts are excluded from MFA requirements)
+
+Session: None
+```
+
+**Compliance signal flow for MTR:**
+
+1. MTR device enrolls in Intune and is assigned the MTR compliance policy
+2. Intune evaluates the device against the compliance policy (BitLocker, Defender, OS version, Secure Boot)
+3. Device is marked Compliant in Intune (or In Grace Period / Non-compliant if it fails)
+4. When the room account authenticates to Teams/Exchange, Entra ID queries Intune for the device compliance state
+5. CA policy requires Compliant → authentication proceeds (Compliant device) or is blocked (Non-compliant device)
+
+**The "Not evaluated" state edge case:**
+
+Newly enrolled MTR devices may be in a "Not evaluated" compliance state for up to 15 minutes after first enrollment. Some CA policies treat "Not evaluated" as non-compliant. If rooms are failing to sign in immediately after Autopilot enrollment, wait for the first compliance evaluation cycle to complete before diagnosing a CA issue.
+
+---
+
+## Persistent Browser Session for Room Accounts
+
+Teams on MTR uses token-based authentication. Access tokens expire (typically 1 hour) and are renewed by refresh tokens. Refresh tokens also have a maximum lifetime. If the refresh token expires before it is renewed, the room account is signed out of Teams and the room goes offline until a technician re-enters credentials.
+
+Microsoft Entra ID's persistent browser session CA control extends token lifetimes for sessions that are marked as persistent. For MTR devices, configure a persistent session policy to prevent token-expiry-driven sign-out.
+
+**CA policy for persistent browser session on room accounts:**
+
+```
+Policy name: MTR-Room-Accounts-Persistent-Session
+State: On
+
+Assignments:
+  Users: [MTR Resource Accounts security group]
+  Cloud apps: Microsoft Teams, Exchange Online
+
+Conditions: None
+
+Access controls:
+  Grant: None (allow access)
+
+Session:
+  Persistent browser session: Always persistent
+  Sign-in frequency: Every time (disabled — no frequency restriction)
+```
+
+<Callout type="warning">
+"Sign-in frequency" settings in CA — which force re-authentication after a specified interval — must be disabled or not configured for room accounts. Setting a sign-in frequency (e.g., every 8 hours) forces a re-authentication prompt that room accounts cannot satisfy without user interaction, taking the room offline. Verify no general CA policy with a sign-in frequency restriction applies to room accounts.
+</Callout>
+
+---
+
+## Guest Account Access from MTR Rooms
+
+When an external guest joins a meeting from an MTR room, they are joining as a guest user in the meeting — the room account itself is not acting as the guest. However, the room's resource account may be the meeting organizer's delegate or may have specific meeting join behaviors. Considerations for guest access:
+
+**MTR room joining a meeting organized by an external user (B2B guest meeting):**
+
+The room resource account joins the meeting as a Teams participant. The room account's CA policies apply to this authentication. If the meeting is in an external tenant, the room account authenticates to the external tenant as a guest — the external tenant's CA policies for guests apply.
+
+**Restrict external tenant access for room accounts (if required):**
+
+If the organization's security policy prohibits room accounts from accessing external tenant resources:
+
+```
+Policy name: MTR-Room-Accounts-Block-External-Tenants
+State: On
+
+Assignments:
+  Users: [MTR Resource Accounts security group]
+  Cloud apps: All cloud apps
+
+Conditions:
+  Cloud apps filter: External (not your organization's tenant)
+
+Access controls:
+  Grant: Block access
+```
+
+Consult the organization's collaboration and federation policy before applying this restriction — blocking room accounts from external meetings would prevent the rooms from joining meetings hosted in partner tenant environments.
+
+---
+
+## Monitoring Room Account Sign-In Anomalies
+
+The Named Location restriction and risk policies are preventive controls. The monitoring layer provides detective coverage for events that the CA policies may not block.
+
+**Search Entra ID sign-in logs for room account activity:**
+
+```powershell
+# Microsoft Graph PowerShell — requires AuditLog.Read.All
+Connect-MgGraph -Scopes "AuditLog.Read.All"
+
+# Get sign-in logs for all room accounts in the last 24 hours
+# Assumes room accounts are in a security group; filter by UPN pattern
+$signIns = Get-MgAuditLogSignIn -Filter "userPrincipalName startsWith 'room-' and createdDateTime ge $(Get-Date (Get-Date).AddDays(-1) -Format 'yyyy-MM-ddTHH:mm:ssZ')" -All
+
+# Surface sign-ins from outside Named Locations or with non-zero risk
+$anomalous = $signIns | Where-Object {
+    $_.RiskLevelDuringSignIn -ne "none" -or
+    $_.NetworkLocationDetails.Count -eq 0
+}
+
+$anomalous | Select-Object UserPrincipalName, CreatedDateTime, IpAddress, RiskLevelDuringSignIn, Status | Format-Table
+```
+
+**Alert rules for room account anomalies in Microsoft Sentinel (or Defender XDR):**
+
+Configure an alert rule that fires when any of the following occur for a room account UPN:
+
+| Alert Condition | Severity | Recommended Response |
+|---|---|---|
+| Sign-in from IP not in Named Location | High | Investigate immediately; consider disabling the room account temporarily |
+| Sign-in risk level: Medium or High | High | Block is in place via CA; investigate the risk event |
+| More than 5 failed sign-in attempts in 10 minutes | Medium | Possible password spray; review the source IPs |
+| Sign-in from new country/region | High | Impossible travel scenario; investigate and dismiss or remediate risk |
+| Resource account password changed | High | Room accounts should not have their passwords changed outside of defined procedures |
+
+These alerts can be configured in Microsoft Sentinel using the `SigninLogs` table or in Defender XDR's Custom Detection rules using the `AADSignInEventsBeta` table.
+
+---
+
+<KnowledgeCheck id="p3-t1-m3-l2-kc">
+  <Question>
+    An organization applies a Named Location restriction policy that blocks MTR room
+    accounts from signing in outside corporate IP ranges. Three weeks after deployment,
+    the security team receives an alert that a room account sign-in was blocked by
+    the policy from an IP address that resolves to a legitimate corporate office
+    that recently had its internet circuit upgraded and received a new public IP
+    from the ISP. The room in that office has been offline for 48 hours. What is
+    the correct immediate action, and what process change should prevent recurrence?
+  </Question>
+  <Answer>Disable the Named Location policy for 24 hours to restore the room, then re-enable it without the new office IP</Answer>
+  <Answer>Delete and recreate the room account resource account so that it re-authenticates fresh from the new IP</Answer>
+  <Answer correct>Immediately add the new office public IP range to the Named Location definition in Entra ID — the CA policy re-evaluates on the next sign-in attempt without any other change required. To prevent recurrence, implement a change management process that includes updating the Named Location definition whenever an office internet circuit changes; this should be a standard task in the network change management workflow. Also, set up a monitoring alert that fires when any office circuit IP changes (tracked through the network monitoring tool or firewall), triggering an automatic reminder to update the Entra ID Named Location.</Answer>
+  <Answer>Temporarily exclude the affected room account from the Named Location restriction policy, then re-include it after the issue is investigated</Answer>
+  <Explanation>
+    Named Location restrictions are evaluated dynamically on each authentication
+    event — updating the Named Location IP ranges in Entra ID takes effect
+    immediately for all subsequent sign-in attempts. The room will recover on
+    its next sign-in retry. Excluding the room account from the policy is a
+    valid emergency workaround but leaves the account unprotected until
+    re-included. The root cause is a missing process: Named Location definitions
+    must be kept current with actual network topology. The correct fix is to
+    update the Named Location and add the process control to prevent it
+    happening again. This is a common operational failure point for Named
+    Location-based restrictions at organizations with frequently changing
+    network infrastructure.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Named Locations:** Restrict room account sign-ins to documented corporate IP ranges; run in Report-only mode for at least 14 days before enforcing to verify all office egress IPs are included.
+- **Sign-in risk policy:** Block medium-and-above risk sign-ins for room accounts — no MFA option is available, so block is the only viable control.
+- **Device compliance as CA signal:** Gate resource access on Intune compliance state, fed by the compliance policies from the Intune module; newly enrolled devices may be in "Not evaluated" state briefly.
+- **Persistent session:** Configure "Always persistent" browser session and disable sign-in frequency for room accounts to prevent token-expiry sign-outs.
+- **Guest meetings:** Room account CA policies apply when joining external tenant meetings; review federation policy before blocking external tenant access for room accounts.
+- **Monitoring:** Search sign-in logs for room accounts by UPN prefix; alert on sign-ins from outside Named Locations, elevated risk levels, and password changes.
+
+---
+
+## What's Next
+
+[Data Governance for MTR →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/security-compliance/lessons/data-governance-mtr/)

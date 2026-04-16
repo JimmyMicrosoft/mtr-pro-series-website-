@@ -1,0 +1,127 @@
+---
+id: "p2-t2-m1"
+slug: "resource-account-management-at-scale"
+title: "Resource Account Management at Scale"
+shortTitle: "Resource Accounts at Scale"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+moduleIndex: 1
+
+type: "module"
+duration: 135
+lessonCount: 5
+
+difficulty: "intermediate"
+bloomLevelRange: "apply–evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Provision MTR resource accounts in bulk using PowerShell, including all required configuration steps"
+  - "Design and implement a license management strategy that minimizes cost while meeting room functionality requirements"
+  - "Build Conditional Access policies that secure MTR device accounts without blocking Teams Rooms sign-in"
+  - "Configure Exchange Online calendar policies and delegation for resource accounts at scale"
+  - "Apply Entra ID naming conventions and governance practices for a large MTR room account estate"
+
+prerequisites:
+  - "p1-t1-m2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "entra-id"
+  - "exchange-online"
+  - "intune"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "resource-accounts"
+  - "powershell"
+  - "licensing"
+  - "conditional-access"
+  - "exchange-online"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-resource-pack.zip"
+    label: "Module 2.1 Resource Pack"
+    sizeKb: 480
+
+metaDescription: "MTR resource account management at scale — bulk PowerShell provisioning, license strategy (Basic vs. Pro), Conditional Access for MTR, Exchange Online calendar policies, Entra ID naming and governance. 5 lessons, 135 minutes."
+
+keywords:
+  - "Teams Rooms resource accounts bulk provisioning"
+  - "MTR PowerShell provisioning"
+  - "Teams Rooms license management"
+  - "MTR Conditional Access"
+  - "Teams Rooms Exchange calendar policy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A single MTR deployment might have 10 resource accounts. An enterprise deployment might have 400. The operational difference is not just scale — it is the difference between doing things manually and doing them systematically. This module covers the PowerShell-based provisioning and management approach that makes large resource account estates maintainable, the license strategy that balances functionality against cost, and the Microsoft 365 policy framework that keeps device accounts secure and compliant.
+
+---
+
+## What you will learn
+
+By completing this module, you will be able to:
+
+- Write and execute PowerShell scripts that provision resource accounts in bulk with all required Exchange Online and Entra ID configuration
+- Select the appropriate license tier (Teams Rooms Basic vs. Pro) for each room and manage license assignments efficiently
+- Design a Conditional Access policy structure that applies MFA and compliance controls to user accounts while correctly excluding MTR device accounts
+- Configure Exchange Online AutomateProcessing, calendar permissions, and room mailbox settings for any number of rooms from a single script
+- Establish naming conventions and Entra ID group structures that make the room account estate auditable and self-documenting
+
+---
+
+## Lessons in this module
+
+This module contains **5 lessons** with an estimated total duration of **2 hours 15 minutes**.
+
+| # | Lesson | Format | Duration |
+|---|--------|--------|----------|
+| 1 | [Bulk Resource Account Provisioning with PowerShell](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/bulk-provisioning-powershell/) | Reading | 30 min |
+| 2 | [License Management — Assignment, Validation, and Cost Optimization](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/license-management/) | Reading | 25 min |
+| 3 | [Conditional Access Policy Design for MTR Devices](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/conditional-access-mtr/) | Reading | 30 min |
+| 4 | [Exchange Online Calendar Policies and Delegation](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/exchange-calendar-policies/) | Reading | 25 min |
+| 5 | [Entra ID Governance for MTR Deployments](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/entra-id-governance/) | Reading | 25 min |
+
+---
+
+## Downloadable resources
+
+<DownloadButton
+  file="p2-t2-m1-resource-pack.zip"
+  label="Module 2.1 Resource Pack"
+  sizeKb={480}
+  description="Contains all reference materials for this module: bulk provisioning PowerShell script template, license decision matrix, Conditional Access policy design guide for MTR, Exchange calendar policy reference, and Entra ID naming convention template."
+/>
+
+---
+
+## What's next
+
+Module 2.2 covers Teams Admin Center fleet management — configuration profiles at scale, meeting policies, update windows, and health monitoring dashboards.
+
+[Continue to Module 2.2: TAC Policies and Fleet Management →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/)

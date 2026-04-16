@@ -1,0 +1,202 @@
+---
+id: "p4-t3-m1-l1"
+slug: "managed-service-tiers-sla"
+title: "Managed Service Tiers and SLA Design"
+shortTitle: "Service Tiers and SLA"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 3
+trackSlug: "practice-operations"
+trackTitle: "Practice Operations"
+
+module: 1
+moduleSlug: "service-delivery-model"
+moduleTitle: "Managed Service Delivery Model"
+
+lessonIndex: 1
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["practice-manager", "solutions-architect", "account-manager"]
+
+objectives:
+  - "Design a tiered managed service model for MTR that is commercially sustainable and operationally deliverable"
+  - "Define SLA parameters that balance client expectations with delivery capacity"
+  - "Write service tier definitions that are clear, enforceable, and differentiated by value"
+  - "Identify the service obligations that are most commonly disputed and design terms that prevent disputes"
+
+prerequisites:
+  - "p4-t1-m3-l4"
+  - "p4-t2-m3-l3"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management"]
+roleTags: ["practice-manager", "solutions-architect", "account-manager"]
+topicTags: ["managed-service", "SLA", "service-tiers", "commercial"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Managed Service Agreement Template"
+    filename: "mtr-managed-service-agreement-template.docx"
+
+relatedLessons:
+  - "p4-t3-m1-l2"
+  - "p4-t3-m1-l3"
+  - "p4-t3-m1-l4"
+  - "p4-t2-m3-l3"
+
+metaDescription: "Learn to design a tiered MTR managed service model with clear SLA parameters, enforceable service tier definitions, and commercial sustainability."
+keywords: ["MTR managed service", "Teams Rooms SLA", "managed service tiers", "service level agreement"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Managed Service as a Business Model
+
+A managed service agreement (MSA) converts a one-time project sale into a recurring revenue stream. For an MTR practice, the managed service covers the ongoing monitoring, support, and management of the client's deployed MTR fleet.
+
+The critical design principle is that the service must be deliverable at the agreed SLA for the agreed price — sustainably, at scale. An SLA that can only be met by heroic effort from an overcommitted team is not a business model; it is a liability.
+
+---
+
+## Service Tier Framework
+
+### Tier 1: Monitoring (Bronze/Essentials)
+
+**What it covers**:
+- Continuous monitoring via Pro Management portal
+- Email alerting for critical device failures (offline, peripheral failure)
+- Remote diagnostics via Teams Admin Centre and Pro Management
+- Monthly device health report
+- Business hours (9am–5pm, Mon–Fri) remote support for reported issues
+- Response SLA: Next business day for all severity levels
+
+**What it does NOT cover**:
+- On-site visits (billable separately at agreed T&M rate)
+- Proactive maintenance visits
+- Configuration changes beyond break-fix
+
+**Best for**: Clients with capable IT teams who want visibility and a remote escalation path, not full outsourced management.
+
+**Typical PRPM**: £60–£80
+
+### Tier 2: Standard (Silver/Standard)
+
+**What it covers**:
+- Everything in Tier 1
+- Extended support hours (8am–8pm, Mon–Fri; optional weekend coverage)
+- P1 response: 2 hours (remote); P2 response: 4 hours (remote); P3: NBD
+- One scheduled on-site preventative maintenance visit per room per year per site
+- Unlimited remote support calls
+- Quarterly Business Review
+- Firmware and Windows update management via Intune/WUfB
+- Configuration change requests (up to 4 hours per month included)
+
+**What it does NOT cover**:
+- Hardware replacement (unless hardware swap SLA is purchased separately)
+- On-site visits beyond the annual maintenance visit (billable)
+- Out-of-scope configuration work
+
+**Best for**: Enterprise clients who want to outsource day-to-day management but retain control over strategic decisions.
+
+**Typical PRPM**: £120–£150
+
+### Tier 3: Premium (Gold/Enterprise)
+
+**What it covers**:
+- Everything in Tier 2
+- 24×7 monitoring with emergency response path (define "emergency" — critical business events, board meetings)
+- P1 response: 1 hour (remote); on-site same-day for P1 within agreed geography
+- Unlimited on-site visits within agreed travel radius
+- Hardware swap SLA: Next business day replacement for failed compute units and cameras (requires spares holding)
+- Dedicated account manager
+- Monthly service review
+- Proactive advisory: platform roadmap briefings, upgrade planning
+- 6-monthly adoption and utilisation review with recommendations
+
+**Best for**: Large enterprise clients where meeting rooms are business-critical infrastructure; executive teams.
+
+**Typical PRPM**: £180–£250
+
+---
+
+## SLA Parameters
+
+Define SLA parameters precisely to prevent disputes.
+
+### Response Time vs Resolution Time
+
+Critically: response time (when you acknowledge the issue and begin investigation) is not resolution time (when the issue is fixed). Conflating these is the most common source of SLA disputes.
+
+| Term | Definition |
+|---|---|
+| Response time | Time from client reporting the issue to contractor acknowledging and beginning investigation |
+| Resolution time | Time from acknowledgement to the issue being resolved |
+| Availability SLA | % of business hours that rooms are operational (typically measured monthly) |
+
+**Example SLA definition**:
+"P1 (Room completely inoperable) — Response: 2 hours; Target resolution: 4 hours (remote) or next business day (on-site). **Note: Resolution time target is not a guarantee; actual resolution depends on the nature and complexity of the fault.**"
+
+### Priority Level Definitions
+
+Define priority levels precisely:
+
+| Priority | Definition | Example |
+|---|---|---|
+| P1 – Critical | Room completely unable to be used for any meeting | Device offline, sign-in failure |
+| P2 – Major | Room usable but with a significant impairment | Camera not working; echo on calls |
+| P3 – Minor | Room fully functional; cosmetic or non-impacting issue | Display brightness setting; cable tie loose |
+| P4 – Request | Non-fault service request | Configuration change; firmware update |
+
+### Out-of-Scope Conditions
+
+Define what suspends the SLA obligation:
+
+- Issues caused by client actions (network changes, account changes, policy modifications) outside the agreed change control process
+- Force majeure (building power failure, ISP outage)
+- Hardware damage (physical damage not covered by warranty)
+- Microsoft platform outages (Teams service incidents) — tracked via Microsoft 365 service health
+
+<Callout type="warning">
+**Always include a Microsoft platform outage carve-out.** If Teams Rooms devices cannot join meetings due to a Microsoft Teams service incident, this is not a managed service failure. Reference the Microsoft 365 Service Health Dashboard as the definitive source for platform status. Without this clause, every Teams outage becomes a managed service SLA breach discussion.
+</Callout>
+
+---
+
+## Service Agreement Structure
+
+A managed service agreement should contain:
+
+1. **Service scope**: What is included; what is explicitly excluded
+2. **Service tiers and SLA parameters**: Response and resolution times; availability target
+3. **Priority definitions**: Clear criteria for P1–P4 classification
+4. **Client responsibilities**: Network maintenance, resource account management, physical access, advance notice for building events
+5. **Reporting cadence**: Monthly reports, QBRs, ad-hoc reporting
+6. **Change management**: How configuration changes are requested and priced
+7. **Termination terms**: Notice period; transition obligations
+8. **Service credits**: What the client receives if SLA is not met (typically % of monthly fee — keep credits proportionate, not punitive)
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client's Tier 2 managed service agreement includes a 2-hour P1 response SLA. At 6pm on a Friday, a room goes offline. The client emails on Monday morning asking why the issue wasn't resolved over the weekend. What is the correct response?">
+    <Answer>Apologise and offer a service credit</Answer>
+    <Answer correct>Review the SLA terms — Tier 2 covers Mon–Fri extended hours only. If the outage was reported at 6pm Friday after business hours, the 2-hour response clock starts at 8am Monday. Politely clarify this with the client and reference the agreement terms.</Answer>
+    <Answer>Upgrade the client to Tier 3 automatically</Answer>
+    <Answer>Tell the client they should have called the emergency line</Answer>
+    <Explanation>SLA terms are the reference point for service disputes. Tier 2 covers Mon–Fri extended hours — out-of-hours response is a Tier 3 feature. This is why precise service tier definitions and business hours definitions in the MSA are essential. The correct response is to resolve the issue on Monday (which is within SLA) and use the conversation to discuss whether the client should upgrade to Tier 3 given their weekend usage patterns.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Managed Service Agreement Template" filename="mtr-managed-service-agreement-template.docx" />

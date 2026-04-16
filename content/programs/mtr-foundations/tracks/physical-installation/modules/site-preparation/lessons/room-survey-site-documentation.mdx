@@ -1,0 +1,256 @@
+---
+id: "p1-t2-m1-l1"
+slug: "room-survey-site-documentation"
+title: "Room Survey and Site Documentation"
+shortTitle: "Room Survey"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 1
+moduleSlug: "site-preparation"
+moduleTitle: "Site Preparation & Pre-Installation Planning"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Conduct a structured AV room survey for an MTR deployment, capturing all physical, architectural, and infrastructure data required for accurate system design"
+  - "Produce a site documentation package including dimensioned room sketch, infrastructure inventory, and photographic record meeting professional AV project standards"
+  - "Identify site conditions that would prevent or modify a standard MTR installation"
+
+prerequisites:
+  - "p1-t1-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "site-survey"
+  - "documentation"
+  - "discas"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m1-l1-room-survey-form.pdf"
+    label: "Room Survey Form Template"
+    sizeKb: 95
+
+relatedLessons:
+  - "p1-t2-m1-l2"
+
+metaDescription: "Learn how to conduct a professional AV room survey for MTR deployments — capturing room dimensions, wall construction, infrastructure inventory, and photographic documentation that supports accurate system design."
+
+keywords:
+  - "AV room survey MTR"
+  - "site documentation conference room"
+  - "DISCAS display sizing"
+  - "MTR pre-installation survey"
+  - "AV site assessment"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The room survey is the integrator's primary risk mitigation tool. Assumptions made without a survey are the root cause of the majority of MTR project cost overruns and installation delays. A confident pre-installation survey turns unknowns into documented facts — room dimensions, wall construction, infrastructure locations, cable pathways, and conditions that require special handling all become part of a package that drives accurate design, accurate bills of materials, and accurate scheduling. The integrator who arrives on installation day with a complete survey package rarely gets surprised. The integrator who shows up without one regularly does.
+
+This lesson covers what to measure, what to photograph, what to assess, and how to organize the results into a professional site documentation package.
+
+---
+
+## What the Room Survey Captures
+
+A complete room survey for an MTR deployment captures six categories of information. Each category feeds a different part of the system design or installation plan.
+
+**Room Dimensions and Geometry:** Measure and record the room's length, width, and ceiling height. Ceiling height determines camera mounting options — a ceiling mount typically requires 8–12 feet for adequate downward camera angle to frame seated participants. Room length and width feed the display sizing calculation (DISCAS, covered below) and the microphone coverage design. Note any architectural features that affect sightlines or cable routing: columns, beams, soffits, stepped ceilings, raised floors.
+
+**Wall Construction Type:** Identify the wall construction at the intended display mounting location, camera mounting locations, and cable penetration points. Drywall on metal stud (standard commercial construction) is straightforward for cable routing and display mounting with proper backing. Masonry or concrete walls require specialized anchors, potentially surface-mounted raceways, and significantly more installation time. Glass partitions and curtain wall systems require custom mounting solutions. Fire-rated walls require rated cable and firestopping at all penetrations — this is a code requirement, not an option.
+
+**Existing Infrastructure Inventory:** Document all existing conduit pathways, cable trays, J-hooks, pull boxes, and cable penetrations. Record the location of the nearest network closet or IDF. Note existing power outlets, circuit locations, and any existing UPS. Identify HVAC diffuser and vent locations — these affect microphone placement and ambient noise levels. An existing pathway to the IDF is valuable; a room with no usable pathways requires new conduit or surface raceway, which changes the installation scope significantly.
+
+**Network and Power Points:** Record the exact location of every existing network jack and power outlet in the room. Identify which are usable for the MTR system versus occupied by existing furniture or equipment. Note the outlet type (standard 15A duplex, 20A, etc.) and whether dedicated circuits are available.
+
+**Furniture and Layout:** Document the existing furniture arrangement — table dimensions and position, seating layout, credenza locations. Note whether furniture is fixed or movable. Display placement, camera positioning, touch console location, and cable routing all depend on the furniture arrangement the client intends to use.
+
+**Conditions of Concern:** Flag anything that would affect installation cost, timeline, or approach: asbestos-containing materials (requires certified abatement before any penetrations), water damage, existing cable that needs to be traced or removed, structural anomalies, accessibility constraints, or evidence of previous failed installations.
+
+{/* MEDIA: Annotated room plan diagram — top-down floorplan of a typical conference room with survey measurement annotations: room dimensions, ceiling height noted, infrastructure elements marked (network jack, power outlets, HVAC vents), camera/display/microphone placement candidates indicated. Filename: p1-t2-m1-l1-room-survey-diagram.png */}
+
+---
+
+## DISCAS Display Sizing
+
+During the room survey, you collect the measurements needed to specify the correct display size for the room. AVIXA's DISCAS standard (Display Image Size for 2D Content in Audio-Visual Systems) provides the formula.
+
+The key measurement is the viewing distance — the distance from the display face to the farthest seated viewer. DISCAS then specifies minimum image height (H) as a fraction of that distance (D), based on content type:
+
+- **Decision-making content** (spreadsheets, detailed data): Minimum H = D/6, Optimal H = D/4
+- **Passive content** (presentations, slides): Minimum H = D/8
+
+Once you have the required image height, convert to diagonal display size for the room's aspect ratio. For a 16:9 display: diagonal = H × 2.04 (approximately).
+
+**Example:** A 20-foot conference room with the display at one end places the farthest viewer at approximately 18 feet. For spreadsheet content at decision-making quality: minimum H = 18 ÷ 6 = 3 feet (36 inches). Diagonal = 36 × 2.04 = 73.4 inches. Specify the next available size up — an 86-inch display would be the appropriate recommendation.
+
+Document the DISCAS calculation in the survey package alongside the room measurements. This gives you a defensible basis for the display size you specify — clients who push back on display cost have a harder time arguing against a calculation derived from their own room dimensions.
+
+---
+
+## Photographic Documentation
+
+Photographs are time-stamped evidence of pre-existing conditions and the fastest way to communicate site conditions to team members who were not present for the survey. A minimum photographic set for an MTR room survey includes:
+
+All four walls (full-width photos from the center of the room), the ceiling from four positions, existing infrastructure access points (conduit penetrations, cable trays, J-hook locations), the network closet or IDF (showing the patch panel, switch, and available port capacity), each existing power outlet and network jack, the area behind where the display will be mounted (to document backing requirements), and any conditions of concern flagged during the walkthrough.
+
+Use a phone or camera that embeds GPS and timestamp metadata in photos. Organize photos by room and by category. A photo of a problem condition is worth more than a note in a survey form when explaining to a client why a scope addition is required.
+
+---
+
+## Site Documentation Package
+
+The room survey output is a site documentation package that becomes part of the project record. A professional package includes:
+
+- Dimensioned room sketch (hand-drawn or CAD, to scale or with measured dimensions annotated)
+- Infrastructure inventory checklist
+- Photographic record organized by subject
+- DISCAS display sizing calculation
+- Conditions of concern summary with photos
+- Survey date, surveyor name, and client representative present
+
+This package is shared with the design team (or used directly if the integrator is also the designer), informs the bill of materials, and is retained as project documentation. For multi-room or multi-site projects, it is typically stored in the project management system and referenced throughout the project lifecycle.
+
+<Callout type="tip">
+  On your first survey for a new client, take more photos than you think you need. You
+  will almost always want to refer back to a photo you almost skipped. Storage is cheap;
+  a return site visit to photograph something you missed is not.
+</Callout>
+
+---
+
+## Hands-On Exercise
+
+The Room Survey Form template guides you through a structured survey documentation exercise. Using either a real room, a provided 360° photo set, or a video walkthrough of a simulated conference room, you will complete all six survey categories, perform a DISCAS calculation, and organize your results into a complete documentation package.
+
+<DownloadButton
+  file="p1-t2-m1-l1-room-survey-form.pdf"
+  label="Room Survey Form Template"
+  sizeKb={95}
+  description="Structured room survey form covering all six survey categories — dimensions, wall construction, infrastructure, network/power, furniture, and conditions of concern — plus a DISCAS calculation worksheet."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t2-m1-l1-kc">
+  <Question>
+    During a room survey, you discover the wall behind the intended display location is
+    concrete masonry. What is the primary installation impact of this finding?
+  </Question>
+  <Answer>Concrete walls prevent cable penetrations entirely — reroute all cables through the floor</Answer>
+  <Answer correct>Concrete masonry requires specialized anchors and additional installation time compared to drywall on metal stud; surface-mounted raceway may be needed for cable routing</Answer>
+  <Answer>No impact — standard drywall toggle bolts work in concrete masonry</Answer>
+  <Answer>The display must be floor-standing rather than wall-mounted in this case</Answer>
+  <Explanation>
+    Concrete masonry (CMU) walls require wedge anchors or sleeve anchors appropriate for
+    masonry — standard drywall anchors will not hold. Cable penetrations require a hammer
+    drill and masonry bits. These differences increase installation time and may require
+    surface-mounted raceway for cable routing where conduit cannot be easily run. This
+    information from the survey changes the installation plan and potentially the cost estimate.
+  </Explanation>
+
+  <Question>
+    A room is 22 feet long with the display at one end. The farthest viewer is at the other
+    end, approximately 20 feet from the display. The primary use is spreadsheet review during
+    weekly team meetings. Applying DISCAS, what is the minimum required display image height?
+  </Question>
+  <Answer>20 ÷ 8 = 2.5 feet (30 inches)</Answer>
+  <Answer correct>20 ÷ 6 = 3.33 feet (40 inches)</Answer>
+  <Answer>20 ÷ 4 = 5 feet (60 inches)</Answer>
+  <Answer>20 ÷ 12 = 1.67 feet (20 inches)</Answer>
+  <Explanation>
+    Spreadsheet review is decision-making content. DISCAS specifies a minimum image height
+    of D/6 for decision-making content, where D is the viewing distance. 20 ÷ 6 = 3.33 feet
+    = 40 inches minimum image height. For a 16:9 display, this corresponds to approximately
+    an 82-inch diagonal — specify the next available size up (typically 86 inches).
+  </Explanation>
+
+  <Question>
+    Which of the following is the most important reason to photograph pre-existing conditions
+    during a room survey?
+  </Question>
+  <Answer>To create marketing materials showing before/after room transformations</Answer>
+  <Answer>To document the camera and display placement for the installation team</Answer>
+  <Answer correct>To create time-stamped evidence of pre-existing site conditions that can prevent post-installation disputes and support scope addition requests</Answer>
+  <Answer>Photographs are required by AVIXA standards for all commercial AV projects</Answer>
+  <Explanation>
+    Pre-existing condition photos protect the integrator from being held responsible for
+    damage, infrastructure deficiencies, or conditions that existed before the installation
+    began. They also provide the factual basis for scope additions when conditions found
+    during installation differ from what was visible during the survey. A timestamp and
+    GPS metadata in the photo file make this evidence unambiguous.
+  </Explanation>
+
+  <Question>
+    A conference room survey reveals HVAC diffusers in two corners of the ceiling, directly
+    above where a ceiling microphone array would be mounted for optimal table coverage.
+    What should you document and what does this affect?
+  </Question>
+  <Answer>Nothing — ceiling microphones are not affected by HVAC diffuser proximity</Answer>
+  <Answer>Document it and plan to seal the HVAC diffusers during installation</Answer>
+  <Answer correct>Document the diffuser locations and plan to adjust the microphone array position to maintain the required 12-inch clearance from HVAC diffusers, which may affect coverage and require additional microphone elements</Answer>
+  <Answer>Recommend a tabletop microphone system instead since ceiling mics cannot be used near HVAC</Answer>
+  <Explanation>
+    Microphones must maintain at least 12 inches of clearance from HVAC diffusers to avoid
+    HVAC noise pickup. If the optimal coverage position conflicts with diffuser locations,
+    the microphone array position must be adjusted — which may affect coverage uniformity
+    and potentially require additional elements to maintain full seating coverage. Documenting
+    the diffuser locations during the survey allows this to be resolved in the design phase
+    rather than on installation day.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Conduct a complete room survey:** Six categories — dimensions, wall construction, existing infrastructure, network/power, furniture, and conditions of concern.
+- **Apply DISCAS for display sizing:** Decision-making content = D/6 minimum image height; passive content = D/8. Document the calculation in the survey package.
+- **Produce a professional documentation package:** Dimensioned sketch, infrastructure inventory, photographic record, conditions summary.
+- **Identify installation-altering conditions:** Masonry walls, HVAC constraints, fire-rated assemblies, asbestos, and existing infrastructure gaps all affect installation scope and must be documented before design is finalized.
+
+---
+
+## What's Next
+
+With the physical survey complete, the next step is assessing whether the room's electrical and network infrastructure is ready to support an MTR system — and identifying what needs to be fixed or added before installation begins.
+
+[Infrastructure Readiness Assessment — Power, Network, AV Pathways →](/programs/mtr-foundations/tracks/physical-installation/modules/site-preparation/lessons/infrastructure-readiness-assessment/)

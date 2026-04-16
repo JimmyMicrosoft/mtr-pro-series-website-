@@ -1,0 +1,268 @@
+---
+id: "p2-t3-m1-l5"
+slug: "audio-measurement-acceptance-testing"
+title: "Audio Measurement and Acceptance Testing"
+shortTitle: "Audio Testing"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 1
+moduleSlug: "conference-room-audio"
+moduleTitle: "Conference Room Audio Systems"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Perform RT60, STI, and SPL measurements using appropriate tools and methodology"
+  - "Interpret measurement results against acceptance criteria and identify rooms that require further treatment or tuning"
+  - "Complete an audio acceptance test report and sign-off document for a commissioned conference room"
+
+prerequisites:
+  - "p2-t3-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "audio"
+  - "commissioning"
+  - "testing"
+
+vendorTags:
+  - "biamp"
+  - "qsc"
+
+downloads:
+  - file: "p2-t3-m1-l5-audio-acceptance-template.xlsx"
+    label: "Audio Acceptance Test Template"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t3-m1-l4"
+  - "p2-t3-m2-l4"
+
+metaDescription: "Audio acceptance testing for MTR conference rooms — RT60 measurement methodology, STI measurement, SPL calibration, background noise measurement, test call procedure, and completion of audio sign-off documentation."
+
+keywords:
+  - "conference room audio acceptance testing"
+  - "MTR audio commissioning checklist"
+  - "RT60 measurement conference room"
+  - "STI measurement Teams Rooms"
+  - "audio commissioning sign-off"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Acceptance testing converts subjective impressions ("sounds good") into objective data that confirms the audio system meets specified performance criteria. This data protects both the integrator (evidence that the system was delivered to spec) and the client (assurance that what they paid for was delivered). A completed audio acceptance test report is the final deliverable before a room is handed over for operational use.
+
+---
+
+## Measurement Tools
+
+**Measurement software:**
+- **Room EQ Wizard (REW):** Free; comprehensive; generates RT60, STI, and frequency response measurements. Requires a measurement microphone and audio interface.
+- **Smaart (Rational Acoustics):** Professional measurement platform; widely used in professional AV. More capable than REW for ongoing system tuning.
+- **iOS/Android apps (AudioTools by Studio Six, dBx DriveRack):** Adequate for basic SPL and RT60 checks in the field.
+
+**Measurement microphone:**
+- Use a calibrated omnidirectional measurement microphone (Dayton Audio EMM-6, miniDSP UMIK-1, or similar)
+- The microphone should have a calibration file (supplied by manufacturer) loaded into the measurement software for accurate frequency response
+
+**SPL meter:**
+- Required for background noise and listening level measurements
+- IEC Type 2 or better; A-weighted measurement (dB(A)) for background noise; C-weighted for peak level checks
+
+---
+
+## RT60 Measurement
+
+RT60 measures how long a room takes for sound to decay by 60 dB after the source stops.
+
+**Measurement method (using REW):**
+1. Position the measurement microphone at a representative seat position (not at the end of the table, not the exact center — a typical participant position 1–1.5m from the nearest speaker)
+2. Configure REW with the USB measurement microphone as input and the room's speaker system as output
+3. Use REW's "Measure" → IR Sweep: generates a swept sine signal through the room speakers and records the impulse response
+4. REW calculates RT60 (also reported as T20 and T30, which are extrapolated from 20 dB and 30 dB decay — often more reliable than a full 60 dB decay measurement in noisy rooms)
+5. Measure at 3–5 seat positions and average the results
+
+**Acceptance criteria:**
+
+| Room Type | Target RT60 | Maximum RT60 |
+|-----------|-------------|-------------|
+| Huddle room (< 4 person) | 0.3–0.5s | 0.6s |
+| Standard conference (6–12 person) | 0.4–0.6s | 0.7s |
+| Boardroom (12–20 person) | 0.5–0.7s | 0.8s |
+| Large conference / training room | 0.6–0.8s | 0.9s |
+
+*If RT60 exceeds the maximum, document which surfaces require additional treatment and notify the project manager before proceeding to final sign-off.*
+
+---
+
+## STI Measurement
+
+STI (Speech Transmission Index) measures speech intelligibility from the speaker system at each seating position.
+
+**Measurement method:**
+1. Configure the STI measurement source (REW STI module, or a dedicated STI measurement device like the NTi XL2 Analyzer)
+2. Play the STI test signal through the room speaker system at the calibrated listening level
+3. Record STI at representative seating positions:
+   - Near seat (1.5m from speaker)
+   - Mid-table
+   - Far seat (end of table, maximum distance from speaker)
+4. Record a minimum of 3 positions; document all
+
+**Acceptance criteria:**
+
+| Position | Target STI | Minimum Acceptable |
+|----------|-----------|-------------------|
+| Near seat | > 0.75 | 0.65 |
+| Mid-table | > 0.70 | 0.60 |
+| Far seat | > 0.65 | 0.55 |
+
+*Note: STI is measured with the room speaker system playing the test signal. It measures the room and speaker system's contribution to intelligibility — it does not measure the microphone system or DSP processing.*
+
+---
+
+## Background Noise Measurement (NC)
+
+Background noise sets the noise floor for microphone capture and affects STI.
+
+**Measurement method:**
+1. Measure with all HVAC and mechanical systems running (occupied condition), all room lighting on, no people in the room
+2. SPL meter at A-weighting, slow response
+3. Measure at the center of the room at seated ear height (1.2m)
+4. Record dB(A) and compare to NC target
+
+**NC measurement:**
+NC (Noise Criterion) requires octave-band SPL measurements (125 Hz to 8 kHz). Use a measurement app with octave-band analysis, or REW with the measurement microphone.
+
+**Acceptance criteria:**
+- Target: NC-35 (approximately 42 dB(A) overall)
+- Maximum: NC-40 (approximately 47 dB(A)) — above this, speech intelligibility and automixer performance are compromised
+
+---
+
+## Speaker Listening Level Calibration
+
+Confirm the speaker system is calibrated to produce the correct listening level.
+
+**Method:**
+1. Generate pink noise through the MTR device's audio output at a reference level (set digital output to −18 dBFS)
+2. Measure SPL at a representative seated position with SPL meter in C-weighting, slow response
+3. Adjust speaker amplifier output level or DSP output gain until SPL reads 68–72 dB(C) at the listening position
+
+*Why C-weighting for level calibration:* C-weighting is closer to flat frequency response and better represents the broadband level perceived by listeners. A-weighting underestimates low-frequency content.
+
+---
+
+## Test Call Procedure
+
+Objective measurements do not fully substitute for a live call test. Conduct a test call to validate end-to-end performance:
+
+**Test call checklist:**
+- [ ] Far-end participant confirms no echo (near-end talker speaks normally while far-end listens)
+- [ ] Far-end participant confirms speech is intelligible at normal conversational volume (no need to lean toward mic or raise voice)
+- [ ] Far-end participant confirms acceptable background noise level (no audible HVAC or room noise during silences)
+- [ ] Near-end participant confirms far-end audio is clear and at comfortable level at all seat positions
+- [ ] Walk the table: speak from the end seat — far end confirms adequate level
+- [ ] Test room speaker volume at maximum intended level — confirm no distortion
+
+*Document the test call: who participated, from what location (office/remote), pass/fail for each check.*
+
+---
+
+## Audio Acceptance Test Report
+
+Complete the audio acceptance test report before sign-off:
+
+**Report sections:**
+
+1. **Room identification:** Room name, building, floor, date of test, technician name
+2. **System description:** Microphone type/model, DSP model, speaker type/model, amplifier model, MTR device model
+3. **RT60 results:** Measurement positions, measured values, pass/fail vs. criteria
+4. **STI results:** Measurement positions, measured values, pass/fail vs. criteria
+5. **Background noise:** NC measurement, pass/fail
+6. **Level calibration:** Measured SPL, pass/fail
+7. **Test call:** Pass/fail for each check item; notes
+8. **Open items:** Any items that failed acceptance criteria with remediation plan and responsible party
+9. **Sign-off:** Integrator technician signature; client representative signature
+
+<DownloadButton
+  file="p2-t3-m1-l5-audio-acceptance-template.xlsx"
+  label="Audio Acceptance Test Template"
+  sizeKb={35}
+  description="Excel template for audio acceptance testing — RT60, STI, background noise, level calibration, and test call checklist. Pre-formatted with acceptance criteria, pass/fail logic, and sign-off section for all standard conference room types."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t3-m1-l5-kc">
+  <Question>
+    During acceptance testing, RT60 measures 0.52s (pass), STI at the near and
+    mid-table positions measures 0.72 and 0.68 (both pass), but STI at the far
+    seat (end of table, 5.5m from the front speaker) measures 0.48 (fail —
+    below the 0.55 minimum). The room has a single front-of-room speaker.
+    What is the most appropriate remediation?
+  </Question>
+  <Answer>Increase the speaker output level to improve STI at the far seat</Answer>
+  <Answer>Reduce the RT60 further with additional acoustic treatment</Answer>
+  <Answer correct>The low STI at the far seat indicates insufficient direct sound level at that position relative to the reverberant field. With a single front-of-room speaker, the far seat is 5.5m away — at this distance, level has dropped significantly and the reverberant field dominates. The appropriate fix is to add a supplementary ceiling speaker over the far-table area to increase the direct-to-reverberant ratio at the far seat, improving STI. Simply increasing the main speaker level will raise the reverberant field alongside the direct sound and is unlikely to significantly improve STI</Answer>
+  <Answer>Add acoustic absorption at the far end of the room to reduce reflections</Answer>
+  <Explanation>
+    STI failure at a specific position (far seat) while passing at other positions
+    is a coverage problem, not a global acoustic problem. The STI at the far
+    seat is low because the listener is not receiving adequate direct sound
+    from the speaker — they are primarily hearing the reverberant field, which
+    is weaker than direct sound for intelligibility. Increasing the main speaker
+    level increases both direct and reverberant sound proportionally, with
+    limited benefit to STI. Adding a ceiling speaker above the far seating area
+    provides direct sound to that position — increasing the direct-to-reverberant
+    ratio and improving STI. Adding absorption at the far wall would help
+    modestly but is a less targeted fix than adding a fill speaker.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Measurements:** RT60 (room reverberation), STI (intelligibility at each seat), NC (background noise), SPL (level calibration).
+- **Tools:** REW + calibrated measurement mic for RT60/STI; SPL meter for level and noise.
+- **Acceptance criteria:** RT60 < 0.7s (standard conference); STI > 0.65 near, > 0.60 mid, > 0.55 far; NC-35 maximum background noise; 68–72 dB(C) listening level.
+- **Test call:** Objective measurements plus a live call test; document both.
+- **Report:** Required before sign-off; open items need remediation plan.
+
+---
+
+## What's Next
+
+[Camera Systems for MTR →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/video-display-systems/lessons/camera-systems-mtr/)

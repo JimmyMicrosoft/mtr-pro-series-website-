@@ -1,0 +1,211 @@
+---
+id: "p4-t1-m3-l3"
+slug: "adoption-metrics-measurement"
+title: "Adoption Metrics and Measurement"
+shortTitle: "Adoption Metrics"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 3
+moduleSlug: "customer-success-adoption"
+moduleTitle: "Customer Success and Technology Adoption"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["project-manager", "solutions-architect", "customer-success"]
+
+objectives:
+  - "Define and measure the key adoption metrics that indicate whether an MTR deployment is delivering value"
+  - "Extract and interpret utilisation data from Pro Management and Microsoft 365 reporting"
+  - "Build an adoption dashboard that communicates progress to the client sponsor"
+  - "Use adoption data to identify and address specific barriers to usage"
+
+prerequisites:
+  - "p4-t1-m3-l1"
+  - "p4-t1-m3-l2"
+  - "p3-t1-m2-l4 (Analytics and Capacity Planning)"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management", "M365"]
+roleTags: ["project-manager", "customer-success"]
+topicTags: ["adoption", "analytics", "utilisation", "reporting"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t1-m3-l2"
+  - "p4-t1-m3-l4"
+  - "p3-t1-m2-l4"
+
+metaDescription: "Learn to measure MTR adoption using Pro Management utilisation data and M365 reporting, build adoption dashboards, and use data to identify and resolve adoption barriers."
+keywords: ["MTR adoption metrics", "Teams Rooms utilisation", "Pro Management analytics", "adoption dashboard"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Measuring What Matters
+
+"The rooms are working" is a technical statement. "The rooms are being used, delivering value, and replacing less efficient meeting behaviours" is an adoption statement. These are different claims, and clients — especially those renewing a managed service agreement — care about the second one.
+
+Adoption measurement provides the evidence that the investment is paying off. It also identifies which rooms, floors, or teams are lagging and need targeted intervention.
+
+---
+
+## Core Adoption Metrics
+
+### Room Utilisation Rate
+
+**Definition**: The percentage of scheduled business hours during which a room was occupied or booked.
+
+**Formula**: `(Total meeting hours in room ÷ Available business hours) × 100`
+
+Available business hours = Days in period × 8 hours (or client's working day length)
+
+**Benchmarks**:
+- <20%: Very low — likely an adoption problem or a room that doesn't serve the local team's needs
+- 20–40%: Below average — training or change management intervention recommended
+- 40–60%: Good — room is being used but has capacity
+- 60–80%: High — healthy utilisation; monitor for booking pressure
+- >80%: Oversubscribed — may need additional rooms or a booking policy review
+
+**Source**: Pro Management portal → Utilisation tab, or M365 calendar analytics.
+
+### Meeting Join Rate (MTR vs BYOD)
+
+**Definition**: The percentage of meetings in MTR-equipped rooms that were joined using the in-room device (vs a laptop-based Teams client).
+
+**Why it matters**: A user who books a MTR room and then joins from their laptop has not adopted the room — they're using the room for the space, not the technology. This metric directly measures whether the MTR investment is being used as intended.
+
+**Target**: >70% of meetings in MTR rooms should be joined via the room device within 90 days of go-live.
+
+**Source**: Pro Management portal → Meetings tab → Meeting join method breakdown.
+
+### Active Rooms Percentage
+
+**Definition**: Percentage of deployed rooms that have hosted at least one meeting in the last 30 days.
+
+**Why it matters**: Identifies rooms that are never used — whether due to location, accessibility, training gap, or booking policy.
+
+**Target**: >90% of deployed rooms active within 60 days of go-live.
+
+### Remote Participant Satisfaction Proxy
+
+**Definition**: A proxy measure derived from support ticket volume and user survey data related to audio/video quality in calls from MTR rooms.
+
+**Why it matters**: The business case for MTR often includes improved hybrid meeting equity. If remote participants are still reporting audio/video issues, the investment is not delivering this outcome.
+
+**Source**: IT helpdesk ticket data + periodic user survey.
+
+---
+
+## Data Sources
+
+### Pro Management Portal
+
+The primary source of MTR-specific utilisation and quality data:
+
+| Report | Data Available |
+|---|---|
+| Device Inventory | All enrolled devices, status, last activity |
+| Utilisation | Per-room meeting hours, booking hours, occupancy rate by day/week |
+| Meeting Quality | Per-meeting audio/video quality indicators, join method |
+| Alerts and Incidents | Device offline events, peripheral failures |
+| Historical Trends | Up to 90 days of utilisation history in portal; export for longer-term analysis |
+
+Navigate to: **pro.rooms.microsoft.com → Analytics → Utilisation**
+
+### Microsoft 365 Usage Reports
+
+For tenant-wide Teams meeting data:
+- **Teams Usage Report** (admin.microsoft.com → Reports → Usage → Microsoft Teams): Meeting counts, call quality, device type breakdown
+- **Productivity Score** (admin.microsoft.com → Reports → Productivity score): Organisation-level communication and meeting collaboration scores
+
+### Exchange Room Analytics
+
+Calendar booking data via Exchange Online:
+```powershell
+# Get room utilisation for a date range
+Get-MailboxStatistics -Identity "LON-F2-Boardroom@contoso.com" | Select DisplayName, TotalItemSize, ItemCount
+
+# For meeting frequency, use Graph API or Calendar Analytics
+# (available via Microsoft 365 admin reports)
+```
+
+---
+
+## Adoption Dashboard
+
+Build a simple adoption dashboard for the client sponsor, updated monthly (or quarterly once adoption stabilises).
+
+### Dashboard Sections
+
+**1. Fleet Status**
+- Total rooms deployed: N
+- Active rooms (meeting in last 30 days): N (%)
+- Rooms in alert/offline state: N
+
+**2. Utilisation Overview**
+- Average utilisation rate across fleet: X%
+- Trend vs previous period: ↑/↓
+- Top 5 most-used rooms
+- Bottom 5 least-used rooms (for intervention targeting)
+
+**3. Meeting Quality**
+- MTR join rate: X%
+- Audio/video quality incidents this month: N (trending ↑/↓)
+
+**4. Adoption Progress vs Target**
+- Target: 40% average utilisation by Day 90 → Actual: X%
+- Target: 70% MTR join rate by Day 90 → Actual: X%
+
+**5. Actions and Recommendations**
+- Rooms below 20% utilisation: intervention recommended
+- Rooms with recurring quality incidents: technical review recommended
+- Rooms booked >80% of the time: expansion opportunity
+
+---
+
+## Using Data to Drive Intervention
+
+### Low Utilisation Diagnosis
+
+When a room is consistently below 20% utilisation:
+
+1. **Check booking data**: Is it being booked but not used (no-show)? Or not being booked at all?
+2. **Check location**: Is it remote, inconveniently located, or in a space with low footfall?
+3. **Check team assignment**: Does the nearby team use meeting rooms? Are they working from home primarily?
+4. **Interview the floor champion**: What feedback are they hearing?
+5. **Check for technical issues**: Has the room had recurring alerts or incidents?
+
+**Interventions by diagnosis**:
+- Not booked: Awareness campaign; floor champion re-engagement; visibility in Outlook room finder
+- Booked but not used: No-show policy; check booking friction (approval required?)
+- Location issue: Consider whether room serves its intended audience
+- Technical issues: Resolve before re-engaging users
+
+---
+
+<KnowledgeCheck>
+  <Question text="A room has 75% average utilisation, but only 45% of meetings are being joined via the in-room MTR device. What does this indicate and what intervention is most appropriate?">
+    <Answer>The room is working well — 45% join rate is acceptable</Answer>
+    <Answer>The room has technical problems preventing device use</Answer>
+    <Answer correct>Users are booking the room for the space but joining via laptop; training or awareness intervention is needed to drive device adoption; investigate whether BYOD join is more convenient than one-touch join</Answer>
+    <Answer>The room should be removed from the MTR programme</Answer>
+    <Explanation>High utilisation with low device join rate means users value the space but haven't adopted the technology. The intervention is usually re-training (particularly one-touch join from calendar) and investigating whether any friction in the device join experience is pushing users back to laptop. This is a common pattern in rooms where users have entrenched laptop-based call habits.</Explanation>
+  </Question>
+</KnowledgeCheck>

@@ -1,0 +1,128 @@
+{
+  "trackSlug": "powershell-graph-automation",
+  "trackTitle": "PowerShell & Graph Automation",
+  "programSlug": "mtr-advanced-deployment",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "An administrator is writing a script to create 30 MTR resource accounts in bulk. Which two PowerShell modules must be imported, and in what order should the account be created?",
+      "answers": [
+        "Import AzureAD and MSOnline; create a user account first, then assign a licence.",
+        "Import MicrosoftTeams and ExchangeOnlineManagement; create the Exchange Online room mailbox first using New-Mailbox -Room, then assign the Teams Rooms licence, then configure CalendarProcessing.",
+        "Import MicrosoftTeams only; the New-CsOnlineUser cmdlet creates both the mailbox and Teams account simultaneously.",
+        "Import ExchangeOnlineManagement only; the Teams Rooms app creates the Teams identity automatically on first sign-in."
+      ],
+      "correct": 1,
+      "explanation": "Bulk resource account creation requires ExchangeOnlineManagement (for New-Mailbox -Room and Set-CalendarProcessing) and MicrosoftTeams (for licence assignment and policy configuration). Creating the mailbox first ensures the Exchange identity exists before the Teams licence is assigned."
+    },
+    {
+      "id": 2,
+      "text": "What does the following PowerShell command return, and why is it useful for MTR administration? `Get-CsOnlineUser -Filter {AccountType -eq 'RoomAccount'}`",
+      "answers": [
+        "It returns all licensed Microsoft 365 users in the tenant.",
+        "It returns all Teams-enabled online user accounts that are classified as room accounts, allowing administrators to audit and manage MTR resource accounts across the tenant.",
+        "It returns all on-premises Active Directory computer accounts with 'Room' in the name.",
+        "It returns all Exchange Online room mailboxes regardless of their Teams licensing status."
+      ],
+      "correct": 1,
+      "explanation": "Get-CsOnlineUser with the AccountType filter for 'RoomAccount' retrieves all Teams-enabled room resource accounts. This is valuable for fleet auditing, identifying unlicenced accounts, bulk policy assignments, and inventory reporting for MTR deployments."
+    },
+    {
+      "id": 3,
+      "text": "A script must configure 50 room mailboxes to automatically accept meetings, decline conflicting bookings, and remove meeting body text for privacy. Which Set-CalendarProcessing parameters achieve all three requirements?",
+      "answers": [
+        "-AutomateProcessing AutoAccept -AllowConflicts $false -DeleteComments $true",
+        "-AutoAccept $true -RejectConflicts $true -RemoveBody $true",
+        "-ProcessExternalMeetingMessages $true -AutomateProcessing AutoAccept -DeleteSubject $true",
+        "-AutomateProcessing AutoUpdate -AllowConflicts $false -DeleteComments $true"
+      ],
+      "correct": 0,
+      "explanation": "Set-CalendarProcessing -AutomateProcessing AutoAccept enables automatic acceptance; -AllowConflicts $false rejects double-bookings; -DeleteComments $true removes the meeting body text from the calendar entry for privacy. These three parameters together satisfy all three requirements."
+    },
+    {
+      "id": 4,
+      "text": "To authenticate a PowerShell script against Microsoft Graph API without user interaction (for scheduled automation), which authentication flow should be used, and what must be configured in Azure AD?",
+      "answers": [
+        "Delegated authentication using a saved username and password in plain text in the script.",
+        "Client Credentials flow (app-only authentication) using an Azure AD app registration with appropriate Microsoft Graph application permissions and a client secret or certificate.",
+        "Device code flow, which requires a human to approve the authentication on a second device during each script run.",
+        "Interactive browser authentication, which opens a login window each time the script runs."
+      ],
+      "correct": 1,
+      "explanation": "Scheduled automation must use app-only (Client Credentials) authentication. This requires an Azure AD app registration with the required Graph application permissions (not delegated), and authenticates using a client secret or certificate — no user interaction required, making it suitable for unattended scheduled tasks."
+    },
+    {
+      "id": 5,
+      "text": "Which Microsoft Graph API endpoint is used to list all Teams devices (including MTR devices) registered in the tenant?",
+      "answers": [
+        "GET /v1.0/deviceManagement/managedDevices",
+        "GET /v1.0/teamwork/devices",
+        "GET /v1.0/communications/calls",
+        "GET /v1.0/users?$filter=accountType eq 'RoomAccount'"
+      ],
+      "correct": 1,
+      "explanation": "The /v1.0/teamwork/devices endpoint in Microsoft Graph returns the inventory of Teams devices including MTR devices, their health status, activity, and configuration. This is the correct API for building automation around Teams device management."
+    },
+    {
+      "id": 6,
+      "text": "A script connecting to an MTR for Windows device via PowerShell remoting fails with 'Access is denied'. The device is on the network and pingable. What is the most likely cause?",
+      "answers": [
+        "PowerShell remoting (WinRM) is not enabled or not configured to accept connections from the management workstation on the MTR device.",
+        "The MTR device requires a Teams Rooms Pro licence before accepting remote PowerShell connections.",
+        "PowerShell remoting is not available on Windows IoT Enterprise, which MTR uses.",
+        "The MTR device's firewall is permanently disabled in the Teams Rooms app."
+      ],
+      "correct": 0,
+      "explanation": "PowerShell remoting (WinRM) must be explicitly enabled and configured on the MTR Windows device, and the initiating machine must have network access on TCP port 5985 (HTTP) or 5986 (HTTPS). By default WinRM may not be enabled or trusted hosts may not be configured, resulting in 'Access is denied' or similar connection errors."
+    },
+    {
+      "id": 7,
+      "text": "What is the best practice for error handling in a bulk MTR resource account creation script to ensure failures on individual accounts do not halt the entire batch?",
+      "answers": [
+        "Wrap the entire script in a single try/catch block that stops execution on the first error.",
+        "Use a try/catch block around each account creation within the loop, log failures with the account details and error message to a CSV file, and allow the loop to continue processing remaining accounts.",
+        "Suppress all errors with -ErrorAction SilentlyContinue to prevent the script from stopping.",
+        "Run the script as Global Administrator to ensure all operations succeed without errors."
+      ],
+      "correct": 1,
+      "explanation": "Per-iteration try/catch blocks allow the script to gracefully handle individual failures (e.g., a duplicate UPN, a licence availability issue) by logging the specific failure and continuing to process the remaining accounts. Using SilentlyContinue suppresses errors without logging them, making post-run remediation impossible."
+    },
+    {
+      "id": 8,
+      "text": "An organisation wants to use Azure Automation to run an MTR health reporting script every night at 2am. What must be configured in Azure Automation for the script to successfully connect to Microsoft Graph without user interaction?",
+      "answers": [
+        "A Run As account using basic username/password stored as an Automation Credential asset.",
+        "A Managed Identity (system-assigned or user-assigned) on the Automation Account, with the required Microsoft Graph application permissions granted to that identity in Azure AD.",
+        "An interactive sign-in prompt that emails an MFA code to the administrator each night.",
+        "A Conditional Access named location that allows the Azure Automation IP range to bypass MFA."
+      ],
+      "correct": 1,
+      "explanation": "Azure Automation Managed Identities are the modern, recommended approach for unattended automation. The Managed Identity is granted the required Microsoft Graph application permissions in Azure AD, and the runbook authenticates using the identity token — no stored credentials, no secrets, and no user interaction required."
+    },
+    {
+      "id": 9,
+      "text": "A script uses the Microsoft Graph API to retrieve room health data and sends a summary report by email each morning. The app registration requires permissions to read Teams device data and send email. Which Graph API permissions (application type) should be requested?",
+      "answers": [
+        "TeamworkDevice.Read.All and Mail.Send",
+        "User.Read and Calendars.ReadWrite",
+        "Device.Read and Mail.ReadWrite.All",
+        "TeamworkDevice.ReadWrite.All and People.Read.All"
+      ],
+      "correct": 0,
+      "explanation": "TeamworkDevice.Read.All is the application permission required to read Teams device health and inventory data via Graph. Mail.Send is the application permission required to send emails programmatically. Both are application (not delegated) permissions for unattended automation."
+    },
+    {
+      "id": 10,
+      "text": "An administrator has a working script that creates resource accounts, but after running it against a new tenant the script fails at the licence assignment step with 'No licence available'. What should the script check before attempting licence assignment?",
+      "answers": [
+        "Whether the tenant's default domain has been verified in Azure AD.",
+        "The available licence count for Teams Rooms Basic/Pro SKUs using Get-MgSubscribedSku (or equivalent), and if insufficient licences are available, log a warning and skip assignment rather than throwing an unhandled error.",
+        "Whether the script is running under a Global Administrator account.",
+        "Whether the Exchange Online mailbox has fully replicated before attempting licence assignment."
+      ],
+      "correct": 1,
+      "explanation": "A robust script should pre-check available licence counts before attempting assignment. Using Get-MgSubscribedSku (Microsoft Graph PowerShell) or Get-MsolAccountSku, the script can compare PrepaidUnits against ConsumedUnits and either halt with a meaningful error or skip and log affected accounts when licences are exhausted."
+    }
+  ]
+}

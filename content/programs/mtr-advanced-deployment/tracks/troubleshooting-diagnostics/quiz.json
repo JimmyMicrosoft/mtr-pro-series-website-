@@ -1,0 +1,128 @@
+{
+  "trackSlug": "troubleshooting-diagnostics",
+  "trackTitle": "Troubleshooting & Diagnostics",
+  "programSlug": "mtr-advanced-deployment",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "An MTR device is showing a grey/blank screen on the front-of-room display instead of the Teams Rooms home screen. The touchscreen console is also blank. What is the correct structured first step in diagnosing this?",
+      "answers": [
+        "Immediately replace the compute unit as this indicates a hardware failure.",
+        "Escalate to Microsoft support and raise a Priority 1 service request.",
+        "Isolate the layer: verify power to both the compute unit and display, check HDMI/DisplayPort signal connections, and confirm whether the compute unit has booted by checking for activity on the management network (ping or Teams Admin Center check-in status).",
+        "Sign out the resource account and sign back in via the touchscreen."
+      ],
+      "correct": 2,
+      "explanation": "Structured diagnostic methodology requires layer-by-layer isolation. A grey screen could be caused by a power issue, a failed HDMI signal path, a compute unit that hasn't booted, or a software crash. Checking physical layer (power, cables) and then confirming whether the compute unit is running eliminates the most common causes before escalating."
+    },
+    {
+      "id": 2,
+      "text": "A Teams Admin Center device health report shows an MTR device with a 'Warning' status on the audio peripheral. A user has also reported that the room microphone is not working. What specific diagnostic steps should follow?",
+      "answers": [
+        "Replace the microphone immediately — Warning status always indicates hardware failure.",
+        "Restart the Teams Rooms app from the admin settings and re-test; if the warning persists, verify the USB connection between the microphone/audio device and the compute unit, check the device is listed in the Teams Rooms app peripheral settings, and test with a known-good USB cable.",
+        "Check the network QoS configuration, as audio issues are always caused by insufficient DSCP priority.",
+        "Re-image the MTR Windows device to clear the peripheral error."
+      ],
+      "correct": 1,
+      "explanation": "A peripheral warning in Teams Admin Center combined with a user report of no microphone should be diagnosed by first attempting a soft recovery (Teams Rooms app restart), then checking the physical USB connection, and confirming the peripheral appears in the app's device settings. This methodical approach avoids unnecessary hardware replacement."
+    },
+    {
+      "id": 3,
+      "text": "An MTR resource account fails to sign in and the error message indicates 'Your organisation has blocked access from this device.' Which root cause does this error message most strongly suggest?",
+      "answers": [
+        "The resource account password has expired.",
+        "A Conditional Access policy is blocking the sign-in — likely because the device is not compliant, not enrolled in Intune, or the resource account is not excluded from a device compliance requirement.",
+        "The Exchange Online room mailbox has been deleted.",
+        "The Teams Rooms licence has expired."
+      ],
+      "correct": 1,
+      "explanation": "The error 'Your organisation has blocked access from this device' is a Conditional Access rejection message. It indicates that a Conditional Access policy evaluated the sign-in and determined the device or account did not meet the required conditions — most commonly a device compliance requirement or a policy that was not correctly scoped to exclude MTR resource accounts."
+    },
+    {
+      "id": 4,
+      "text": "A technician runs the following command on an MTR Windows device: `Test-NetConnection -ComputerName teams.microsoft.com -Port 443`. The result shows 'TcpTestSucceeded: False'. What does this tell the technician, and what is the next step?",
+      "answers": [
+        "The MTR device has a hardware fault on its network adapter.",
+        "TCP port 443 to teams.microsoft.com is blocked, indicating a firewall or proxy rule is preventing Teams signalling traffic. The next step is to check firewall rules and proxy bypass configuration for Microsoft 365 endpoints.",
+        "The resource account credentials are incorrect.",
+        "The Teams Rooms app is not installed correctly and needs to be reinstalled."
+      ],
+      "correct": 1,
+      "explanation": "Test-NetConnection tests TCP connectivity to a specific host and port. A False result on port 443 to a Teams endpoint means the TCP handshake is failing — indicating a network-layer block such as a firewall rule or a proxy that is intercepting/dropping the connection. This is a network issue, not a device or account issue."
+    },
+    {
+      "id": 5,
+      "text": "Where are the MTR for Windows application logs stored, and what information do they typically contain that is useful for diagnosing sign-in and meeting issues?",
+      "answers": [
+        "C:\\Windows\\Logs\\MTR\\ — containing hardware driver logs only.",
+        "C:\\Users\\Skype\\AppData\\Local\\Packages\\Microsoft.SkypeRoomSystem_[hash]\\LocalState\\DiagOutputDir\\ — containing Teams Rooms app diagnostic logs including sign-in attempts, meeting joins, peripheral status, and error codes.",
+        "C:\\ProgramData\\Microsoft\\Teams\\ — the same location as regular Teams client logs.",
+        "Event Viewer under Applications and Services Logs > Microsoft > Teams > Operational."
+      ],
+      "correct": 1,
+      "explanation": "MTR for Windows logs are written to the Skype user profile's app data directory under the Teams Rooms (SkypeRoomSystem) app package. The DiagOutputDir folder contains timestamped JSON log files with detailed diagnostic information about sign-in, meetings, peripheral detection, and error codes — the primary resource for deep-dive troubleshooting."
+    },
+    {
+      "id": 6,
+      "text": "A meeting room consistently produces echo for far-end participants, but only when a specific laptop is plugged into the HDMI content sharing port. When no laptop is connected, there is no echo. What is the most likely cause?",
+      "answers": [
+        "The HDMI cable is defective and is causing electrical interference in the audio circuit.",
+        "The laptop's audio output is being activated when the HDMI cable is connected, causing the laptop's speakers to play room audio which is re-captured by the room microphones — a ground loop or unintended audio feedback path.",
+        "The MTR device's AEC is disabled by default and only activates during screen sharing sessions.",
+        "The room's DSP cannot process audio when a content sharing session is active."
+      ],
+      "correct": 1,
+      "explanation": "When a laptop is connected via HDMI, the OS may route audio output through the HDMI connection to the room's display or audio system. If the laptop's speakers or the HDMI audio output are playing the far-end audio, those sounds are captured by the room microphones and sent back — creating the echo. The laptop's audio output device settings should be checked and corrected."
+    },
+    {
+      "id": 7,
+      "text": "An MTR device in Teams Admin Center shows health status 'Offline' but the physical device in the room appears to be powered on and showing the Teams Rooms home screen. What is the most likely explanation?",
+      "answers": [
+        "The device's Teams Rooms Pro licence has been revoked.",
+        "The display is showing a static screensaver image, and the actual compute unit is powered off.",
+        "The device has lost connectivity to Microsoft 365 — either the network connection has failed, a firewall rule has changed, or the resource account is blocked — preventing Teams Admin Center check-ins.",
+        "Teams Admin Center has a known bug that shows all devices as Offline on weekends."
+      ],
+      "correct": 2,
+      "explanation": "Teams Admin Center 'Offline' status means the device is not checking in to the Teams service. If the device appears physically operational, the most common causes are: network connectivity failure (the device can display its UI from cache), a firewall change blocking Teams endpoints, or a resource account issue that prevents cloud authentication."
+    },
+    {
+      "id": 8,
+      "text": "A customer reports that a meeting room's camera image appears on the far-end call but is completely black. The camera's power LED is on. What is the systematic troubleshooting sequence?",
+      "answers": [
+        "Replace the camera immediately — a black image always indicates the image sensor has failed.",
+        "Check that the camera privacy shutter is not closed; then verify the USB connection to the compute unit; confirm the camera appears as the selected video device in the Teams Rooms app peripheral settings; test the camera in the OEM's companion app or Windows Camera app.",
+        "Reinstall the Teams Rooms app to reload the camera driver.",
+        "Check the network bandwidth, as black video is always caused by insufficient upload speed."
+      ],
+      "correct": 1,
+      "explanation": "A black camera image with power LED on should be diagnosed in order: physical shutter first (simplest fix), USB connection integrity, software recognition (does the app see the camera?), then driver-level test using a neutral application like Windows Camera. This sequence moves from physical to software without premature hardware replacement."
+    },
+    {
+      "id": 9,
+      "text": "When should an MTR issue be escalated to Microsoft Support, and what information should be prepared before opening a service request?",
+      "answers": [
+        "Escalate immediately for any issue that takes more than 30 minutes to resolve; no preparation is needed.",
+        "Escalate after ruling out physical, network, and account-layer causes and the issue is reproducible, with supporting evidence including: device name, resource account UPN, Teams Rooms app version, diagnostic logs, network trace if applicable, and a description of steps to reproduce.",
+        "Escalate only if the issue affects more than 50% of rooms in the estate.",
+        "Escalate by having the end user report the issue via the Teams feedback button in the meeting."
+      ],
+      "correct": 1,
+      "explanation": "Microsoft Support escalation should follow thorough first-tier troubleshooting. A well-prepared service request includes: the device identifier, resource account UPN, app version, collected log files, network diagnostics (if relevant), reproduction steps, and business impact. This preparation significantly reduces resolution time."
+    },
+    {
+      "id": 10,
+      "text": "An MTR device that was working correctly for months suddenly fails to join meetings, displaying a 'licence not found' error. No changes were made by the local IT team. What should the administrator check first?",
+      "answers": [
+        "Whether the physical network cable has been disconnected.",
+        "Whether the Teams Rooms licence assigned to the resource account has been removed, expired, or the subscription has lapsed — perhaps due to an automated licence reconciliation or billing issue.",
+        "Whether the MTR Windows operating system has received a major version update overnight.",
+        "Whether the display has been replaced with an incompatible model."
+      ],
+      "correct": 1,
+      "explanation": "A 'licence not found' error on a previously functioning device almost always indicates the Teams Rooms licence has been removed from the resource account. Common causes include automated licence management scripts, licence reconciliation after a Microsoft subscription change, or accidental removal during admin activity. Checking licence assignment in Microsoft 365 admin centre is the correct first step."
+    }
+  ]
+}

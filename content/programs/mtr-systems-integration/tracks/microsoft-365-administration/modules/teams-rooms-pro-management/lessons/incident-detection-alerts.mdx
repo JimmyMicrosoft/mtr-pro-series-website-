@@ -1,0 +1,222 @@
+---
+id: "p2-t2-m3-l2"
+slug: "incident-detection-alerts"
+title: "Automated Incident Detection and Alert Management"
+shortTitle: "Incident Detection"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 3
+moduleSlug: "teams-rooms-pro-management"
+moduleTitle: "Teams Rooms Pro Management"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the incident types that Pro Management detects automatically and the signals that trigger each"
+  - "Investigate an open incident in Pro Management using the incident detail and timeline views"
+  - "Configure alert rules to route specific incident types to the appropriate support team"
+
+prerequisites:
+  - "p2-t2-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "pro-management"
+  - "monitoring"
+  - "managed-services"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m3-l2-incident-investigation-guide.pdf"
+    label: "Pro Management Incident Investigation Guide"
+    sizeKb: 40
+
+relatedLessons:
+  - "p2-t2-m3-l1"
+  - "p2-t2-m3-l3"
+
+metaDescription: "Teams Rooms Pro Management incident detection — automated incident types, incident severity, incident detail and timeline view, investigation workflow, alert routing rules, and incident resolution procedures."
+
+keywords:
+  - "Teams Rooms Pro Management incidents"
+  - "MTR automated incident detection"
+  - "Pro Management alert management"
+  - "Teams Rooms Pro incident workflow"
+  - "MTR incident investigation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The defining capability of Pro Management over TAC basic monitoring is automated incident detection. Pro Management continuously analyzes room telemetry — device health signals, meeting quality data, peripheral status, and historical patterns — and automatically creates incident tickets when it detects conditions that indicate a problem or predict a future problem. An incident created at 03:00 when a camera fails overnight means the support team sees it at 07:00 and can resolve it before the 09:00 meeting. Without automated detection, the same failure goes unnoticed until a meeting participant reports it.
+
+---
+
+## Automated Incident Types
+
+Pro Management detects and categorizes incidents across several categories:
+
+**Hardware and peripheral incidents:**
+- Camera not detected or not providing signal
+- Microphone array not responding
+- Display not detected or displaying wrong resolution
+- HDMI ingest hardware failure
+- USB hub or connected peripheral not responding
+
+**Software and connectivity incidents:**
+- Teams app crash or not running
+- Device offline for threshold duration
+- Teams app authentication failure (resource account sign-out)
+- Teams app version significantly behind current release (potential security risk)
+
+**Meeting quality incidents:**
+- AI-detected meeting quality degradation (audio packet loss, video freeze patterns)
+- Persistent poor call rate above threshold for a room
+- Network connectivity quality issues detected during meetings
+
+**Configuration incidents:**
+- Configuration profile non-compliance
+- Missing expected peripherals (camera present at enrollment, now absent)
+- Firmware version below minimum supported version
+
+---
+
+## Incident Severity Levels
+
+| Severity | Description | Expected Response Time |
+|----------|-------------|----------------------|
+| **Critical** | Room cannot be used for meetings | Immediate; SLA typically < 4 hours |
+| **Important** | Room functionality degraded; meetings may be affected | Same day; SLA typically < 8 hours |
+| **Minor** | Non-urgent issue; room functional but sub-optimal | Within 24–48 hours |
+| **Informational** | Awareness item; no immediate action required | Review at next scheduled maintenance |
+
+---
+
+## Investigating an Incident
+
+When an incident appears in the Pro Management Incidents feed, open it to view the incident detail:
+
+**Incident detail view includes:**
+- **Summary:** Automated description of the detected issue (e.g., "Camera not detected — USB connection lost at 03:14")
+- **Affected room:** Room name, building, device model
+- **Timeline:** Chronological events leading to the incident — device state changes, telemetry drops, error signals
+- **AI analysis:** Pro Management's automated assessment of the most likely root cause
+- **Recommended actions:** Suggested resolution steps (varies by incident type)
+- **Related meetings:** Any meetings scheduled in the room during or after the incident detection time
+
+**Investigation workflow:**
+
+1. Read the incident summary and AI analysis — in many cases, the root cause is identified
+2. Review the timeline to confirm the timeline of events (did the issue occur before or after a maintenance window?)
+3. Check the AI analysis against the recommended actions
+4. Apply the recommended actions or dispatch physical support
+
+**Common incident + resolution pairs:**
+
+| Incident | AI Analysis | Resolution |
+|---------|-------------|-----------|
+| Camera not detected | USB device disconnected from compute unit | Remote restart; if not resolved, physical re-seat of USB connection |
+| Device offline | Network connectivity loss detected | Check network monitoring; remote restart if network restored |
+| Meeting quality degraded | High packet loss detected; correlates with internet congestion time | Review CQD and network monitoring for congestion correlation |
+| Teams app sign-out | Authentication token failure at 04:23 | Check NTP; verify CA policy; check resource account password |
+
+---
+
+## Configuring Alert Rules and Routing
+
+In Pro Management → Settings → Notifications, configure rules that route incident alerts to the appropriate teams:
+
+**Rule structure:**
+- Incident type (e.g., Hardware: Camera failure)
+- Severity (Critical, Important, Minor)
+- Scope (specific buildings, all rooms, or tag-filtered groups)
+- Action (email notification, webhook to ITSM, Teams channel notification)
+
+**Recommended routing:**
+- Critical hardware incidents → AV support team + IT on-call
+- Authentication failures → IT security + identity team
+- Meeting quality incidents → IT operations
+- Configuration compliance → IT operations (non-urgent review)
+- Informational → Daily digest email to IT operations (not real-time alert)
+
+<DownloadButton
+  file="p2-t2-m3-l2-incident-investigation-guide.pdf"
+  label="Pro Management Incident Investigation Guide"
+  sizeKb={40}
+  description="Pro Management incident investigation guide — incident type catalog, investigation workflow using incident detail and timeline, common incident-to-resolution mapping, alert rule configuration templates, and escalation procedures."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m3-l2-kc">
+  <Question>
+    A Critical incident appears in Pro Management at 06:30: "Camera not
+    detected — USB connection lost at 06:12." The AI analysis states:
+    "Camera USB device removed or lost power. Remote restart may restore
+    detection if connection is intermittent." The room's first meeting is
+    at 08:00. What is the correct investigation and response sequence?
+  </Question>
+  <Answer>Dispatch on-site support immediately to physically replace the camera before 08:00</Answer>
+  <Answer correct>Attempt remote restart from Pro Management (or TAC) first — the AI analysis indicates the issue may be intermittent and restart may restore camera detection. Monitor camera health after restart. If camera health returns to Healthy, incident is resolved. If camera health remains unhealthy after restart, dispatch physical support to re-seat the USB connection before the 08:00 meeting, and notify the meeting organizer of the issue</Answer>
+  <Answer>Wait until after the 08:00 meeting to investigate — the room can still host audio-only meetings</Answer>
+  <Answer>Delete the configuration profile and reassign it — configuration issues often cause false camera detection failures</Answer>
+  <Explanation>
+    The recommended response follows the escalation ladder: remote action first
+    (restart), observe result, then physical action if remote fails. Remote
+    restart costs nothing and takes 5 minutes — if it resolves the issue, no
+    site visit is needed. Starting with a site visit wastes time and resources
+    if the issue was intermittent. The 90-minute window (06:30 to 08:00) is
+    sufficient: restart (5 min) + monitoring (15 min) + physical dispatch if
+    needed (remaining 70 minutes). Notifying the meeting organizer in parallel
+    with the remote restart ensures they are informed if physical support
+    cannot resolve the issue before 08:00.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Automated detection:** Hardware failures, software/auth issues, meeting quality degradation, configuration compliance.
+- **Severity:** Critical (immediate), Important (same day), Minor (24–48h), Informational (periodic review).
+- **Investigation:** Summary → Timeline → AI analysis → Recommended actions → resolution or escalation.
+- **Alert routing:** Configure by incident type and severity; route to appropriate team; avoid alert fatigue from low-severity fleet-wide notifications.
+
+---
+
+## What's Next
+
+[Remote Device Management →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/teams-rooms-pro-management/lessons/remote-device-management/)

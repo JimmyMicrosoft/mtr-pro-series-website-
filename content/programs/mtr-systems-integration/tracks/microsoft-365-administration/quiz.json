@@ -1,0 +1,128 @@
+{
+  "trackSlug": "microsoft-365-administration",
+  "trackTitle": "Microsoft 365 Administration",
+  "programSlug": "mtr-systems-integration",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "An administrator needs to create a resource account for an MTR device. The account must accept meeting invitations automatically and allow the room to be booked. Which Exchange Online mailbox type should be used?",
+      "answers": [
+        "Shared mailbox with a forwarding rule to the room owner.",
+        "User mailbox with calendar sharing enabled.",
+        "Room mailbox configured with auto-accept meeting processing.",
+        "Distribution group with calendar permissions."
+      ],
+      "correct": 2,
+      "explanation": "A room mailbox in Exchange Online is the correct mailbox type for an MTR resource account. Room mailboxes are designed for bookable resources and, when configured with Set-CalendarProcessing -AutomateProcessing AutoAccept, will automatically accept meeting invitations subject to availability."
+    },
+    {
+      "id": 2,
+      "text": "Which Exchange Online PowerShell cmdlet is used to configure a room mailbox to automatically accept meeting requests and set a maximum booking lead time?",
+      "answers": [
+        "Set-Mailbox -AutoAccept $true -MaxBookingLead 180",
+        "Set-CalendarProcessing -AutomateProcessing AutoAccept -BookingWindowInDays 180",
+        "Set-MailboxCalendar -AutoAcceptMeetings $true -MaxLeadTime 180",
+        "Set-ExchangeRoomPolicy -AutoAccept True -LeadTimeDays 180"
+      ],
+      "correct": 1,
+      "explanation": "Set-CalendarProcessing is the correct cmdlet for configuring room mailbox booking behaviour in Exchange Online. The -AutomateProcessing AutoAccept parameter enables automatic acceptance, and -BookingWindowInDays sets how far in advance bookings are permitted."
+    },
+    {
+      "id": 3,
+      "text": "A Teams administrator needs to ensure MTR devices in meeting rooms receive a different meeting policy than regular user accounts — specifically, to enable the large gallery view and meeting room analytics. How should this be achieved?",
+      "answers": [
+        "Create a custom Teams meeting policy with the desired settings and assign it to the resource accounts using Grant-CsTeamsMeetingPolicy.",
+        "Edit the Global (Org-wide default) Teams meeting policy to apply to all accounts including rooms.",
+        "Enable large gallery and analytics in the Teams Admin Center device settings page for each device.",
+        "Apply a Conditional Access policy to the resource account group with the required meeting settings."
+      ],
+      "correct": 0,
+      "explanation": "The correct approach is to create a custom Teams meeting policy with the required configuration and assign it specifically to the MTR resource accounts using the Grant-CsTeamsMeetingPolicy cmdlet. This avoids altering the global policy that applies to all users."
+    },
+    {
+      "id": 4,
+      "text": "A security team has implemented a Conditional Access policy requiring MFA for all sign-ins. MTR devices begin failing to sign in. What is the correct remediation that maintains security best practices?",
+      "answers": [
+        "Disable MFA enforcement globally to allow MTR resource accounts to sign in.",
+        "Assign Global Administrator to each resource account so they bypass MFA requirements.",
+        "Exclude the MTR resource account group from the MFA Conditional Access policy, and optionally restrict sign-in to named network locations (MTR device IP ranges) for compensating security.",
+        "Switch all MTR devices to Android, as Conditional Access MFA does not apply to Android-based devices."
+      ],
+      "correct": 2,
+      "explanation": "MTR resource accounts cannot interactively complete MFA challenges. The correct approach is to create a dedicated group for MTR resource accounts and exclude it from MFA-requiring Conditional Access policies. A compensating control such as restricting sign-ins to named locations (known office IP ranges) can be applied for security."
+    },
+    {
+      "id": 5,
+      "text": "An administrator is enrolling an MTR for Windows device into Microsoft Intune. Which Intune enrolment method is most appropriate for MTR Windows devices to ensure they appear as managed corporate devices?",
+      "answers": [
+        "BYOD enrolment via the Company Portal app installed by the end user.",
+        "Windows Autopilot with a device configuration profile pre-assigned in Intune, so the device self-configures on first network connection.",
+        "Manual enrolment by logging into the Intune Company Portal as the resource account.",
+        "Android Enterprise enrolment via the OEM provisioning QR code."
+      ],
+      "correct": 1,
+      "explanation": "Windows Autopilot is the recommended enrolment method for MTR Windows devices at scale. The device serial number or hardware hash is pre-registered in Intune/Autopilot, and on first boot the device self-configures, receives its configuration profiles, and is ready for the resource account sign-in without manual intervention."
+    },
+    {
+      "id": 6,
+      "text": "Which Microsoft 365 admin role should be assigned to a person who needs to manage Teams meeting policies and device configurations in Teams Admin Center, but should NOT have access to Exchange Online or Azure AD administration?",
+      "answers": [
+        "Global Administrator",
+        "Exchange Administrator",
+        "Teams Administrator",
+        "Intune Administrator"
+      ],
+      "correct": 2,
+      "explanation": "The Teams Administrator role grants full access to Teams Admin Center including meeting policies, Teams devices, calling, and meetings — without granting Exchange Online or Azure AD administrative access. It follows the principle of least privilege."
+    },
+    {
+      "id": 7,
+      "text": "A room resource account has been created and licenced, but the room does not appear in the Room Finder when users try to book a meeting in Outlook. What configuration is most likely missing?",
+      "answers": [
+        "The resource account needs a Teams Rooms Pro licence instead of Basic.",
+        "The room mailbox has not been added to a Room List (distribution group designated as a room list) in Exchange Online, which is required for Room Finder to display it.",
+        "The room mailbox needs to have its Capacity property set before it appears in Room Finder.",
+        "Room Finder only displays rooms that have been signed into by an MTR device at least once."
+      ],
+      "correct": 1,
+      "explanation": "Room Finder in Outlook discovers rooms through Room Lists — distribution groups with the -RoomList parameter set. A room mailbox must be added to at least one room list using Add-DistributionGroupMember before it appears in Outlook's Room Finder."
+    },
+    {
+      "id": 8,
+      "text": "What is the Teams Rooms Pro Management portal, and what is its primary purpose?",
+      "answers": [
+        "It is a mobile app that lets room users report issues directly to IT support.",
+        "It is a Microsoft-hosted monitoring and management portal that provides health status, incident alerts, and remote diagnostics for MTR devices enrolled with Teams Rooms Pro licences.",
+        "It is an on-premises server component that must be deployed in the customer's data centre to manage MTR devices.",
+        "It is the same as Teams Admin Center but with a different URL for legacy compatibility."
+      ],
+      "correct": 1,
+      "explanation": "The Teams Rooms Pro Management portal (formerly Microsoft Teams Rooms Managed Service / MTRMS) is a cloud-hosted service included with Teams Rooms Pro licences. It provides automated health monitoring, incident creation, and AI-driven diagnostics for enrolled MTR devices."
+    },
+    {
+      "id": 9,
+      "text": "A room mailbox is configured but is accepting meeting bookings outside business hours and allowing bookings for periods longer than 4 hours. Which Set-CalendarProcessing parameters should the administrator configure to enforce business-hours-only bookings and a 4-hour maximum meeting duration?",
+      "answers": [
+        "-BookingWindowInDays and -MaximumDurationInMinutes",
+        "-EnforceSchedulingHorizon and -AllowConflicts",
+        "-AllowRecurringMeetings and -ScheduleOnlyDuringWorkHours",
+        "-ScheduleOnlyDuringWorkHours $true and -MaximumDurationInMinutes 240"
+      ],
+      "correct": 3,
+      "explanation": "Set-CalendarProcessing -ScheduleOnlyDuringWorkHours $true restricts bookings to the working hours defined on the mailbox, and -MaximumDurationInMinutes 240 limits any single booking to 4 hours (240 minutes)."
+    },
+    {
+      "id": 10,
+      "text": "An organisation has 80 conference rooms. Which approach provides the richest meeting room utilisation analytics — including actual occupancy vs. booked time, meeting start/end adherence, and per-room trends — natively within the Microsoft ecosystem?",
+      "answers": [
+        "Exchange Online mailbox audit logs exported to Excel.",
+        "Teams Admin Center Usage reports combined with Teams Rooms Pro Management portal analytics.",
+        "A manual spreadsheet maintained by the facilities team based on room booking exports.",
+        "SharePoint lists populated by a Power Automate flow that reads calendar data."
+      ],
+      "correct": 1,
+      "explanation": "Teams Admin Center Usage reports and the Teams Rooms Pro Management portal together provide native analytics on room utilisation, meeting quality, and device health. Teams Rooms Pro in particular includes occupancy and meeting adherence data that goes beyond basic calendar booking reports."
+    }
+  ]
+}

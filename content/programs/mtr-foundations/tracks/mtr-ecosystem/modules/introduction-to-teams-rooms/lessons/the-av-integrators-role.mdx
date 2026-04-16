@@ -1,0 +1,364 @@
+---
+# ─────────────────────────────────────
+# IDENTITY
+# ─────────────────────────────────────
+
+id: "p1-t1-m1-l5"
+slug: "the-av-integrators-role"
+title: "The AV Integrator's Role — Scope, SOW Boundaries, and Handoff"
+shortTitle: "The Integrator's Role"
+
+# ─────────────────────────────────────
+# HIERARCHY
+# ─────────────────────────────────────
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 1
+moduleSlug: "introduction-to-teams-rooms"
+moduleTitle: "Introduction to Microsoft Teams Rooms"
+
+lessonIndex: 5
+
+# ─────────────────────────────────────
+# CONTENT METADATA
+# ─────────────────────────────────────
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+# ─────────────────────────────────────
+# AUDIENCE
+# ─────────────────────────────────────
+
+difficulty: "beginner"
+bloomLevel: "analyze"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+  - "casey"
+
+# ─────────────────────────────────────
+# LEARNING DESIGN
+# ─────────────────────────────────────
+
+objectives:
+  - "Define the boundary between the AV integrator's scope of work and the IT/Microsoft administrator's scope in a typical MTR deployment."
+  - "Identify the deliverables and responsibilities that belong to the integrator in the pre-installation, installation, configuration, and handoff phases."
+  - "Construct a responsibility matrix (RACI) for a standard MTR deployment that correctly assigns ownership across the AV integrator, IT/Microsoft 365 admin, and end client."
+
+prerequisites:
+  - "p1-t1-m1-l1"
+
+# ─────────────────────────────────────
+# TAXONOMY TAGS
+# ─────────────────────────────────────
+
+technologyTags:
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "scope-of-work"
+  - "project-management"
+  - "handoff"
+
+vendorTags:
+  - "microsoft"
+
+# ─────────────────────────────────────
+# MEDIA
+# ─────────────────────────────────────
+
+videoId: ""
+
+# ─────────────────────────────────────
+# ASSETS
+# ─────────────────────────────────────
+
+downloads:
+  - file: "p1-t1-m1-l5-raci-matrix-template.pdf"
+    label: "RACI Matrix Template"
+    sizeKb: 110
+
+# ─────────────────────────────────────
+# CROSS-REFERENCES
+# ─────────────────────────────────────
+
+relatedLessons:
+  - "p1-t1-m1-l4"
+
+# ─────────────────────────────────────
+# SEO
+# ─────────────────────────────────────
+
+metaDescription: "Define the AV integrator's scope in an MTR deployment, write clear SOW boundaries, build a RACI matrix, and deliver proper handoff documentation."
+keywords:
+  - "AV integrator MTR scope"
+  - "MTR SOW"
+  - "Teams Rooms project management"
+  - "MTR handoff documentation"
+  - "RACI matrix AV"
+
+# ─────────────────────────────────────
+# PUBLISHING & VERSIONING
+# ─────────────────────────────────────
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Picture this: you have just wrapped up three days of installation work in a client's new conference suite. Eight rooms, all wired cleanly, displays mounted perfectly, compute units racked, consoles locked down, cables labeled from end to end. You drive home satisfied. Then at 8:47 the next morning your phone rings. The client is on the line. None of the rooms are working. Users arrive for meetings and every touch console shows a sign-in screen instead of the meeting calendar. The client's facilities manager is frustrated and pointing at you — you were the last person in those rooms, and as far as she is concerned, you are responsible.
+
+When you dig in, the answer becomes clear immediately: the IT team never completed the resource account setup. The Exchange Online room mailboxes have not been provisioned. The Teams Rooms Pro licenses have not been assigned. Not a single device can authenticate. Your hardware is flawless. The problem lives entirely in the Microsoft 365 tenant, a space you were never authorized to touch — and frankly, should not touch. But the client does not see that distinction. In their view, the rooms do not work, you installed the rooms, and therefore this is your problem.
+
+This scenario plays out on MTR projects with uncomfortable regularity. It is not caused by bad technicians or incompetent IT teams. It is caused by a failure to define, communicate, and document the boundary between the AV integrator's scope and the IT administrator's scope before the project begins. That boundary is what this lesson is about — where it sits, how to describe it in your SOW, how to manage the overlap zones where disputes are most likely, and how to deliver a handoff that leaves no ambiguity about who owns what when you leave the site.
+
+By the end of this lesson, you will be able to define the integrator's scope precisely, identify the tasks that belong to IT, manage the areas where the two overlap, write SOW language that protects your firm, and deliver a professional handoff package that the client's IT team can actually use.
+
+---
+
+## What the integrator owns
+
+The AV integrator's scope on an MTR deployment is anchored in three categories: physical infrastructure, device-level configuration, and functional acceptance. These are the areas where your expertise, your tools, and your licensing apply. They are also the areas where you have the authority to act — you do not need privileged access to the client's Microsoft 365 tenant to do any of them.
+
+Physical infrastructure is the most familiar territory. It encompasses the complete cable infrastructure: data runs from the wall port to the compute unit and peripherals, power delivery to all AV equipment, HDMI and DisplayPort signal paths from the compute unit to each display, and USB signal paths to cameras, microphones, and speakers. It includes equipment mounting — displays on walls or ceilings, compute units in rack enclosures or AV furniture, consoles on the conference table or mounted in the lectern. It includes every label on every cable, every patch in every rack, and every termination at every endpoint. The client should be able to open an as-built drawing six months after you leave and trace any cable in the room from end to end.
+
+Device-level configuration sits between physical installation and Microsoft 365 administration, and it is squarely the integrator's responsibility. This means performing the initial setup of the Teams Rooms application on each compute unit, applying the XML configuration profile that controls room behavior (display layout, Bluetooth beaconing, content sharing defaults, meeting join options), pairing and testing all certified peripherals, configuring dual-display output if applicable, and setting up the touch console. The integrator signs the MTR device into the resource account — but only using credentials that the IT administrator has created, tested, and delivered. The distinction matters: the integrator authenticates with credentials, it does not create the identity.
+
+Network connectivity at the device level is also the integrator's responsibility. This means connecting the MTR compute unit to the correct wall port, confirming the device receives an IP address on the expected subnet, and verifying that the device can reach Microsoft's required service endpoints. What the integrator does not own is the wall port itself — the VLAN assignment, PoE configuration, and port security settings are IT infrastructure. The integrator confirms the result; IT configures the infrastructure that produces it.
+
+The functional acceptance test is the integrator's final deliverable before handoff. This is a structured verification that every room performs its intended function: the touch console displays the room's meeting calendar, one-touch meeting join works correctly, audio is clear in both directions, camera framing is appropriate for the room geometry, content sharing via HDMI input works, and the device appears in the <GlossaryTerm slug="teams-admin-center">Teams Admin Center</GlossaryTerm> as a healthy, managed endpoint. The acceptance test is not informal — it is documented, signed off by a client representative, and included in the handoff package.
+
+What the integrator does not own is equally important to state clearly. The integrator does not create resource accounts in Entra ID. The integrator does not provision Exchange Online room mailboxes. The integrator does not assign Teams Rooms Pro or Teams Rooms Basic licenses. The integrator does not configure Conditional Access policies or create MFA exclusion groups. The integrator does not configure or manage Intune enrollment profiles or device compliance policies. The integrator does not manage firmware updates on an ongoing basis unless a separate managed services agreement has been executed. These tasks require privileged access to the Microsoft 365 tenant and involve policy decisions with security, compliance, and audit implications that are the IT administrator's responsibility and liability — not the integrator's.
+
+{/* MEDIA: Responsibility swim lane diagram showing AV Integrator, IT Admin, and Microsoft swim lanes across six deployment phases: pre-sale, pre-install, physical install, software config, testing, and handoff. Each lane shows which tasks belong to each party at each phase with color-coded task blocks. Filename: p1-t1-m1-l5-swim-lane-diagram.png */}
+
+---
+
+## What IT owns
+
+The IT administrator's scope on an MTR deployment is anchored in the Microsoft 365 tenant and the network infrastructure that supports it. These are areas that require privileged administrative access, involve tenant-wide policy decisions, and carry security and compliance implications that extend far beyond any single room or project.
+
+At the Microsoft 365 tenant level, IT owns the complete resource account lifecycle. This means creating the room account in Entra ID (formerly Azure Active Directory), provisioning the Exchange Online room mailbox and configuring AutomateProcessing to AutoAccept so that meeting invitations are automatically accepted, assigning the Teams Rooms Pro or Teams Rooms Basic license to the account, and applying the correct Teams meeting policy in the <GlossaryTerm slug="teams-admin-center">Teams Admin Center</GlossaryTerm>. These four steps must all be complete and correct before the integrator can sign the device in — they are not optional prerequisites that the integrator can work around. If any of them is missing or misconfigured, the device will not function correctly, and diagnosing the root cause requires tenant-level access the integrator should not have.
+
+At the network infrastructure level, IT owns everything upstream of the wall port. This means VLAN assignment for the MTR device subnet, QoS policy configuration for Teams media traffic (including DSCP marking at the switch), firewall rules that permit outbound traffic to Microsoft's required URLs and IP ranges (the Office 365 endpoint categories maintained at the Microsoft documentation portal), and switch port configuration including the correct VLAN tagging and PoE delivery if an IP-based touch console is in use. The integrator will confirm that these things work correctly — that the device gets the right IP, that it can reach Microsoft services, that the console powers up — but IT must configure the infrastructure that produces those outcomes.
+
+Conditional Access and device security policies are entirely IT's domain. In most enterprise tenants, resource accounts must be excluded from MFA Conditional Access policies that would otherwise interrupt the automated sign-in process. Creating and managing these exclusion groups requires a thorough understanding of the tenant's security posture and must be coordinated with the organization's security team. Similarly, if the organization uses Intune for device compliance enforcement, the MTR devices need to be in scope for the correct device compliance policy — a decision and configuration that belongs to IT. An integrator who modifies Conditional Access policies, creates Entra ID accounts without authorization, or enrolls devices into Intune without an agreed enrollment profile is not just stepping out of scope — they are creating a security liability and potentially violating the client's internal governance requirements.
+
+Ongoing management of the MTR fleet after project completion is IT's responsibility by default. This includes monitoring device health in the Teams Admin Center, managing firmware updates through the update rings in TAC, handling user support escalations for platform-level issues such as meeting join failures caused by policy changes, and coordinating with Microsoft Support when tenant-side issues arise. The integrator may offer managed services as a contracted extension of their work — proactive monitoring, firmware management, helpdesk support — but absent that contract, ongoing management belongs to the client's IT team.
+
+---
+
+## The overlap zones
+
+The integrator's scope and the IT administrator's scope do not share a clean, unambiguous boundary across every task on an MTR project. There are three areas where the responsibilities of both parties must be coordinated explicitly — and where, if they are not coordinated, projects stall, fingers get pointed, and clients lose confidence in both parties simultaneously.
+
+The first overlap zone is network port configuration. The integrator needs each wall port to be configured on the correct VLAN with the correct PoE settings before installation day. Without that, the MTR compute unit will either fail to get an IP address or land on the wrong subnet, and commissioning cannot proceed. But to configure port security correctly, IT needs to know the MAC addresses of the devices being installed — information the integrator typically cannot provide until the hardware has been received and unpacked. The pre-installation meeting is where this timing dependency gets resolved: the integrator commits to delivering MAC addresses by a specific date, and IT commits to having port configuration complete before installation begins. Documenting this as a prerequisite with a named owner and a due date is the only way to prevent it from becoming a day-of emergency.
+
+The second overlap zone is Intune enrollment. Teams Rooms Pro supports <GlossaryTerm slug="autopilot">Windows Autopilot</GlossaryTerm> enrollment for Windows-based MTR devices, and many enterprise organizations require Intune enrollment as a condition of network access or compliance policy. The integrator may initiate the enrollment process — the device reaches out to Intune during the OOBE or initial setup phase — but IT must have the Autopilot enrollment profile configured in the Microsoft Endpoint Manager portal before the device first boots, and the device's hardware hash must be registered in the tenant. If enrollment fails, both parties need to troubleshoot together: the integrator needs to confirm the device is reaching Intune endpoints at the network level, while IT needs to confirm the enrollment profile is correctly configured and the device is registered. Establishing clearly in the pre-installation meeting whether Intune enrollment is in scope, who is responsible for each step, and what the fallback is if enrollment fails saves significant on-site time.
+
+The third overlap zone is Teams Admin Center device verification. After installation, the integrator's acceptance test requires confirming that the device appears in TAC as a healthy endpoint. This is a straightforward verification — but it requires someone who has read access to the TAC. If the integrator does not have a TAC guest account with Device Administrator privileges, they cannot complete this step independently. The options are: the IT admin creates a limited-access account for the integrator before installation day, or the IT admin is present during commissioning. Either option works. What does not work is discovering on acceptance test day that neither party arranged for TAC access, and the integrator is standing in the room unable to confirm healthy device status without calling IT to share a screen.
+
+<Callout type="info">
+  The pre-installation kickoff meeting is the most important risk mitigation tool on an MTR project. Use it to confirm that IT has completed all prerequisites, establish the overlap zone responsibilities with named owners and due dates, and document who to call if something is not working on installation day. Projects that skip this meeting are not more efficient — they are more likely to lose that time on installation day, in front of the client, under pressure.
+</Callout>
+
+{/* MEDIA: Venn diagram showing AV Integrator scope and IT Admin scope as two overlapping circles. The AV Integrator circle contains: physical infrastructure, device-level config, peripheral pairing, acceptance testing, as-built documentation. The IT Admin circle contains: resource account creation, license assignment, Conditional Access, Intune policy, ongoing management. The intersection zone is labeled with the three overlap areas: network port config, Intune enrollment, TAC verification. Filename: p1-t1-m1-l5-scope-venn-diagram.png */}
+
+---
+
+## SOW language that protects you
+
+Vague scope language is the single most common root cause of MTR project disputes. When the SOW says "configure Microsoft Teams Rooms on all devices" without specifying what that means and what it excludes, every party reads it differently. The client reads it as "make everything work." The IT administrator reads it as "not my problem — the integrator is handling Teams." The integrator means "install the application and apply configuration settings." When the rooms do not work because IT has not created the resource accounts, everyone has a different interpretation of whose responsibility that was — and everyone has a piece of paper that supports their position.
+
+The fix is specificity: describe exactly what the integrator will do, name exactly what the integrator will not do, and state explicitly what IT must deliver before the integrator can begin. Consider the difference in the following two formulations of the same task:
+
+Vague: "Configure Microsoft Teams Rooms on all devices."
+
+Specific: "Install and configure the Teams Rooms application on each compute unit, pair certified peripherals, apply the XML configuration profile, and verify device sign-in using resource account credentials provided by the client's IT administrator. Resource account creation, license assignment, and all Microsoft 365 tenant configuration are excluded from this scope of work and are the responsibility of the client's IT administrator."
+
+The specific version does something the vague version does not: it names the IT deliverable (resource account credentials) and makes the integrator's ability to complete the task contingent on it. The same principle applies to acceptance testing:
+
+Vague: "Ensure rooms are working at project completion."
+
+Specific: "Perform a functional acceptance test on each room that includes: one-touch meeting join, audio and video verification in a live Teams meeting, content sharing via HDMI input, and confirmation of healthy device status in the Teams Admin Center. Acceptance testing is contingent on the client's IT administrator providing correctly configured resource accounts with Exchange Online room mailboxes and Teams Rooms Pro licenses assigned and independently tested prior to testing. If IT prerequisites are not complete at the time of scheduled acceptance testing, acceptance testing will be rescheduled and any schedule overrun is the client's responsibility."
+
+That last sentence matters. The SOW should treat IT prerequisites as client deliverables with specific due dates, not as informal assumptions. If the IT team needs to have resource accounts ready by a specific date in order for acceptance testing to proceed on schedule, that date belongs in the SOW as a milestone. If that milestone is missed, the integrator is not responsible for the resulting schedule impact — but only if the SOW says so explicitly. A SOW that does not name IT prerequisites as client deliverables with dates leaves the integrator exposed when those prerequisites are late.
+
+{/* MEDIA: SOW comparison side-by-side — two-column table showing vague scope language on the left and precise scope language on the right for five common MTR project tasks: device configuration, resource account sign-in, network connectivity, acceptance testing, and handoff documentation. Filename: p1-t1-m1-l5-sow-comparison.png */}
+
+<Callout type="warning">
+  Never accept verbal confirmation that IT prerequisites are complete. Require written confirmation — an email, a project management tool status update, or a formal checklist sign-off — from the IT administrator who actually configured the accounts. Project managers often relay status information secondhand and in good faith, but they are not the person who configured the tenant. Written confirmation from the right person creates a documented record that protects you if the rooms are not working when you arrive.
+</Callout>
+
+---
+
+## Handoff documentation and ongoing services
+
+Project completion is not when the last screw goes in. It is when the client has everything they need to own and operate the rooms you built — and when you can demonstrate that you delivered a professional outcome, not just functional hardware.
+
+The handoff documentation package is a core deliverable of every MTR project, and it should be scoped and priced accordingly. At minimum, it includes as-built drawings covering cable schedules (every run labeled, source, destination, cable type, and length), rack elevations, and a floor plan showing device locations. It includes a device inventory spreadsheet listing every device in every room: serial number, MAC address, assigned IP address, resource account UPN, and Teams Admin Center device ID. It includes the signed acceptance test report — the document that a client representative signs when they confirm the room passed functional testing. And it includes a brief user guide for the touch console, written for a non-technical end user, covering how to start a meeting, how to share content, and who to call when something does not work.
+
+Each of these documents serves a specific operational purpose. The as-built drawings are the IT team's reference when they need to trace a cable or find a device. The device inventory is the foundation for every TAC management and support operation going forward. The acceptance report is the legal record that the project was completed to specification. The user guide is the difference between a client who calls you every time a user is confused about how to share their laptop screen and a client who handles that question internally.
+
+Beyond the document package, the integrator should conduct a structured IT handoff — a dedicated meeting or formal document walk-through with the client's IT team. This is not a courtesy call. It is a knowledge transfer that covers where each device appears in the Teams Admin Center, how to interpret TAC health indicators and alert categories, where the resource account credentials are stored (or who in the organization owns them), and who the integrator's support contact is for hardware warranty or post-installation issues. Integrators who skip the IT handoff meeting create an information gap that eventually becomes a support call — sometimes six months later, when the IT team cannot find the device in TAC, does not know what the resource account UPN is, and does not know whether the firmware is current.
+
+The handoff is also the natural moment to discuss ongoing services. Many integration firms now offer managed services contracts for MTR fleets — proactive device health monitoring, firmware update management, helpdesk support for room users, and quarterly health check reports. This is a legitimate and growing revenue stream that provides real value to clients who do not have the internal IT capacity to actively manage their MTR fleet. If your firm offers managed services, the language in the project SOW should already reference the transition to a managed services agreement at project close. Project completion is not the end of the client relationship — in a well-run practice, it is the beginning of a recurring service engagement that generates more revenue over the life of the fleet than the original installation.
+
+---
+
+## Hands-on exercise
+
+These two exercises apply the scope concepts from this lesson to practical scenarios. Complete both before the knowledge check.
+
+**Exercise 1 — RACI Matrix Construction.** Using the downloadable RACI Matrix Template, assign each of the following twenty deployment tasks to either AV Integrator (Responsible), IT Admin (Responsible), or Shared (Accountable/Consulted). Do not look at the answer key until you have completed all twenty assignments. The tasks are: create resource account in Entra ID; mount display on wall; configure PoE switch port; sign MTR device into resource account; create Intune device compliance policy; perform acoustic measurement; cable label all runs; verify device in Teams Admin Center; assign Teams Rooms Pro license; configure XML profile on MTR device; set AutomateProcessing = AutoAccept on mailbox; test HDMI content sharing; document as-built cable schedule; configure QoS DSCP markings on switch; install ceiling microphone array; exclude resource account from MFA Conditional Access policy; perform functional acceptance test; deliver completed acceptance report; create Intune Autopilot enrollment profile; configure dual display output in MTR XML.
+
+After completing your assignments, review the model answer key in the worksheet. Pay particular attention to any tasks you placed in a different column than the model answer — for those tasks, the worksheet includes an explanation of the reasoning. The tasks most commonly assigned incorrectly are the shared tasks (signing the device in, TAC verification, Intune enrollment initiation), because they involve the integrator performing an action that depends on IT having completed a prerequisite.
+
+**Exercise 2 — SOW Language Review.** Two sample SOW excerpts are included on the second page of the worksheet: one from a real-world project that generated a scope dispute, and one rewritten version of the same scope. Read both excerpts and identify specifically which phrases in the first version created ambiguity — write out each ambiguous phrase, explain why it is ambiguous, and identify how the rewritten version resolved it. There are five distinct ambiguities to find.
+
+<DownloadButton
+  file="p1-t1-m1-l5-raci-matrix-template.pdf"
+  label="RACI Matrix Template"
+  sizeKb={110}
+  description="20-task RACI worksheet for a standard MTR deployment. Includes model answer key and common dispute scenarios."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m1-l5-kc">
+  <Question>
+    During an MTR installation, the integrator discovers that the client's IT team has not
+    yet created the resource account. Installation day is today. What is the correct
+    immediate action?
+  </Question>
+  <Answer>
+    Create the resource account using the client's M365 admin credentials, which the client
+    has shared
+  </Answer>
+  <Answer correct>
+    Proceed with hardware installation and document that software commissioning is blocked
+    pending IT completion of the resource account
+  </Answer>
+  <Answer>Cancel the installation and reschedule for when IT is ready</Answer>
+  <Answer>
+    Configure the device with a temporary account to complete the installation
+  </Answer>
+  <Explanation>
+    The correct action is to proceed with hardware installation — which does not require the
+    resource account — and formally document that software commissioning cannot be completed
+    until the IT prerequisite is met. Using the client's M365 admin credentials to create
+    accounts is a security and liability issue that integrators must avoid: it gives the
+    integrator access to privileged systems they are not authorized to operate and creates
+    ambiguity about who is responsible for that configuration going forward. Canceling the
+    installation entirely is commercially impractical if hardware work can still proceed.
+    A temporary account leaves the client with an uncompleted installation and an unsecured
+    device on the network.
+  </Explanation>
+
+  <Question>
+    Which of the following tasks is squarely within the AV integrator's scope of work on
+    an MTR project?
+  </Question>
+  <Answer>
+    Assigning the Teams Rooms Pro license to the resource account in the M365 admin center
+  </Answer>
+  <Answer>Creating a Conditional Access exclusion group for resource accounts</Answer>
+  <Answer correct>Configuring the XML profile on the MTR Windows compute unit</Answer>
+  <Answer>Setting AutomateProcessing = AutoAccept on the resource account mailbox</Answer>
+  <Explanation>
+    XML configuration of the MTR device is a device-level configuration task — it controls
+    how the Teams Rooms application behaves on that specific piece of hardware, and it
+    requires no access to the Microsoft 365 tenant. It is squarely the integrator's domain.
+    License assignment, Conditional Access policy management, and Exchange Online mailbox
+    configuration (including AutomateProcessing) are all Microsoft 365 tenant-level tasks
+    that require privileged tenant access and belong to the IT administrator.
+  </Explanation>
+
+  <Question>
+    A client's project manager tells you that the IT team has completed all resource account
+    setup and you can proceed with software commissioning. You arrive on site and find the
+    devices cannot sign in. What should your first action have been before arriving?
+  </Question>
+  <Answer>
+    Perform a remote test connection to verify the resource account worked
+  </Answer>
+  <Answer correct>
+    Require written confirmation from the IT admin — not the project manager — that resource
+    accounts are created, licensed, and independently tested before arrival
+  </Answer>
+  <Answer>Trust the project manager — they would not say it was done if it was not</Answer>
+  <Answer>Build extra commissioning time into the schedule as a buffer</Answer>
+  <Explanation>
+    Written confirmation from the IT administrator — the person who actually configured the
+    accounts — is the correct prerequisite verification method. Project managers often relay
+    status information secondhand and in good faith, but they are not the person who touched
+    the tenant. A project manager saying "IT says it is done" is not the same as an IT
+    administrator writing "resource accounts created, licensed, and tested — credentials
+    attached." Building buffer time into the schedule helps absorb delays but does not
+    prevent the root cause: unverified prerequisites.
+  </Explanation>
+
+  <Question>
+    What is the primary purpose of the as-built documentation package delivered at
+    project close?
+  </Question>
+  <Answer>
+    To satisfy a regulatory requirement for commercial AV installations
+  </Answer>
+  <Answer correct>
+    To provide the client's IT team with the baseline information needed to manage,
+    troubleshoot, and support the rooms going forward
+  </Answer>
+  <Answer>To protect the integrator from warranty claims</Answer>
+  <Answer>To document the installation for the integrator's own records</Answer>
+  <Explanation>
+    As-built documentation is fundamentally a handoff document for the client's IT team.
+    It tells them where devices are physically located, what resource account each device
+    uses, how to find each device in the Teams Admin Center, and what the physical
+    infrastructure looks like. Without it, every future support incident requires the
+    client to track down the integrator for basic information — a poor client experience,
+    an operational liability, and a poor reflection on the quality of the integration work.
+    While as-builts do provide a record for the integrator, and may reduce warranty dispute
+    risk, the primary purpose is operational enablement of the client.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary and module completion
+
+This lesson addressed the three most operationally important scope questions on an MTR project: where the integrator's responsibility ends, where IT's begins, and how to manage the territory in between.
+
+You can now define the integrator's scope across the full deployment lifecycle — physical infrastructure, device-level configuration, network connectivity confirmation, and functional acceptance testing — and distinguish it clearly from the IT administrator's scope in the Microsoft 365 tenant, network infrastructure, security policy, and ongoing device management. You can identify the three overlap zones (network port configuration, Intune enrollment, and Teams Admin Center verification) where coordination must be established in the pre-installation meeting to prevent day-of failures. You can write SOW language that names IT prerequisites as client deliverables, specifies what the integrator will and will not do, and conditions acceptance testing on documented completion of IT prerequisites. And you can describe the components of a professional handoff package that leaves the client's IT team with the information they need to own and operate the rooms after you leave.
+
+**Module 1.1: Introduction to Microsoft Teams Rooms is now complete.**
+
+Across the five lessons in this module, you have built a working model of the Microsoft Teams Rooms platform from the ground up. You know what MTR is, where it came from, and how it compares to Zoom Rooms and Cisco Webex for AV integrators. You understand the architectural differences between MTR on Windows and MTR on Android, and you know which platform is appropriate for which deployment scenario and feature requirements. You have a working knowledge of the certified hardware ecosystem — compute units, audio peripherals, cameras, and consoles — and the certification process that determines what can be deployed. You understand the Teams Rooms licensing model, including the differences between Teams Rooms Pro and Teams Rooms Basic and the implications of each for the features you can deliver and the management capabilities your client will have. And you now understand where you fit in the deployment ecosystem: what you own, what IT owns, and how to define that boundary in writing before the project starts.
+
+Module 1.2 builds directly on this foundation by going deeper into Microsoft Teams itself — the meeting types and join methods that determine how rooms are used, the admin tooling in the Teams Admin Center that IT and integrators both need to understand, and the resource account configuration that underpins every MTR deployment. The concepts in Module 1.2 will explain why things you have already seen in resource account setup work the way they do — and give you the vocabulary to have an informed conversation with a Teams administrator on any MTR project.
+
+[Meeting Types and Their AV Implications →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/teams-fundamentals/lessons/meeting-types-av-implications/)

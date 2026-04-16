@@ -1,0 +1,209 @@
+---
+id: "p4-t1-m1-l4"
+slug: "project-risk-management"
+title: "Project Risk Management for MTR"
+shortTitle: "Risk Management"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 1
+moduleSlug: "project-planning-scoping"
+moduleTitle: "Project Planning and Scoping"
+
+lessonIndex: 4
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["project-manager", "solutions-architect"]
+
+objectives:
+  - "Build a risk register that captures, scores, and tracks project risks throughout the delivery lifecycle"
+  - "Apply probability/impact scoring to prioritise risk management effort"
+  - "Define mitigation and contingency responses for the most common MTR project risks"
+  - "Use the risk register as a client communication and governance tool"
+
+prerequisites:
+  - "p4-t1-m1-l1"
+  - "p4-t1-m1-l2"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["project-manager", "solutions-architect"]
+topicTags: ["risk-management", "project-planning", "governance"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "MTR Risk Register Template"
+    filename: "mtr-risk-register-template.xlsx"
+
+relatedLessons:
+  - "p4-t1-m1-l1"
+  - "p4-t1-m1-l2"
+  - "p4-t1-m2-l1"
+
+metaDescription: "Learn to build and maintain a risk register for MTR deployment projects, including probability/impact scoring, mitigation strategies, and using the register as a governance tool."
+keywords: ["MTR risk management", "project risk register", "risk assessment", "MTR deployment risks"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Why MTR Projects Need Active Risk Management
+
+MTR deployments involve dependencies across multiple client teams (IT, facilities, procurement, end users), multiple vendors (hardware, software, network), and physical installation constraints that cannot always be verified in advance. A risk that is not identified and managed will eventually materialise as a schedule delay, a budget overrun, or a failed acceptance.
+
+Risk management is not about pessimism — it is about converting unknowns into knowns early enough to influence the outcome.
+
+---
+
+## The Risk Register
+
+The risk register is a living document maintained throughout the project lifecycle. It is not a one-time deliverable created at scoping and filed away — it is reviewed at every project status meeting.
+
+### Risk Register Structure
+
+Each risk entry contains:
+
+| Field | Description |
+|---|---|
+| Risk ID | Sequential reference (R-001, R-002...) |
+| Risk Description | Clear statement of what could go wrong |
+| Category | Technical / Commercial / Organisational / External |
+| Probability | 1–5 scale (1 = Rare, 5 = Almost Certain) |
+| Impact | 1–5 scale (1 = Negligible, 5 = Critical) |
+| Risk Score | Probability × Impact (1–25) |
+| Priority | High (15–25) / Medium (8–14) / Low (1–7) |
+| Mitigation Action | What we do to reduce likelihood |
+| Contingency Response | What we do if the risk materialises |
+| Owner | Named individual responsible for monitoring |
+| Status | Open / Mitigated / Closed / Materialised |
+| Review Date | Next scheduled review |
+
+### Probability/Impact Scoring
+
+**Probability scale:**
+- 1 – Rare: Less than 10% chance
+- 2 – Unlikely: 10–30% chance
+- 3 – Possible: 30–60% chance
+- 4 – Likely: 60–80% chance
+- 5 – Almost Certain: Greater than 80% chance
+
+**Impact scale:**
+- 1 – Negligible: No meaningful impact on schedule, cost, or quality
+- 2 – Minor: Up to 1-week delay or <5% cost impact
+- 3 – Moderate: 1–3 week delay or 5–15% cost impact
+- 4 – Major: 3–8 week delay or 15–30% cost impact
+- 5 – Critical: Project failure, significant financial loss, or client relationship damage
+
+---
+
+## Common MTR Project Risks
+
+### Technical Risks
+
+| Risk | Typical Score | Mitigation | Contingency |
+|---|---|---|---|
+| Network not ready at installation | High (4×4=16) | Complete NRA 4 weeks before install; include network readiness gate in plan | Delay install dates; engage client escalation path |
+| Resource accounts not provisioned on time | High (4×3=12) | Provide provisioning guide 3 weeks ahead; confirm completion 5 days before | Defer commissioning; provision accounts on-site if admin access available |
+| Ceiling void inaccessible for cable routing | Medium (3×3=9) | Verify void access during survey; include cable tray as alternative | Commission cable tray contractor; raise change request for additional works |
+| SSL inspection blocking Teams auth | High (3×5=15) | Test during NRA; document firewall exemption requirement in SOW | Engage client network team; delay commissioning until resolved |
+| Legacy display not HDMI-compatible | Low (2×2=4) | Inventory existing equipment during survey | Supply HDMI adapter; raise change request if display replacement needed |
+| MTR app update changes behaviour mid-project | Medium (2×3=6) | Pin app version in Intune for duration of project | Test on pilot room before fleet rollout |
+
+### Commercial Risks
+
+| Risk | Typical Score | Mitigation | Contingency |
+|---|---|---|---|
+| Client adds rooms mid-project without change request | High (4×3=12) | Strong SOW with change control clause; brief client stakeholders at kickoff | Issue change request immediately when additional rooms are requested |
+| Hardware delivery delay | Medium (3×4=12) | Order hardware minimum 6 weeks before install; confirm lead times | Source alternative devices; stagger installation schedule |
+| Client unable to pay within terms | Low (2×4=8) | Agree payment milestones in contract; invoice on delivery | Pause additional phases; escalate to client finance |
+| Scope dispute on exclusions | Medium (3×3=9) | Explicit exclusions in SOW; client sign-off before works begin | Refer to SOW; raise change request; escalate if unresolved |
+
+### Organisational Risks
+
+| Risk | Typical Score | Mitigation | Contingency |
+|---|---|---|---|
+| Client IT contact leaves or changes mid-project | Medium (3×3=9) | Identify a secondary contact at kickoff; document all knowledge transfers | Re-brief new contact; adjust schedule if knowledge gap significant |
+| Rooms unavailable during installation window | High (4×3=12) | Confirm room bookings 2 weeks before install; daily confirmation day before | Resequence installation; reschedule unavailable rooms |
+| End-user resistance to new system | Medium (3×2=6) | Include change management and training in scope; brief floor manager | Additional training sessions; escalate to executive sponsor |
+| Client procurement delays hardware order | High (4×3=12) | Agree procurement process at kickoff; offer to manage procurement | Extend project timeline; replan installation dates |
+
+---
+
+## Risk Register in Practice
+
+### At Scoping
+
+Populate the risk register with all risks identified during the site survey and IT discovery. Assign initial probability and impact scores. Identify owners.
+
+Present the register to the client at the project kickoff meeting — not as a list of problems, but as a demonstration of rigorous planning. Frame it as: "Here are the things we're watching to protect your project. These are the actions we're taking. These are the things we need from you."
+
+### At Project Status Meetings
+
+Review the risk register at every status meeting (recommended weekly for active projects):
+
+1. Review all Open High-priority risks — confirm mitigation actions are on track
+2. Check upcoming project milestones against risk triggers
+3. Add any new risks identified since last review
+4. Update status of risks that have materialised or been resolved
+5. Confirm owner acknowledgement of assigned risks
+
+### When a Risk Materialises
+
+When a risk converts from "possible" to "actual":
+
+1. Move status to "Materialised" in the register
+2. Activate the contingency response
+3. Notify the client sponsor immediately (do not wait for the next scheduled meeting)
+4. Assess downstream impact on schedule, cost, and other risks
+5. Update the project plan with revised dates
+
+<Callout type="warning">
+**Never surprise a client sponsor with a materialised risk in a project meeting.** Sponsors need a call or direct communication before any formal meeting where the issue will be discussed. Discovering a schedule-impacting problem in a group meeting — without prior notice — damages the relationship regardless of whose fault the risk was.
+</Callout>
+
+---
+
+## Risk Appetite and Escalation
+
+Different clients and projects have different risk tolerances. At project initiation, agree:
+
+- What risk score threshold triggers escalation to the project sponsor?
+- Who has authority to approve contingency actions without sponsor involvement?
+- Are any risk categories (e.g., data security, building works) subject to special escalation rules?
+
+Document these agreements in the project initiation document (PID) or project charter. This prevents ambiguity when a risk materialises under time pressure.
+
+---
+
+<KnowledgeCheck>
+  <Question text="A risk is assessed as Probability 4 (Likely) and Impact 4 (Major). What is the risk score and priority?">
+    <Answer>Score 8 — Medium priority</Answer>
+    <Answer correct>Score 16 — High priority</Answer>
+    <Answer>Score 4 — Low priority</Answer>
+    <Answer>Score 44 — Critical priority</Answer>
+    <Explanation>Risk Score = Probability × Impact = 4 × 4 = 16. A score of 15–25 is High priority, requiring active mitigation and regular review.</Explanation>
+  </Question>
+  <Question text="When should the risk register first be shared with the client?">
+    <Answer>Only when a risk materialises and affects the project</Answer>
+    <Answer>During the final handover meeting</Answer>
+    <Answer correct>At the project kickoff meeting, framed as a demonstration of rigorous planning and to confirm client responsibilities for risk mitigation</Answer>
+    <Answer>After the first week of installation</Answer>
+    <Explanation>Sharing the risk register at kickoff demonstrates professionalism, sets expectations, and confirms client-owned mitigation actions early — when there is still time to act. Waiting until risks materialise removes the opportunity to prevent them.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="MTR Risk Register Template" filename="mtr-risk-register-template.xlsx" />

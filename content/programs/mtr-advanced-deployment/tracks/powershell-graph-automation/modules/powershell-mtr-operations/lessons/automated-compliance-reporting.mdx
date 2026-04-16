@@ -1,0 +1,343 @@
+---
+id: "p3-t3-m1-l2"
+slug: "automated-compliance-reporting"
+title: "Automated Compliance and Health Reporting"
+shortTitle: "Compliance and Health Reporting"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 1
+moduleSlug: "powershell-mtr-operations"
+moduleTitle: "PowerShell for MTR Operations"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Build a PowerShell script that aggregates TAC health, Intune compliance, and Teams app version data into a weekly fleet health report"
+  - "Calculate a composite fleet health score and identify rooms requiring immediate action"
+  - "Generate a color-coded HTML report and distribute it via email with a CSV attachment"
+
+prerequisites:
+  - "p3-t3-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "powershell"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l1"
+  - "p3-t3-m1-l3"
+
+metaDescription: "Automated MTR compliance and health reporting with PowerShell — combining TAC health status, Intune compliance state, and Teams app version into a fleet health score, HTML report generation, and email distribution."
+
+keywords:
+  - "MTR compliance reporting PowerShell"
+  - "Teams Rooms health report automation"
+  - "MTR fleet health score"
+  - "Teams Rooms PowerShell report"
+  - "MTR automated reporting"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A weekly health report gives stakeholders visibility into fleet status without requiring portal access, and gives the operations team a consistent forcing function to review the fleet. A good automated report does three things: it summarizes fleet-level health with a single score, it surfaces rooms that need action so nothing slips through, and it archives a snapshot for trend analysis over time. This lesson builds that report end-to-end — from raw data collection through HTML generation and email delivery.
+
+---
+
+## Collecting the Three Data Sources
+
+The report combines three independent datasets. Collect them first, then aggregate:
+
+```powershell
+# --- Connect to required services ---
+Connect-MicrosoftTeams
+Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
+
+# --- 1. TAC Health Status ---
+$tacDevices = Get-CsTeamsRoomDevice | Select-Object DisplayName, ResourceAccount,
+    HealthStatus, CurrentVersion, Manufacturer, HardwareModel
+
+# Count by health bucket
+$tacHealthCounts = $tacDevices | Group-Object HealthStatus |
+    Select-Object Name, Count
+
+# --- 2. Intune Compliance State ---
+$intuneDevices = Get-MgDeviceManagementManagedDevice `
+    -Filter "operatingSystem eq 'Windows'" -All |
+    Where-Object { $_.DeviceName -like "MTR-*" } |
+    Select-Object DeviceName, SerialNumber, ComplianceState,
+                  ComplianceGracePeriodExpirationDateTime
+
+$intuneCounts = $intuneDevices | Group-Object ComplianceState |
+    Select-Object Name, Count
+
+# --- 3. Teams App Version Distribution ---
+$versionGroups = $tacDevices | Group-Object CurrentVersion |
+    Sort-Object Count -Descending |
+    Select-Object Name, Count
+```
+
+The three `Group-Object` calls produce the count breakdowns that feed the fleet health score and the report summary table.
+
+---
+
+## Calculating the Fleet Health Score
+
+The fleet health score compresses three independent signals into a single 0-100 number. A simple weighted formula gives each dimension its proportional importance:
+
+```powershell
+$totalRooms = $tacDevices.Count
+if ($totalRooms -eq 0) { throw "No rooms found — check TAC connection" }
+
+# Determine current version (most common version in the fleet)
+$currentVersion = ($versionGroups | Sort-Object Count -Descending | Select-Object -First 1).Name
+$twoReleasesOld = $versionGroups |
+    Where-Object { [version]$_.Name -lt ([version]$currentVersion - [version]"0.0.2.0") }
+
+# Calculate percentages
+$healthyCount    = ($tacDevices | Where-Object HealthStatus -eq "Healthy").Count
+$compliantCount  = ($intuneDevices | Where-Object ComplianceState -eq "compliant").Count
+$intuneTotal     = $intuneDevices.Count
+
+# Rooms running a current or one-release-behind version
+$outdatedCount   = ($tacDevices | Where-Object {
+    $_.CurrentVersion -and [version]$_.CurrentVersion -lt [version]$currentVersion
+} | Measure-Object).Count
+$currentVersionCount = $totalRooms - $outdatedCount
+
+# Weighted score (50% health, 30% compliance, 20% version currency)
+$healthyPct         = if ($totalRooms -gt 0) { ($healthyCount / $totalRooms) * 100 } else { 0 }
+$compliantPct       = if ($intuneTotal -gt 0) { ($compliantCount / $intuneTotal) * 100 } else { 0 }
+$currentVersionPct  = if ($totalRooms -gt 0) { ($currentVersionCount / $totalRooms) * 100 } else { 0 }
+
+$fleetHealthScore = [Math]::Round(
+    ($healthyPct * 0.5) + ($compliantPct * 0.3) + ($currentVersionPct * 0.2), 1
+)
+
+Write-Host "Fleet Health Score: $fleetHealthScore / 100"
+```
+
+| Weight | Dimension | Rationale |
+|--------|-----------|-----------|
+| 50% | TAC Healthy % | Real-time device health is the most operationally critical signal |
+| 30% | Intune Compliant % | Compliance indicates policy adherence and security posture |
+| 20% | Current Version % | Version currency affects feature access and security patch coverage |
+
+---
+
+## Identifying Rooms That Need Action
+
+The action list filters across all three data sources for rooms in a degraded state:
+
+```powershell
+# Build a serial-number lookup for Intune data
+$intuneLookup = @{}
+foreach ($d in $intuneDevices) { $intuneLookup[$d.SerialNumber] = $d }
+
+$actionNeeded = foreach ($device in $tacDevices) {
+    $intune = $intuneLookup[$device.SerialNumber]
+
+    $reasons = @()
+
+    # Critical health in TAC
+    if ($device.HealthStatus -eq "Critical") {
+        $reasons += "Critical health status"
+    }
+
+    # Non-compliant AND grace period expired (or no grace period set)
+    if ($intune) {
+        $gracePeriod = $intune.ComplianceGracePeriodExpirationDateTime
+        $graceExpired = (-not $gracePeriod) -or ($gracePeriod -lt (Get-Date))
+        if ($intune.ComplianceState -eq "noncompliant" -and $graceExpired) {
+            $reasons += "NonCompliant (grace period expired)"
+        }
+    }
+
+    # Teams app version more than 2 releases behind current
+    if ($device.CurrentVersion) {
+        try {
+            $devVer = [version]$device.CurrentVersion
+            $curVer = [version]$currentVersion
+            # Compare major.minor.build — treat each build increment as a "release"
+            $buildDiff = $curVer.Build - $devVer.Build
+            if ($devVer.Major -eq $curVer.Major -and $devVer.Minor -eq $curVer.Minor -and $buildDiff -gt 2) {
+                $reasons += "Teams app $($device.CurrentVersion) — >2 releases behind $currentVersion"
+            }
+        } catch { }
+    }
+
+    if ($reasons.Count -gt 0) {
+        [PSCustomObject]@{
+            Room         = $device.DisplayName
+            Account      = $device.ResourceAccount
+            HealthStatus = $device.HealthStatus
+            Compliance   = if ($intune) { $intune.ComplianceState } else { "Not in Intune" }
+            AppVersion   = $device.CurrentVersion
+            ActionNeeded = $reasons -join "; "
+        }
+    }
+}
+
+Write-Host "$($actionNeeded.Count) rooms require action"
+```
+
+Export the action list as a CSV attachment for the email:
+
+```powershell
+$date = Get-Date -Format "yyyy-MM-dd"
+$csvPath = "C:\Reports\MTR-Action-Required-$date.csv"
+$actionNeeded | Export-Csv -Path $csvPath -NoTypeInformation
+```
+
+---
+
+## Generating the HTML Report
+
+PowerShell's `ConvertTo-Html` renders objects as an HTML table. Adding inline CSS produces a self-contained, readable report:
+
+```powershell
+$scoreColor = switch {
+    { $fleetHealthScore -ge 90 } { "#27ae60" }   # green
+    { $fleetHealthScore -ge 70 } { "#f39c12" }   # amber
+    default                      { "#e74c3c" }   # red
+}
+
+$header = @"
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; font-size: 13px; color: #333; margin: 20px; }
+  h1   { color: #0078d4; }
+  h2   { color: #444; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  .score { font-size: 48px; font-weight: bold; color: $scoreColor; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+  th    { background: #0078d4; color: white; padding: 6px 10px; text-align: left; }
+  td    { padding: 5px 10px; border-bottom: 1px solid #eee; }
+  tr:hover td { background: #f5f5f5; }
+  .healthy   { color: #27ae60; font-weight: bold; }
+  .critical  { color: #e74c3c; font-weight: bold; }
+  .nonurgent { color: #f39c12; font-weight: bold; }
+  .offline   { color: #7f8c8d; font-weight: bold; }
+</style>
+"@
+
+$healthSummaryHtml = $tacHealthCounts |
+    ConvertTo-Html -Fragment -PreContent "<h2>TAC Health Status</h2>"
+
+$complianceSummaryHtml = $intuneCounts |
+    ConvertTo-Html -Fragment -PreContent "<h2>Intune Compliance State</h2>"
+
+$versionHtml = $versionGroups |
+    ConvertTo-Html -Fragment -PreContent "<h2>Teams App Version Distribution</h2>"
+
+$actionHtml = if ($actionNeeded.Count -gt 0) {
+    $actionNeeded | ConvertTo-Html -Fragment -PreContent "<h2>Rooms Requiring Action ($($actionNeeded.Count))</h2>"
+} else {
+    "<h2>Rooms Requiring Action</h2><p style='color:#27ae60'>No rooms require action this week.</p>"
+}
+
+$reportHtml = ConvertTo-Html -Head $header -Body @"
+<h1>MTR Fleet Weekly Health Report — $date</h1>
+<p>Total rooms tracked: <strong>$totalRooms</strong></p>
+<p>Fleet Health Score: <span class='score'>$fleetHealthScore</span> / 100</p>
+$healthSummaryHtml
+$complianceSummaryHtml
+$versionHtml
+$actionHtml
+<p style='color:#999;font-size:11px'>Generated $(Get-Date -Format 'yyyy-MM-dd HH:mm') UTC by MTR Automation</p>
+"@
+
+$htmlPath = "C:\Reports\MTR-Health-Report-$date.html"
+$reportHtml | Out-File -FilePath $htmlPath -Encoding UTF8
+```
+
+---
+
+## Sending the Report by Email
+
+```powershell
+$mailParams = @{
+    From        = "mtr-automation@contoso.com"
+    To          = @("it-management@contoso.com", "av-team@contoso.com")
+    Subject     = "MTR Fleet Weekly Health Report — $date (Score: $fleetHealthScore/100)"
+    Body        = [System.IO.File]::ReadAllText($htmlPath)
+    BodyAsHtml  = $true
+    Attachments = $csvPath
+    SmtpServer  = "smtp.office365.com"
+    Port        = 587
+    UseSsl      = $true
+    Credential  = (Get-Credential -Message "SMTP credentials")
+}
+
+Send-MailMessage @mailParams
+Write-Host "Report sent successfully"
+```
+
+<Callout type="tip">
+In production, store SMTP credentials in a **Windows Credential Manager** entry or an **Azure Key Vault** secret rather than prompting interactively — the script will be running unattended via Task Scheduler.
+</Callout>
+
+---
+
+<KnowledgeCheck id="p3-t3-m1-l2-kc">
+  <Question>
+    Your fleet health score drops from 87 to 71 week-over-week. The TAC Healthy percentage is unchanged at 92%. What does this tell you about where the drop originated, and which section of the report would you examine first?
+  </Question>
+  <Answer>The drop is caused by new Critical health incidents — check the Rooms Requiring Action table for new Critical entries</Answer>
+  <Answer>The Teams app version distribution changed — a new release was published and many rooms are now showing as outdated</Answer>
+  <Answer correct>Because TAC Healthy % is unchanged, the drop must have come from the Intune compliance component (30% weight) or the version currency component (20% weight). A drop from 87 to 71 (16 points) is consistent with a significant compliance drop — for example, a compliance policy change that reclassified many rooms as non-compliant, or a grace period expiring for a batch of rooms enrolled at the same time. The first section to examine is Intune Compliance State in the report to see if the compliant count changed, then cross-reference with the action list for rooms now flagged as NonCompliant with expired grace period</Answer>
+  <Answer>The report script has a bug — the score calculation is dividing by the wrong total</Answer>
+  <Explanation>
+    The fleet health score formula weights TAC health at 50%, Intune compliance at 30%, and version currency at 20%. If the TAC Healthy % component is unchanged, the full 16-point drop must come from one or both of the other two components. A drop of this magnitude most likely reflects a compliance change — either a new compliance policy was applied, a grace period batch expired, or a large group of devices stopped checking in. Examining the Intune Compliance State count table and the action list (filtered for NonCompliant) points directly to the cause.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Data collection:** TAC health status, Intune compliance state, and Teams app version are collected independently then aggregated.
+- **Fleet health score:** Weighted formula — 50% TAC Healthy %, 30% Intune Compliant %, 20% current-version % — produces a single operational metric.
+- **Action list:** Rooms are flagged if they meet any of: Critical health, non-compliant with expired grace period, or Teams app more than 2 releases behind.
+- **HTML report:** `ConvertTo-Html` with inline CSS generates a self-contained, color-coded report without requiring external tools.
+- **Distribution:** `Send-MailMessage` delivers the HTML report body with the action CSV as an attachment; credentials should be stored securely for unattended execution.
+
+---
+
+## What's Next
+
+[Bulk Configuration Changes at Scale →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/powershell-mtr-operations/lessons/bulk-configuration-changes/)

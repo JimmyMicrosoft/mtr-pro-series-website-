@@ -1,0 +1,228 @@
+---
+id: "p2-t1-m1-l5"
+slug: "wifi-design-validation"
+title: "Wi-Fi Design and Validation for MTR Deployments"
+shortTitle: "Wi-Fi for MTR"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 1
+moduleSlug: "mtr-network-architecture"
+moduleTitle: "MTR Network Architecture and Design"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Evaluate a Wi-Fi network design against the minimum requirements for MTR device operation"
+  - "Identify the Wi-Fi configuration issues most likely to cause meeting quality problems on wireless MTR devices"
+  - "Conduct a basic Wi-Fi validation for an MTR deployment and interpret the results"
+
+prerequisites:
+  - "p2-t1-m1-l4"
+
+technologyTags:
+  - "mtr-android"
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "wifi"
+  - "wireless"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-l5-wifi-validation-checklist.pdf"
+    label: "MTR Wi-Fi Validation Checklist"
+    sizeKb: 40
+
+relatedLessons:
+  - "p2-t1-m2-l4"
+
+metaDescription: "Wi-Fi design and validation for MTR deployments — 5 GHz band requirements, channel width, roaming behavior, SSID design, client density, WMM QoS over Wi-Fi, and Wi-Fi validation methodology for Teams Rooms."
+
+keywords:
+  - "Teams Rooms Wi-Fi requirements"
+  - "MTR wireless network design"
+  - "Teams Rooms Wi-Fi validation"
+  - "MTR Android Wi-Fi"
+  - "wireless Teams Rooms setup"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Wired Ethernet is always the preferred network connection for MTR devices. A wired connection provides consistent bandwidth, deterministic latency, and no radio-frequency interference — all desirable properties for real-time meeting media. However, some deployment contexts require Wi-Fi: Android bar devices with no native Ethernet port, rooms where cable infrastructure cannot be run, or temporary deployments. When Wi-Fi is required, the wireless network must meet a higher standard of design than typical office Wi-Fi to support real-time meeting traffic reliably.
+
+---
+
+## When Wi-Fi is Unavoidable
+
+**Android all-in-one bars:** Many Android MTR bar devices (Yealink MeetingBar A20, A30, Logitech Rally Bar Mini, Poly Studio X30/X50) have no built-in Ethernet port. Wired connectivity requires a USB-C to Ethernet adapter. Using the adapter is strongly recommended — if the client's room design prevents running Ethernet to the bar's location, Wi-Fi becomes the fallback.
+
+**Legacy buildings:** Some historic or protected buildings cannot have new cable pathways installed. Wi-Fi is the only option in these environments.
+
+**Temporary and flexible spaces:** Touchdown rooms, flexible workspace areas, and temporary deployments where running permanent cabling is not practical.
+
+In all these cases, validate the Wi-Fi quality before finalizing the deployment design. If the Wi-Fi cannot meet the minimum requirements, advocate for a wired solution even if it requires creative cable routing.
+
+---
+
+## Minimum Wi-Fi Requirements
+
+**Band: 5 GHz (mandatory for MTR):** 2.4 GHz Wi-Fi is not suitable for MTR deployments. The 2.4 GHz band is congested in most office environments, has higher interference from microwaves and Bluetooth devices, and does not provide sufficient throughput consistency for video conferencing. All MTR devices must connect on the 5 GHz band (or 6 GHz if available).
+
+**Signal strength:** Minimum -67 dBm RSSI at the device location during meetings. -65 dBm or better is the target for comfortable headroom. Below -70 dBm produces retransmissions and quality degradation.
+
+**Signal-to-noise ratio:** Minimum 25 dB SNR. Higher is better. Low SNR indicates high interference or a weak signal.
+
+**Channel utilization:** Channels used by MTR devices should have less than 50% utilization during peak hours. High channel utilization from other clients sharing the channel compresses the available airtime for the MTR device.
+
+**Roaming behavior:** MTR devices must stay connected without dropping calls during roaming events (moving between access points). Configure 802.11r (Fast BSS Transition) or equivalent fast roaming on the SSID to minimize roaming latency. Avoid aggressive client steering that forces disconnection — MTR devices are stationary, so excessive roaming triggers indicate AP placement or coverage issues.
+
+---
+
+## SSID and Authentication Configuration
+
+**Dedicated SSID for MTR (recommended):** A dedicated SSID for MTR devices enables per-SSID QoS policies, simplifies VLAN assignment, and allows separate authentication configuration optimized for device accounts rather than user accounts.
+
+If a dedicated SSID is not practical, ensure the shared SSID is on the 5 GHz band, uses WPA2-Enterprise or WPA3 authentication, and is in the MTR VLAN (or the VLAN assignment is handled by RADIUS attributes).
+
+**Authentication:** WPA2-Enterprise (802.1X) is the recommended authentication for MTR Wi-Fi. Pre-shared key (PSK) is acceptable for smaller deployments or where 802.1X infrastructure is not available. Avoid open or captive portal networks — MTR devices cannot complete captive portal authentication.
+
+**Certificate-based authentication:** If using 802.1X with certificate-based authentication, ensure the MTR device's certificate is enrolled and the RADIUS server trusts the device's certificate chain. Android MTR devices require OEM-specific 802.1X configuration.
+
+---
+
+## WMM: Wi-Fi QoS
+
+Wi-Fi Multimedia (WMM) is the 802.11e extension that maps DSCP values to Wi-Fi access categories — extending QoS from the wired network through the wireless hop.
+
+WMM defines four access categories that map to DSCP values:
+
+| WMM Access Category | DSCP | Traffic |
+|--------------------|------|---------|
+| AC_VO (Voice) | 46–63 | Teams audio |
+| AC_VI (Video) | 34–45 | Teams video |
+| AC_BE (Best Effort) | 0–31 | General traffic |
+| AC_BK (Background) | Lowest priority | Background downloads |
+
+**Requirement:** WMM must be enabled on the SSID. It is typically enabled by default on modern access points but should be explicitly verified. Without WMM, all Wi-Fi traffic is treated as best effort regardless of DSCP values — QoS provides no benefit over wireless.
+
+**DSCP-to-WMM mapping:** The AP maps incoming DSCP markings from the wired side (or from the endpoint) to WMM categories. Teams audio traffic (DSCP 46) should map to AC_VO, Teams video (DSCP 34) to AC_VI. Verify the AP's DSCP-to-WMM mapping table is correctly configured.
+
+---
+
+## Validation Procedure
+
+**Pre-deployment Wi-Fi assessment:**
+
+1. **Site survey:** Use a Wi-Fi analyzer tool (Ekahau, NetSpot, or equivalent) to measure signal strength, SNR, and channel utilization at each room location. Record RSSI and SNR at the MTR device's expected mounting location.
+
+2. **Channel planning:** Verify non-overlapping channel assignment on 5 GHz (36, 40, 44, 48... for UNII-1; 149, 153, 157, 161 for UNII-3). Overlapping channels on adjacent APs cause co-channel interference that degrades throughput.
+
+3. **Roaming test:** Connect a test device to the SSID, walk through the room coverage zone, and confirm no disconnections occur. For stationary MTR devices, this test confirms adequate coverage without dead zones.
+
+4. **Throughput test:** From the MTR device location, run a speed test to an internal server (or internet). Minimum 10 Mbps symmetrical per room at peak load is acceptable; 20+ Mbps is comfortable headroom for HD video.
+
+5. **Latency and jitter test:** Use a network test tool (Network Monitor, iPerf, or the Microsoft 365 Network Connectivity Test) to measure latency and jitter to internet destinations. Teams audio requires less than 150ms one-way latency and less than 30ms jitter.
+
+<DownloadButton
+  file="p2-t1-m1-l5-wifi-validation-checklist.pdf"
+  label="MTR Wi-Fi Validation Checklist"
+  sizeKb={40}
+  description="Pre-deployment Wi-Fi validation checklist for MTR — RSSI and SNR thresholds, channel utilization limits, WMM verification, roaming behavior tests, throughput and latency benchmarks, and pass/fail criteria for wireless MTR readiness."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m1-l5-kc">
+  <Question>
+    An MTR Android bar device is connected to the 2.4 GHz band because the
+    room is at the edge of 5 GHz coverage. Meeting audio is choppy and video
+    frequently pauses. What is the correct recommendation?
+  </Question>
+  <Answer>Increase the Wi-Fi transmit power on the MTR device to reach the 5 GHz band</Answer>
+  <Answer>Configure WMM on the 2.4 GHz SSID to prioritize Teams traffic</Answer>
+  <Answer correct>Resolve the 5 GHz coverage gap — add an access point to extend 5 GHz coverage to the room, or run a USB-C to Ethernet adapter to provide wired connectivity. The 2.4 GHz band is not suitable for MTR and WMM cannot compensate for band-inherent congestion and interference</Answer>
+  <Answer>Reduce video resolution in the Teams app settings to compensate for the 2.4 GHz bandwidth limitation</Answer>
+  <Explanation>
+    The 2.4 GHz band is fundamentally unsuitable for MTR deployments due to
+    congestion, lower throughput, and high interference susceptibility. WMM
+    can prioritize traffic within the available airtime, but it cannot resolve
+    the underlying band limitations. The correct solution is either extending
+    5 GHz coverage to the room (additional AP) or providing wired connectivity
+    via a USB-C to Ethernet adapter. Reducing video resolution is a workaround
+    that degrades the meeting experience rather than fixing the root cause.
+  </Explanation>
+
+  <Question>
+    A Wi-Fi site survey shows -72 dBm RSSI at the MTR device location in a
+    conference room. The minimum acceptable RSSI for MTR is -67 dBm. What
+    impact will this have on meetings?
+  </Question>
+  <Answer>No impact — RSSI affects range but not meeting quality once connected</Answer>
+  <Answer correct>The weak signal (-72 dBm is below the -67 dBm minimum) will cause increased retransmissions, variable throughput, and potential packet loss during meetings — symptoms include choppy audio, frozen video, and intermittent connection drops</Answer>
+  <Answer>The device will not be able to connect to the network at -72 dBm</Answer>
+  <Answer>RSSI only matters for 2.4 GHz — 5 GHz connections work reliably at any signal level</Answer>
+  <Explanation>
+    -72 dBm is below the recommended minimum (-67 dBm) for MTR Wi-Fi. At this
+    signal level, the Wi-Fi adapter must use lower modulation schemes (slower
+    data rates), experiences more retransmissions when packets are corrupted by
+    noise, and has less margin against interference. The practical effect is
+    variable throughput, higher latency from retransmissions, and occasional
+    packet loss — all of which directly degrade real-time audio and video
+    quality. The fix is either an additional AP to improve coverage or a wired
+    connection.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Prefer wired:** USB-C to Ethernet adapter for bar devices; always advocate for wired over Wi-Fi for MTR.
+- **Apply minimum Wi-Fi requirements:** 5 GHz only, -67 dBm RSSI minimum, 25 dB SNR minimum, <50% channel utilization.
+- **Configure correctly:** Dedicated SSID, WPA2/3-Enterprise, WMM enabled with correct DSCP-to-AC mapping.
+- **Validate before deployment:** Site survey (RSSI, SNR, channel utilization), throughput test (10+ Mbps symmetrical), latency/jitter test (<150ms, <30ms).
+
+---
+
+## Module Complete
+
+You have completed Module 1.1: MTR Network Architecture and Design. You now understand how to design the network foundation for an MTR deployment — from VLAN structure through firewall rules, QoS implementation, and Wi-Fi validation.
+
+Module 1.2 addresses bandwidth planning and the call quality analytics tools that validate and monitor the network after deployment.
+
+[Continue to Module 1.2: Bandwidth, Media Flow, and Call Quality →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/)

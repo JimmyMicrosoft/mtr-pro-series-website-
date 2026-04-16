@@ -1,0 +1,319 @@
+---
+id: "p3-t2-m3-l1"
+slug: "authentication-failure-deep-dive"
+title: "Authentication Failure Deep-Dive for MTR"
+shortTitle: "Authentication Failure Deep-Dive"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 3
+moduleSlug: "network-auth-diagnostics"
+moduleTitle: "Network and Authentication Diagnostics"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Trace the OAuth 2.0 device code flow for MTR and identify what can fail at each step"
+  - "Diagnose NTP desynchronization as the cause of token validation failure using w32tm"
+  - "Identify a Conditional Access policy blocking an MTR room account sign-in using Entra ID sign-in logs"
+  - "Verify certificate enrollment status on an MTR device when certificate-based authentication is in use"
+  - "Interpret AADSTS error codes from Entra ID sign-in logs to direct the remediation action"
+
+prerequisites:
+  - "p3-t2-m2-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "authentication"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m3-l2"
+
+metaDescription: "Authentication failure deep-dive for Microsoft Teams Rooms — OAuth 2.0 device code flow, token refresh failure, NTP desync diagnosis, Conditional Access blocking, certificate-based authentication, token cache corruption, and Entra ID sign-in log analysis."
+
+keywords:
+  - "MTR authentication failure"
+  - "Teams Rooms sign-in failure"
+  - "MTR Conditional Access"
+  - "Teams Rooms NTP sync"
+  - "AADSTS error codes MTR"
+  - "Teams Rooms Entra ID"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Authentication failures in Teams Rooms produce one of the most disruptive symptoms an end user can experience: the room shows "Not signed in" on the console, all meeting join buttons are unavailable, and the device is functionally unusable for the duration of the failure. The root causes range from a 5-minute NTP clock drift to a Conditional Access policy that silently began applying to the room account after a policy change, to a refresh token that expired after 90 days of continuous use. Each cause has a specific diagnostic path and a specific remediation — and they are not interchangeable. Treating an NTP-caused token failure with a credential cache clear wastes time; applying a CA policy exclusion when the actual cause is a password expiry does not fix anything. This lesson provides the technical depth to diagnose each authentication failure type correctly.
+
+---
+
+## OAuth 2.0 Device Code Flow for MTR
+
+The Teams Rooms app on Windows uses the OAuth 2.0 device code flow to authenticate the resource account against Entra ID (Azure Active Directory). Understanding each step of this flow identifies exactly where a failure can occur.
+
+**The flow, step by step:**
+
+1. **Device code request:** The MTR app sends a request to the Entra ID device authorization endpoint (`https://login.microsoftonline.com/{tenant}/oauth2/v2.0/devicecode`) requesting a device code and a user code. This step requires that the device can reach the Entra ID login endpoint over HTTPS (TCP 443).
+
+2. **User authentication:** During initial setup, an administrator enters the user code at `microsoft.com/devicelogin` and authenticates with the resource account credentials. This step happens once during room provisioning.
+
+3. **Token issuance:** After successful authentication, Entra ID issues an access token (valid for 1 hour) and a refresh token (valid for 90 days by default, configured by tenant Conditional Access or token lifetime policy). The tokens are stored in the Teams Rooms app's local credential store.
+
+4. **Token refresh (recurring):** The MTR app uses the refresh token to silently obtain a new access token every hour. This happens automatically without administrator action. Each successful refresh extends the effective session.
+
+5. **Refresh token expiry:** After 90 days (or the configured lifetime), the refresh token itself expires. The app cannot silently refresh and requires re-authentication — the room shows "Not signed in."
+
+**What can fail at each step:**
+
+| Step | Failure Mode | Symptom |
+|---|---|---|
+| Device code request | Network cannot reach `login.microsoftonline.com` | Sign-in cannot initiate; error in Teams app log |
+| Token issuance | Conditional Access blocks the authentication | AADSTS error code in sign-in log; sign-in fails |
+| Token storage | App credential store corrupted | Sign-in succeeds but app shows signed out after restart |
+| Token refresh (hourly) | NTP desync — clock offset >5 minutes | Token validation fails; app signs out mid-operation |
+| Token refresh (hourly) | Entra ID Conditional Access policy changed after initial sign-in | Refresh fails with CA block; app signs out |
+| Refresh token expiry | 90-day default or policy-configured expiry reached | App signs out; re-authentication required |
+
+---
+
+## Token Refresh Failure
+
+**Access token expiry and normal refresh:**
+
+Access tokens issued by Entra ID for Teams Rooms expire after 1 hour. The Teams Rooms app handles this silently — it uses the refresh token to obtain a new access token before the current one expires. Users and administrators do not need to take action for this normal cycle.
+
+**Refresh token expiry:**
+
+The refresh token itself has a configurable lifetime. The Entra ID default is 90 days for non-persistent sessions. Organizations that have configured a **Token Lifetime Policy** or **Continuous Access Evaluation** may have different expiry periods.
+
+When the refresh token expires, the Teams Rooms app cannot silently refresh and displays "Not signed in." Remediation: an administrator must re-authenticate the resource account (enter credentials via the Teams Rooms Settings console or via the device login flow).
+
+**NTP desynchronization as a token validation failure cause:**
+
+OAuth 2.0 token validation includes a check of the token's `nbf` (not before) and `exp` (expiration) claims against the current system clock. The Entra ID token validation system allows a tolerance of ±5 minutes for clock skew. If the MTR device's system clock has drifted more than 5 minutes from UTC (due to NTP misconfiguration or NTP server unreachability), token validation fails even for a freshly issued, valid token — and the app signs out or fails to refresh.
+
+Symptoms of NTP-caused auth failure:
+- Teams app signs out at irregular intervals (not correlated with the 90-day refresh token expiry)
+- Teams app log (`*_Lync.txt`) shows token validation error with a timestamp that differs from the expected token expiry
+- The failure resolves after a device restart (which briefly re-syncs the clock) but recurs
+
+**Diagnosing NTP status:**
+
+```cmd
+w32tm /query /status
+```
+
+Output fields to review:
+- **Source:** The current NTP server the device is syncing to. If this shows `Local CMOS Clock` or a private IP that is not an authoritative NTP server, the NTP configuration is incorrect.
+- **Last Successful Sync Time:** If this is hours or days in the past, the NTP sync has failed.
+- **Phase Offset:** The clock drift from the NTP source. If this exceeds ±300 seconds (5 minutes), token validation will fail.
+
+```cmd
+# Force an immediate NTP sync and check the result
+w32tm /resync /force
+w32tm /query /status
+```
+
+If NTP sync fails after `/resync /force`, verify the NTP server is reachable from the device on UDP port 123:
+
+```powershell
+Test-NetConnection -ComputerName time.windows.com -Port 123
+```
+
+---
+
+## Conditional Access Blocking Room Sign-In
+
+Conditional Access (CA) policies in Entra ID are among the most common causes of Teams Rooms authentication failures in enterprise environments. CA policies are frequently updated for broader security purposes, and a policy change that is appropriate for user accounts can inadvertently affect room accounts that were not included in the policy exclusion list.
+
+**How to investigate CA blocking:**
+
+1. In the Entra ID admin center (or Microsoft Entra admin center), navigate to **Monitor → Sign-in logs**.
+2. Filter by **User** = the resource account UPN (e.g., `conf-room-101@contoso.com`).
+3. Filter by **Date** = the time period when the authentication failure occurred.
+4. Look for sign-in events with a **Status** of "Failure."
+5. Click the failed sign-in event → **Conditional Access** tab — this shows which CA policies were evaluated and whether any resulted in a "Failure" or "Not Applied" result that blocked the sign-in.
+
+**Common CA policies that affect room accounts:**
+
+| Policy Type | Why It Blocks Rooms | Remediation |
+|---|---|---|
+| MFA required for all users | Room accounts cannot complete an MFA challenge | Exclude room account group from the MFA CA policy, or use a dedicated CA policy that allows room accounts to sign in without MFA |
+| Sign-in risk policy | Room accounts signing in from an MTR device may be flagged as risky (new device, unusual location) | Exclude room accounts from sign-in risk policies; ensure room accounts are in a dedicated Entra ID group excluded from risk-based CA |
+| Named location mismatch | CA policy requires sign-in from a named corporate network; the room is on a guest VLAN or a different IP range not in the named location | Add the room's subnet/IP range to the named location, or exclude room accounts from location-based CA |
+| Device compliance required | CA policy requires Intune-compliant device; MTR device is not enrolled in Intune or not compliant | Enroll MTR devices in Intune and configure a Teams Rooms-appropriate compliance policy, or exclude room accounts from device compliance CA |
+
+**Reading the AADSTS error code:**
+
+The Entra ID sign-in log failure details include an AADSTS error code. This code directly identifies the failure cause:
+
+| AADSTS Code | Meaning | Action |
+|---|---|---|
+| AADSTS50076 | MFA required by CA policy | Exclude room account from MFA CA policy |
+| AADSTS53003 | Blocked by Conditional Access — Named Location | Add room IP to named location or exclude account |
+| AADSTS70008 | Refresh token expired | Re-authenticate resource account |
+| AADSTS90072 | Account does not exist in the tenant | Verify resource account is in the correct tenant |
+| AADSTS700054 | Response type not enabled | Check app registration permissions (rare for standard MTR) |
+| AADSTS50173 | Password has expired | Reset the resource account password; configure password never-expires |
+
+---
+
+## Certificate-Based Authentication Issues
+
+Organizations that have deployed certificate-based authentication (CBA) for Microsoft 365 require that client devices present a valid digital certificate when authenticating. MTR devices enrolled in Intune receive a device certificate through the SCEP or PKCS certificate profile configured in the Intune enrollment.
+
+**Verifying certificate enrollment status:**
+
+1. On the MTR device (in admin mode), open the Certificate Manager for the local machine:
+
+```cmd
+certlm.msc
+```
+
+2. Navigate to **Personal → Certificates**. A certificate issued by the organization's Certificate Authority (CA) for the device should be listed here with:
+   - **Issued To:** The device's Intune device name or the resource account UPN (depending on the CBA configuration)
+   - **Issued By:** The organization's internal CA or a trusted public CA
+   - **Expiration date:** Not expired
+
+3. If no certificate is present, the Intune SCEP/PKCS profile has not delivered a certificate to this device. Verify in Intune: **Devices → [Device Name] → Device configuration** — the certificate profile should show "Succeeded." If it shows "Failed," check the SCEP/NDES service logs on the certificate infrastructure.
+
+**Verifying via PowerShell:**
+
+```powershell
+# List all certificates in the LocalMachine Personal store
+Get-ChildItem -Path Cert:\LocalMachine\My |
+    Select-Object Subject, Issuer, NotBefore, NotAfter, Thumbprint |
+    Format-Table -AutoSize
+```
+
+A certificate with a `NotAfter` in the past is expired — the device will fail CBA until a new certificate is issued by Intune.
+
+---
+
+## Azure AD Token Cache Corruption
+
+In rare cases, the Teams Rooms app's locally stored token cache becomes corrupted — the credential data is present but in an invalid state that causes token refresh to fail despite the account credentials being correct and no CA policy blocking.
+
+**Symptoms:**
+
+- Room shows "Not signed in"
+- Attempting to sign in via the Teams Rooms Settings console with the correct credentials fails immediately
+- Entra ID sign-in logs show no sign-in attempt from the device (the app is not reaching Entra ID — it is failing before making the authentication request)
+- Teams app log (`*_Lync.txt`) shows `MSAL token cache` errors or `TokenCacheCorrupted`
+
+**Remediation:**
+
+1. In the Teams Rooms Settings console (accessible via the admin PIN or admin credentials), navigate to **Accounts → Sign out** to explicitly sign out the resource account. This clears the cached token data for that account.
+2. After sign-out, sign back in with the resource account UPN and password.
+3. If the sign-out option is unavailable (the app is in a state where Settings is inaccessible), perform an App State Reset as described in the previous module's lesson.
+
+---
+
+## Sign-In Log Analysis in Entra ID
+
+Entra ID sign-in logs are the definitive source for diagnosing authentication failures — they record every authentication attempt, the result, and the specific reason for any failure.
+
+**Navigating to sign-in logs:**
+
+1. In the Entra ID admin center: **Monitor → Sign-in logs**.
+2. Filter by the resource account UPN.
+3. Set the date range to cover the failure period.
+
+**Key fields to examine:**
+
+| Field | What to Look For |
+|---|---|
+| Status | "Failure" indicates a blocked or failed sign-in |
+| Sign-in error code | The AADSTS code (see table above) |
+| Failure reason | Plain-language description of the failure cause |
+| Conditional Access | Tab showing which policies were evaluated and their result |
+| IP address | The IP from which the sign-in was attempted — should match the room's expected network address |
+| Application | Should show "Microsoft Teams Rooms" for room device sign-ins |
+| Client app | Should show "Mobile apps and desktop clients" for MTR |
+
+**Filtering for interactive vs. non-interactive sign-ins:**
+
+The Teams Rooms app uses both interactive (initial setup) and non-interactive (token refresh) sign-ins. Token refresh failures appear in the **Non-interactive sign-ins** tab (not the default interactive tab). If the default sign-in log shows no failures but the room is signed out, switch to the non-interactive sign-in tab and filter for the resource account UPN there.
+
+---
+
+<KnowledgeCheck id="p3-t2-m3-l1-kc">
+  <Question>
+    A Teams Rooms device has been operational for 94 days without issues.
+    This morning the room console shows "Not signed in." The support engineer
+    checks the Entra ID sign-in logs for the resource account and finds no
+    failed sign-in events in the interactive sign-in log for the past 24 hours.
+    The Teams app log shows the message: "Token refresh failed: refresh_token_expired."
+    What is the most likely cause and the correct remediation?
+  </Question>
+  <Answer>The resource account password has expired — reset the password in Entra ID and re-sign in on the device</Answer>
+  <Answer>The NTP clock on the device has drifted more than 5 minutes — run w32tm /resync /force on the device and the authentication will recover automatically</Answer>
+  <Answer correct>The refresh token has expired. The default Entra ID refresh token lifetime is 90 days; this device has been operational for 94 days, which exceeds the default lifetime. The app log message "refresh_token_expired" confirms this directly. No failed interactive sign-in will appear in the Entra ID logs because the failure is occurring during the silent non-interactive token refresh, which appears in the non-interactive sign-in log tab rather than the default interactive tab. The correct remediation is to re-authenticate the resource account: navigate to the Teams Rooms Settings console, go to Accounts, and sign in again with the resource account credentials. To prevent recurrence, the organization should configure a longer refresh token lifetime via an Entra ID Token Lifetime Policy, or consider enabling a Continuous Access Evaluation policy that re-evaluates sessions on demand rather than expiring them on a fixed schedule</Answer>
+  <Answer>A Conditional Access policy is blocking the token refresh — check the Conditional Access tab in the Entra ID sign-in log for the failed refresh attempt</Answer>
+  <Explanation>
+    The 94-day operational period exceeding the 90-day default refresh token
+    lifetime, combined with the explicit "refresh_token_expired" message in
+    the Teams app log, makes this a clear-cut case. NTP drift would produce
+    a token validation error, not a refresh_token_expired error. A CA policy
+    block would appear in the non-interactive sign-in log as a CA failure.
+    A password expiry would produce AADSTS50055 in the sign-in log. The absence
+    of entries in the interactive sign-in log is expected because silent token
+    refresh does not appear there — it appears in the non-interactive tab.
+    The engineer should also check the non-interactive sign-in log to confirm
+    the refresh_token_expired error code appears there (AADSTS70008) as
+    additional evidence before remediating.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **OAuth 2.0 device code flow:** Five steps, each with distinct failure modes; token refresh is the ongoing recurring step most likely to fail in production.
+- **NTP desync:** >5-minute clock offset causes token validation failure; diagnose with `w32tm /query /status`; fix with `w32tm /resync /force`; confirm NTP server reachability on UDP 123.
+- **Conditional Access:** Check the non-interactive sign-in log (not the default interactive tab) for refresh failures; the CA tab on the failed sign-in event shows which policy blocked the attempt; common culprits are MFA, risk-based, and named location policies.
+- **AADSTS error codes:** AADSTS50076 = MFA required; AADSTS70008 = refresh token expired; AADSTS53003 = named location block; AADSTS50173 = password expired.
+- **Certificate-based auth:** Verify device certificate presence in `certlm.msc` or PowerShell `Cert:\LocalMachine\My`; expired or absent certificate requires Intune re-enrollment or manual certificate issuance.
+- **Token cache corruption:** Sign out and re-sign in via Settings clears the cache; App State Reset for cases where Settings is inaccessible.
+- **Sign-in log analysis:** Interactive tab for initial sign-in failures; non-interactive tab for ongoing refresh failures; filter by resource account UPN and date range of the failure.
+
+---
+
+## What's Next
+
+[Network Quality Degradation Investigation →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/network-auth-diagnostics/lessons/network-quality-degradation/)

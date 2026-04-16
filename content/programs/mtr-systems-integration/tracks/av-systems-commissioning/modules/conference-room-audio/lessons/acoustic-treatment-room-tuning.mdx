@@ -1,0 +1,228 @@
+---
+id: "p2-t3-m1-l4"
+slug: "acoustic-treatment-room-tuning"
+title: "Acoustic Treatment and Room Tuning"
+shortTitle: "Acoustics and Tuning"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 1
+moduleSlug: "conference-room-audio"
+moduleTitle: "Conference Room Audio Systems"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Explain RT60 and its impact on speech intelligibility in conference rooms"
+  - "Specify acoustic treatment types appropriate for different room acoustic problems"
+  - "Perform basic room tuning adjustments in a DSP to improve measured audio performance"
+
+prerequisites:
+  - "p2-t3-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "audio"
+  - "acoustics"
+
+vendorTags:
+  - "biamp"
+  - "qsc"
+
+relatedLessons:
+  - "p2-t3-m1-l3"
+  - "p2-t3-m1-l5"
+
+metaDescription: "Conference room acoustic treatment and DSP tuning for MTR — RT60 reverberation targets, absorption vs. diffusion, HVAC noise control, DSP EQ and filter tuning, and common acoustic problems with remediation strategies."
+
+keywords:
+  - "conference room acoustic treatment"
+  - "RT60 conference room target"
+  - "MTR room acoustics"
+  - "Teams Rooms audio tuning"
+  - "DSP EQ conference room"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The room itself is part of the audio system. Hard surfaces, parallel walls, and high ceilings create acoustic conditions that defeat even the best microphone systems and DSP processing. Understanding acoustic principles — and knowing when and how to address them — enables practitioners to specify, tune, and commission conference rooms that perform well from day one rather than requiring repeated service visits to address audio complaints.
+
+---
+
+## Reverberation Time (RT60)
+
+RT60 is the time it takes for sound to decay by 60 dB after a sound source stops. It is the primary acoustic parameter for conference room design.
+
+**Target RT60 for conference rooms:**
+
+| Room Volume | Target RT60 |
+|-------------|------------|
+| < 100 m³ (small huddle, 4–6 person) | 0.3–0.5 seconds |
+| 100–300 m³ (standard conference, 8–14 person) | 0.4–0.6 seconds |
+| 300–750 m³ (large boardroom, 16–25 person) | 0.5–0.7 seconds |
+| > 750 m³ (training room, large boardroom) | 0.6–0.8 seconds |
+
+*A room with RT60 above 0.8s will feel reverberant and speech will be difficult to understand — particularly for remote participants receiving the microphone signal before noise reduction can fully clean it up.*
+
+**Why RT60 matters for AEC and DSP:**
+AEC systems have to distinguish between the direct path from speakers to microphones (what should be cancelled) and the reverberant tail (reflections from walls, ceiling, floor). High RT60 means longer, denser reverberant tails that are harder to cancel. A room with RT60 of 0.9s is significantly more difficult to achieve good AEC performance in than a room with RT60 of 0.5s — even with the same DSP and microphone system.
+
+---
+
+## Acoustic Treatment Types
+
+**Sound absorption:**
+Absorptive materials convert sound energy to heat, reducing reflections and RT60.
+
+| Material | Absorption Performance | Use Case |
+|----------|----------------------|----------|
+| Acoustic ceiling tiles | Low-mid frequency absorption | Baseline absorption; standard in most offices |
+| Acoustic wall panels (fabric-wrapped fiberglass/mineral wool) | Broadband absorption | Primary treatment for reverberant rooms |
+| Carpet and soft furnishings | High-frequency absorption | Floor-level treatment; conference table chairs provide useful absorption |
+| Acoustic baffles (suspended) | Broadband; reduces RT60 in high-ceiling rooms | Training rooms, large open spaces with no ceiling tile |
+
+*Thickness matters:* Thin (25mm) absorptive panels absorb high frequencies; thick (100mm) or low-density panels absorb low and mid frequencies. Most conference room problems involve mid-frequency speech intelligibility — 50–100mm fabric-wrapped panels are the most effective treatment.
+
+**Sound diffusion:**
+Diffusers scatter sound energy in multiple directions rather than absorbing it, breaking up flutter echoes and standing waves without removing acoustic energy.
+
+*Use in conference rooms:* Diffusion is less commonly needed in typical conference rooms. It is useful at the rear wall (behind participants at the far end of the table) to prevent a strong parallel reflection back toward the front of the room.
+
+**Bass traps:**
+Floor-to-ceiling broadband absorbers placed in room corners that specifically target low-frequency room modes (resonances). Room modes appear as boomy, uneven bass — in conference rooms, HVAC rumble or adjacent mechanical equipment can excite room modes, adding a resonant low-frequency component to the audio.
+
+---
+
+## Common Conference Room Acoustic Problems
+
+**Flutter echo:**
+A rapid series of echoes between two parallel reflective surfaces (opposite walls, or floor and ceiling). Symptom: a "ringing" or "slapping" quality to sounds in the room; clapping hands produces a short, sharp decay with audible flutter.
+
+*Treatment:* Apply absorptive panels to at least one of the two parallel surfaces. For wall-to-wall flutter, one treated wall surface reduces RT60 significantly.
+
+**HVAC noise:**
+HVAC systems contribute broadband noise (duct airflow, fan noise) and sometimes tonal hum (duct resonances). HVAC noise directly impacts the noise floor of microphone capture — even with DSP noise reduction, a high HVAC noise level degrades intelligibility and can interfere with automixer gating.
+
+*Target:* HVAC background noise level in a conference room should not exceed NC-35 (Noise Criterion 35 — approximately 42 dB(A) overall). NC-25 to NC-30 is better for critical listening environments.
+
+*Mitigation:*
+- Specify low-velocity duct design in the room (lower air velocity = less noise)
+- Install lined duct sections between the diffuser and main duct
+- Use ceiling diffusers rated for low noise rather than square registers
+- Add duct lining or acoustic duct silencer upstream of the room diffuser
+
+**Room modes (low-frequency resonances):**
+Parallel walls create standing waves at specific frequencies related to room dimensions. A room 6m wide resonates at 28 Hz and harmonics (57 Hz, 85 Hz…). If HVAC, footfall, or equipment noise excites these frequencies, the room will have boomy, uneven low-frequency response.
+
+*Treatment:* Bass traps in corners, or DSP high-pass filtering to reduce the transmitted low-frequency content.
+
+---
+
+## DSP Room Tuning
+
+After treating the room acoustically, DSP tuning adjusts the audio system to match the room's remaining acoustic characteristics.
+
+**Input EQ (microphone channel):**
+- Apply a high-pass filter on each microphone input: typically 80–120 Hz at 12–18 dB/octave. This removes low-frequency content (HVAC rumble, chair movement, table vibrations) that does not contribute to speech intelligibility and increases the noise floor.
+- If the room has a resonance at a specific frequency (audible as a consistent tonal ring), add a narrow parametric cut at that frequency (Q = 3–8, cut 6–10 dB)
+
+**Output EQ (speaker channel):**
+- Apply a high-pass filter to remove frequencies below the speaker's working range (prevents over-excursion of small ceiling speakers)
+- Apply gentle room correction EQ to compensate for room frequency response variations measured with a measurement microphone (see Lesson 5)
+
+**Noise gate / automixer threshold:**
+- Set the noise gate threshold 6–10 dB above the measured background noise floor
+- Too high: gate closes during quiet speech; participant sounds choppy at the far end
+- Too low: background noise (HVAC, keyboard) opens the gate constantly; noise floor increases
+
+**AEC tail length:**
+- Set the AEC tail length (echo delay) to match the room's RT60. A room with 0.6s RT60 needs an AEC tail of at least 0.8s. Many DSP systems auto-calibrate this; for manual setting, the tail length should exceed the measured RT60 by 25–30%.
+
+**Level alignment:**
+- Set microphone send level so that speech at conversational volume reaches the codec at the target level (typically −18 to −12 dBFS peak)
+- Set speaker output level for 65–72 dB SPL at the seating area
+
+---
+
+## Practical Tuning Workflow
+
+1. Measure background noise level (HVAC only, no occupants) — set gate threshold accordingly
+2. Play pink noise through speakers; measure frequency response at seating positions with measurement microphone; apply speaker output EQ correction
+3. Conduct a test call; have far end describe audio quality (echo, noise, level, intelligibility)
+4. Adjust AEC tail length if residual echo reported
+5. Adjust NR aggressiveness if background noise reported at far end
+6. Measure STI at representative seating positions (see Lesson 5)
+
+---
+
+<KnowledgeCheck id="p2-t3-m1-l4-kc">
+  <Question>
+    After commissioning a 12-person conference room, the far end consistently
+    reports that audio sounds "echoey" or "hollow," but not a distinct repetitive
+    echo. The room has hard plaster walls, a concrete ceiling with no acoustic
+    tile, and a glass exterior wall. AEC was confirmed to be functioning. What
+    is the most likely cause and appropriate remediation?
+  </Question>
+  <Answer>AEC tail length is too short — increase it to 2 seconds</Answer>
+  <Answer correct>The "hollow" or diffuse echo quality (not a distinct repetitive echo) indicates high RT60 from the hard, reflective room surfaces (plaster, concrete, glass). AEC cannot cancel reverberation — it can only cancel the direct speaker-to-microphone path. The reverberant tail from the room is being captured by the microphones and transmitted to the far end. The appropriate remediation is acoustic treatment: install absorptive wall panels on the plaster walls (25–50% surface coverage) and acoustic baffles or ceiling panels to address the concrete ceiling, aiming to bring RT60 into the 0.4–0.6s range for this room volume</Answer>
+  <Answer>The microphone gain is too high — reduce input gain by 10 dB</Answer>
+  <Answer>Increase noise reduction aggressiveness in the DSP</Answer>
+  <Explanation>
+    "Echoey" or "hollow" sound reported by the far end — distinct from a sharp
+    repeated echo — is the characteristic symptom of high RT60. The room's hard
+    surfaces (plaster, concrete, glass) provide almost no absorption, resulting
+    in long reverberation. When participants speak, the sound bounces around the
+    room for 0.8–1.5 seconds before decaying — the microphones capture this
+    reverberant tail and transmit it to the far end. AEC only addresses the
+    specific echo path from speakers back to microphones; it cannot remove
+    room reverberation from the microphone signal. Increasing noise reduction
+    would make the audio sound processed and metallic. The only effective fix
+    is treating the room acoustically to reduce RT60 to the target range.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **RT60 target:** 0.4–0.6s for standard conference rooms; above 0.8s causes intelligibility problems that DSP cannot fully compensate.
+- **Treatment types:** Absorption (reduces RT60), diffusion (breaks up flutter), bass traps (low-frequency modes).
+- **Common problems:** Flutter echo (parallel walls), HVAC noise (target NC-35 or below), room modes.
+- **DSP tuning:** HPF on mic inputs (80–120 Hz), output EQ correction, gate threshold 6–10 dB above noise floor, AEC tail ≥ RT60 × 1.25.
+
+---
+
+## What's Next
+
+[Audio Measurement and Acceptance Testing →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/conference-room-audio/lessons/audio-measurement-acceptance-testing/)

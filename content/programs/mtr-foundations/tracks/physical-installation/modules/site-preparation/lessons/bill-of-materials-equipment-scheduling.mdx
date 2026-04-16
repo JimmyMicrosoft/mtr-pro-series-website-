@@ -1,0 +1,230 @@
+---
+id: "p1-t2-m1-l3"
+slug: "bill-of-materials-equipment-scheduling"
+title: "Bill of Materials and Equipment Scheduling"
+shortTitle: "Bill of Materials"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 1
+moduleSlug: "site-preparation"
+moduleTitle: "Site Preparation & Pre-Installation Planning"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Produce a complete, accurate Bill of Materials for a defined MTR room scenario, including all hardware, cable, and consumable line items with manufacturer part numbers"
+  - "Develop an equipment delivery and staging schedule that accounts for lead times, storage requirements, and installation sequence dependencies"
+  - "Identify common BOM errors that cause installation delays and describe processes to prevent them"
+
+prerequisites:
+  - "p1-t2-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "bom"
+  - "procurement"
+  - "project-management"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m1-l3-bom-template.xlsx"
+    label: "BOM Template"
+    sizeKb: 65
+
+relatedLessons:
+  - "p1-t2-m1-l2"
+  - "p1-t2-m1-l4"
+
+metaDescription: "Build a complete MTR Bill of Materials with certified hardware, correct cable quantities, and all consumables — plus an equipment delivery and staging schedule that prevents installation-day shortages."
+
+keywords:
+  - "MTR bill of materials"
+  - "AV BOM template"
+  - "Teams Rooms hardware procurement"
+  - "AV equipment lead times"
+  - "MTR certified devices list"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A Bill of Materials is the purchasing foundation for an MTR installation. An incomplete or inaccurate BOM results in the most preventable class of installation problem: the right hardware is not on-site when installation begins. Missing a mount, running short on cable, forgetting firestopping materials — these are BOM failures that stop installation, generate emergency procurement costs, and delay the client's go-live date. A complete, accurate BOM takes more time to produce upfront but eliminates a category of problems entirely.
+
+This lesson covers BOM structure, the certified hardware requirement, cable and consumable quantification, and the lead time and staging considerations that separate a procurement plan from a wish list.
+
+---
+
+## BOM Structure
+
+A professional AV BOM is a structured document with one line item per distinct product or material. Each line requires:
+
+- **Item number** — sequential, unique within the BOM
+- **Manufacturer name** — the brand of the product
+- **Model number** — as listed by the manufacturer
+- **Manufacturer part number (MPN)** — the exact ordering identifier; model number and MPN are not always the same
+- **Description** — a plain-language description of what the item is and where it is used in the system
+- **Quantity** — for hardware, the count; for cable, the measured length plus overage
+- **Unit cost** and **extended cost** (quantity × unit cost)
+- **Lead time** — the expected procurement time from order to delivery
+- **Notes** — configuration details, finish specifications, substitution restrictions, or anything the purchasing team needs to know
+
+The BOM is a living document. Version it. Include a revision history table showing what changed, when, and why. A BOM without version control creates confusion when the BOM you are looking at during installation is not the same as the one that was ordered from.
+
+---
+
+## The Certified Hardware Requirement
+
+Every hardware item in an MTR BOM that participates in the Teams Rooms system must come from Microsoft's certified device list. This is not a recommendation — it is a functional requirement. Uncertified displays, cameras, compute units, and audio devices may partially function but will not receive Microsoft's hardware certification validation, will not appear with full health status in Teams Admin Center, and may cause application instability.
+
+The certified devices list is maintained at the Microsoft Teams Rooms devices portal (aka.ms/MTRDevices). Before finalizing any hardware selection, verify that the specified model appears on the current list. Hardware models are added and removed as they pass or fail recertification — a device certified six months ago may have had its certification status updated since then.
+
+When a specified device becomes unavailable — discontinued, backordered, or end-of-life — the substitution must also be certified. Include explicit substitution guidance in the BOM notes for every line item where supply risk exists. "No substitutions without client approval" is a reasonable note for key items; for commodity items, an approved substitution list saves time if the primary choice is unavailable.
+
+---
+
+## Cable and Consumables Quantification
+
+Cable quantities are calculated from the cable schedule derived during the site survey. For each cable run:
+
+1. Measure the pathway distance from the site survey
+2. Add a routing allowance (typically 10–15%) for bends, drops, and routing that is not straight-line
+3. Add a termination allowance — each terminated end needs slack for re-termination if the first attempt fails (18–24 inches per end)
+4. Round up to the nearest standard spool or box size
+
+Total the quantity for each cable type and add a project-level overage of 10% to cover field cuts, damaged cable discovered during pull, and unforeseen routing changes. A BOM that specifies cable to the exact calculated length will run short in the field. Always over-specify cable.
+
+Consumables are the most commonly missed BOM category. A complete consumables list includes: wall plates and keystone jacks, cable labels (specify quantity and material type), cable ties and hook-and-loop straps, patch panel blanking plugs, rack blanking panels (1U for every unused rack space), firestopping materials (specify the product and quantity for each fire-rated penetration identified during the survey), display mounting hardware (confirm the VESA pattern and specified mount are compatible), fasteners for each mounting application (wood screws, concrete anchors, toggle bolts), and wire management items (cable raceways, grommets, J-hooks for new pathway sections).
+
+---
+
+## Lead Time Management
+
+High-demand MTR hardware items regularly carry 8–16 week lead times. This is not unusual for large commercial displays, custom room kits, specialty ceiling microphone arrays, and content cameras. The integration of supply chain variability with installation scheduling is one of the most practically important skills in commercial AV project management.
+
+At BOM creation, research the current lead time for each line item and record it in the lead time column. Any item with a lead time greater than the project's procurement window — the time between BOM approval and scheduled installation — is a critical path item. Critical path items must be ordered immediately upon project award, not when the installation date approaches.
+
+For critical path items, identify an approved substitute on the same BOM line. If the primary item arrives in time, great. If it does not, the substitute is already documented and approved, and procurement can pivot without losing time to additional approval cycles.
+
+<Callout type="warning">
+  The most common schedule-killing BOM error: specifying a large commercial display
+  (85-inch or larger) without noting its 10–12 week lead time, ordering it three weeks
+  before installation, and discovering on installation day that it has not arrived. Large
+  displays are often the longest-lead item in an MTR system. Order them first.
+</Callout>
+
+---
+
+## Equipment Staging
+
+For multi-room deployments, equipment typically arrives over a period of weeks and must be organized, verified, and pre-configured before installation day. Staging is the process of assembling, verifying, and partially configuring equipment before it leaves the integrator's facility or arrives on-site.
+
+Staging activities for MTR systems include: receiving and verifying each item against the BOM (model, MPN, quantity), inspecting for shipping damage, recording serial numbers in the asset register, power-testing compute units (confirm they boot to OOBE or to Windows before shipping to site), pre-labeling cables from the cable schedule, and in some cases pre-configuring compute units with the Windows OS image and Teams Rooms application before arrival on-site.
+
+An equipment staging log documents what was received, inspected, and verified — and by whom, and when. This log is part of the project record and is the basis for warranty claims if equipment fails during installation.
+
+---
+
+<KnowledgeCheck id="p1-t2-m1-l3-kc">
+  <Question>
+    A BOM for a 10-room MTR deployment specifies an 86-inch display that has just been
+    added to Microsoft's certified device list. The scheduled installation is 5 weeks out.
+    The display's current lead time is 11 weeks. What is the correct action?
+  </Question>
+  <Answer>Proceed with the order — 11 weeks is only an estimate and the display will likely arrive sooner</Answer>
+  <Answer>Delay the installation until the display can be confirmed for delivery</Answer>
+  <Answer correct>Order the display immediately and identify an approved certified substitute on the BOM in case the primary cannot be delivered in time for the scheduled installation</Answer>
+  <Answer>Replace the 86-inch display with a smaller model that has a shorter lead time without consulting the client</Answer>
+  <Explanation>
+    An 11-week lead time against a 5-week window means the display cannot arrive in time
+    if ordered now. The correct response is to order immediately (to minimize the delay)
+    and to document an approved substitute on the BOM so procurement can pivot if the
+    primary item still cannot make the installation date. The client should be informed
+    of the timeline risk so they can make an informed decision about whether to delay
+    installation or accept a temporary substitute.
+  </Explanation>
+
+  <Question>
+    When calculating cable quantity for a BOM, which approach correctly accounts for
+    field realities?
+  </Question>
+  <Answer>Measure the straight-line distance between endpoints and order exactly that length</Answer>
+  <Answer>Add 50% to every cable run to ensure there is always enough</Answer>
+  <Answer correct>Measure pathway distance, add routing allowance (10–15%), add termination slack (18–24 inches per end), then add a 10% project-level overage across all cable of each type</Answer>
+  <Answer>Use the same cable quantity for all rooms regardless of room dimensions</Answer>
+  <Explanation>
+    Straight-line distance underestimates actual cable length needed for routing around
+    obstacles, up walls, and through conduit bends. Termination slack allows re-termination
+    if the first attempt fails. Project-level overage covers unforeseen routing changes,
+    damaged cable discovered during pull, and field cuts. Under-specifying cable guarantees
+    a shortage; the small cost of cable overage is far less than an emergency cable order
+    that halts installation.
+  </Explanation>
+
+  <Question>
+    Which of the following is a consumable item that is commonly missed in MTR BOMs?
+  </Question>
+  <Answer>The compute unit (e.g., Lenovo ThinkSmart Core)</Answer>
+  <Answer>The touch console (e.g., Logitech Tap)</Answer>
+  <Answer correct>Firestopping materials for fire-rated wall penetrations identified during the site survey</Answer>
+  <Answer>The Teams Rooms Pro license</Answer>
+  <Explanation>
+    Firestopping is a code-required consumable that is routinely missed in AV BOMs because
+    it is not an AV device — it is a building materials item. However, the AV integrator
+    creating the cable penetrations is responsible for completing the firestopping. Missing
+    firestop materials from the BOM means the installation team arrives without them,
+    creating a code compliance problem and a delay while the materials are sourced.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Build a complete BOM:** All hardware (with MPNs), cable (with calculated quantities and overage), and consumables including firestopping, labels, and mounting hardware.
+- **Enforce the certified hardware requirement:** Every device in the system must be on the Microsoft certified list; substitutions must also be certified.
+- **Manage lead times:** Record lead time for every item; identify critical path items; order long-lead items immediately; document approved substitutes.
+- **Plan staging:** Receive, verify, inspect, and log equipment before installation day so problems are discovered before the truck leaves the warehouse.
+
+---
+
+## What's Next
+
+Before the physical installation begins, one more planning domain needs to be addressed: the safety regulations and code requirements that apply to commercial AV installation work.
+
+[Safety and Compliance Requirements for AV Installation →](/programs/mtr-foundations/tracks/physical-installation/modules/site-preparation/lessons/safety-compliance-requirements/)

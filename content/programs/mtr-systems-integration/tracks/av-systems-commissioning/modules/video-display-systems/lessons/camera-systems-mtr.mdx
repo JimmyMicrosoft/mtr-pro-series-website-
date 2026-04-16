@@ -1,0 +1,251 @@
+---
+id: "p2-t3-m2-l1"
+slug: "camera-systems-mtr"
+title: "Camera Systems for MTR"
+shortTitle: "Camera Systems"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 2
+moduleSlug: "video-display-systems"
+moduleTitle: "Video and Display Systems"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Select the appropriate camera type for a given room size and meeting style"
+  - "Calculate the optimal camera placement position for a conference table using field of view and recommended distance"
+  - "Identify the MTR-specific AI camera features (IntelliFrame, Speaker Recognition) and their room requirements"
+
+prerequisites:
+  - "p2-t3-m1-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "video"
+  - "cameras"
+
+vendorTags:
+  - "logitech"
+  - "poly"
+  - "jabra"
+  - "huddly"
+  - "aver"
+
+relatedLessons:
+  - "p2-t3-m2-l2"
+  - "p2-t3-m2-l4"
+
+metaDescription: "Camera systems for Teams Rooms MTR — PTZ cameras, fixed wide-angle cameras, AI-framing cameras, IntelliFrame, Intelligent Speaker recognition, camera placement calculation, field of view, and multi-camera configurations."
+
+keywords:
+  - "Teams Rooms camera selection"
+  - "MTR camera placement"
+  - "IntelliFrame camera Teams Rooms"
+  - "PTZ camera conference room"
+  - "MTR video camera"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+What remote participants see in a meeting is determined by the camera system — its field of view, its ability to frame participants appropriately, and its position relative to the table. A well-positioned camera with appropriate framing makes remote participants feel present in the room; a poorly positioned camera or one that cuts off participants creates friction that undermines the meeting experience.
+
+---
+
+## Camera Types for Conference Rooms
+
+**PTZ (Pan-Tilt-Zoom) Cameras:**
+
+A PTZ camera has a motorized head that can pan (rotate left/right), tilt (rotate up/down), and zoom. Camera operators or automated presets control the framing.
+
+*Examples:* Poly Studio E70, AVer CAM540, Jabra PanaCast 50, Logitech Rally Camera
+
+*Best for:*
+- Large boardrooms and conference rooms where the table extends beyond the field of view of a wide-angle camera
+- Rooms with a designated presenter position requiring close-up framing
+- Multi-use rooms where different camera presets serve different configurations (full table, presenter, whiteboard)
+
+*Operating modes:*
+- **Manual preset control:** Room touch panel triggers camera presets (Preset 1 = full table, Preset 2 = presenter, etc.)
+- **Auto-tracking:** Some PTZ cameras include speaker tracking — detects the active speaker and pans/zooms to frame them
+
+*Limitation:* Without a touch panel or auto-tracking, the PTZ camera sits at one preset — typically the widest position. Auto-tracking PTZ can be distracting in videoconference use if the camera moves during multi-person discussions.
+
+**Fixed Wide-Angle Cameras:**
+
+A fixed camera with a wide horizontal field of view (typically 90°–120°) that captures the full room without mechanical movement.
+
+*Examples:* Logitech Brio, Microsoft Modern Camera, Jabra PanaCast 20, Poly Studio P5
+
+*Best for:*
+- Small rooms (4–6 person tables up to approximately 3m depth)
+- Huddle rooms and focus spaces
+- Rooms where camera movement is undesirable
+
+*Limitation:* Wide-angle lenses create perspective distortion at the edges — participants near the sides of the frame appear stretched. Placement at the correct distance (not too close) reduces this.
+
+**AI-Framing Cameras:**
+
+AI-framing cameras use computer vision to automatically detect and frame people in the room — cropping and panning within a wide-field capture sensor to show individual or group compositions.
+
+*Examples:* Logitech Rally Bar (IntelliFrame), Huddly IQ/GO, Jabra PanaCast 50 (AI framing), Neat Camera Pro
+
+*Best for:*
+- Rooms where a single camera must serve multiple use cases (full-table and individual framing)
+- Organizations prioritizing remote participant experience
+- Standard conference rooms where PTZ cost or complexity is not justified
+
+*Key AI feature — IntelliFrame (Microsoft Teams Rooms specific):*
+IntelliFrame uses the room camera to detect individual participants and creates a composite grid view showing each person in their own framed tile. This requires:
+- A camera certified for IntelliFrame (Logitech Rally Bar, selected other certified devices)
+- Teams Rooms Pro license on the room device
+- IntelliFrame enabled in the room's Teams Rooms app settings
+
+*Key AI feature — Intelligent Speaker (Intelligent Speaker Recognition):*
+Intelligent Speaker identifies which participant is speaking and highlights their name in the meeting transcript. This requires:
+- A certified Intelligent Speaker microphone (Epos Expand Vision 3T, selected devices)
+- Teams Rooms Pro license
+- All participants enrolled in their personal Microsoft 365 voice profile
+
+---
+
+## Camera Field of View and Placement Calculation
+
+The camera's horizontal field of view (FoV) and its distance from the table determine what is visible to remote participants.
+
+**Calculating required camera distance:**
+
+For a camera to frame the full width of a table, the relationship between table width (W), camera distance (D), and horizontal FoV (θ) is:
+
+```
+D = (W / 2) / tan(θ / 2)
+```
+
+For a 2m-wide table and a 90° FoV camera:
+```
+D = (2 / 2) / tan(45°) = 1 / 1 = 1m minimum distance
+```
+
+At 1m, the camera exactly frames the table width. In practice, add 20–30% margin so participants are not at the extreme edge of frame.
+
+| Table Width | 65° FoV Camera | 90° FoV Camera | 120° FoV Camera |
+|-------------|---------------|----------------|-----------------|
+| 1.2m (4-person) | 1.3m | 0.6m | 0.35m |
+| 1.8m (6-person) | 1.9m | 0.9m | 0.52m |
+| 2.4m (8-person) | 2.6m | 1.2m | 0.69m |
+| 3.0m (10-person) | 3.2m | 1.5m | 0.87m |
+
+*Minimum camera-to-table distance for framing the full table width. At these distances, add margin — target 1.2× to 1.5× these values for comfortable framing.*
+
+**Camera height:**
+Mount cameras at approximately seated eye level (1.1–1.2m from floor) or slightly above (up to 1.5m). Camera height above eye level causes a top-down angle that is unflattering and makes participants appear to look down. Camera below eye level causes an upward angle (the "laptop on a table" effect) that is also unflattering.
+
+*For display-mounted cameras:* Cameras built into or mounted above displays are typically 1.7–2.0m high. This is above ideal eye level for a seated participant. Compensate by tilting the camera down and choosing a display height that puts the camera as close to eye level as practical.
+
+---
+
+## Multi-Camera Configurations
+
+Larger rooms may require more than one camera to adequately cover all seating positions.
+
+**Dual-camera configurations:**
+- Two cameras at opposite ends of the table — each camera covers the nearest half of the table
+- Requires a video switcher or MTR with multi-camera input support
+- Common in large U-shape or long boardroom configurations
+
+**Content camera (whiteboard camera):**
+A second camera dedicated to capturing whiteboard content. Teams Rooms supports a "Content Camera" configuration that:
+- Applies image processing to improve readability of handwritten content
+- Sends the whiteboard view as a secondary video stream (shared as content)
+- Can digitally correct perspective distortion from an off-angle mount
+
+Content camera must be certified by Microsoft for Teams Rooms content camera function. Set in the Teams Rooms app configuration (or via XML: `<ContentCameraId>`, `<ContentCameraInverted>`).
+
+---
+
+## USB and HDMI Camera Connections
+
+**USB cameras:**
+The majority of conference room cameras connect via USB 3.0 to the MTR Windows compute unit. Cable runs from the camera to the compute unit (typically in an AV rack or credenza).
+
+*USB cable length limitation:* USB 3.0 passive cables are reliable to approximately 5m. For longer runs (5–15m), use USB 3.0 active extension cables or USB over Cat6 extenders (USB over HDBaseT). Beyond 15m, HDMI cameras with HDMI-to-USB capture devices are common.
+
+**HDMI cameras (PTZ with HDMI output):**
+PTZ cameras often have HDMI outputs in addition to or instead of USB. HDMI can be run to an HDMI-to-USB capture card (Magewell USB Capture, AJA U-TAP) at the MTR compute unit, or directly to a video switcher.
+
+*HDMI cable length:* Passive HDMI cables reliable to 10m; active HDMI or HDBaseT extenders for longer runs.
+
+**IP cameras (RTSP/NDI):**
+Some cameras output over the network via RTSP or NDI. These require additional software (RTSP capture, NDI Virtual Input) and are generally not used for standard MTR deployments — USB and HDMI are simpler and better supported.
+
+---
+
+<KnowledgeCheck id="p2-t3-m2-l1-kc">
+  <Question>
+    A 14-person boardroom has a 6m × 1.4m table. The client requires that
+    remote participants see individual framing of participants rather than a
+    group wide shot. The room has Teams Rooms Pro licenses. Which camera
+    solution best meets this requirement?
+  </Question>
+  <Answer>A single wide-angle fixed camera (120° FoV) mounted at one end of the table</Answer>
+  <Answer>A PTZ camera on auto-tracking preset, positioned 2m from one end of the table</Answer>
+  <Answer correct>An IntelliFrame-certified camera (such as the Logitech Rally Bar or equivalent certified device) combined with Teams Rooms Pro licensing. IntelliFrame uses AI to detect and individually frame each participant, presenting remote participants with a grid of individually cropped video tiles — exactly meeting the requirement for individual framing. A single wide-angle camera would show a group wide shot; a PTZ with auto-tracking would follow a single active speaker, not show all participants simultaneously</Answer>
+  <Answer>Two fixed cameras at each end of the table with a video switcher</Answer>
+  <Explanation>
+    IntelliFrame is the Microsoft Teams Rooms feature specifically designed for
+    the scenario where remote participants need individual participant framing
+    without multiple cameras or manual camera operators. It requires a certified
+    camera and a Teams Rooms Pro license (which this room has). A wide-angle
+    camera at one end would show the full table but not individual framing. A
+    PTZ on auto-tracking follows the active speaker — not all participants
+    simultaneously. Two fixed cameras with a switcher would require a camera
+    operator or switching logic and still would not provide individual participant
+    framing. IntelliFrame is the purpose-built solution for this use case.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Camera types:** PTZ (large rooms, presets/tracking), fixed wide-angle (small rooms), AI-framing (individual framing, IntelliFrame).
+- **Placement:** Mount at near-eye-level (1.1–1.5m); calculate required distance from table width and FoV using D = (W/2) / tan(θ/2).
+- **IntelliFrame:** Requires certified camera + Pro license; provides individual participant framing from a single camera.
+- **Connections:** USB 3.0 to 5m (active cable/extender for longer); HDMI PTZ → capture card at MTR.
+
+---
+
+## What's Next
+
+[Display Selection and Room Placement →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/video-display-systems/lessons/display-selection-placement/)

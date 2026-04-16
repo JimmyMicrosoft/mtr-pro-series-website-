@@ -1,0 +1,283 @@
+---
+id: "p2-t1-m1-l4"
+slug: "qos-implementation"
+title: "QoS Implementation — Switch Configuration and Policy Application"
+shortTitle: "QoS Implementation"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 1
+moduleSlug: "mtr-network-architecture"
+moduleTitle: "MTR Network Architecture and Design"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Configure a Windows QoS Group Policy Object to mark MTR device traffic with the correct DSCP values"
+  - "Apply Intune-based QoS policies for MTR Windows devices in organizations without GPO access"
+  - "Describe the switch-level configuration required to honor DSCP markings and configure QoS queues"
+  - "Verify QoS is functioning correctly using packet capture and network testing tools"
+
+prerequisites:
+  - "p2-t1-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "intune"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "qos"
+  - "dscp"
+  - "group-policy"
+  - "intune"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-l4-qos-implementation-guide.pdf"
+    label: "MTR QoS Implementation Guide"
+    sizeKb: 60
+
+relatedLessons:
+  - "p2-t1-m1-l3"
+  - "p2-t1-m1-l5"
+
+metaDescription: "MTR QoS implementation — Windows GPO DSCP marking policy, Intune QoS policy for MTR devices, TAC QoS port range configuration, switch DSCP trust and queue configuration, and QoS verification using packet capture."
+
+keywords:
+  - "Teams Rooms QoS Group Policy"
+  - "MTR Windows DSCP GPO"
+  - "Intune QoS policy Teams Rooms"
+  - "switch QoS DSCP configuration"
+  - "Teams Rooms QoS implementation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+QoS implementation has three parts that must all be configured correctly for QoS to function end-to-end: the Teams Admin Center port range configuration that tells Teams which source ports to use for each traffic type, the Windows policy that marks outgoing packets from those port ranges with the correct DSCP values, and the switch configuration that honors those markings and applies queue prioritization. This lesson walks through all three and includes the verification step to confirm QoS is working before the deployment goes live.
+
+---
+
+## Step 1 — Teams Admin Center: Enable QoS Port Ranges
+
+Before endpoint marking can work correctly, Teams must be configured to use the specific source port ranges that the QoS policy will mark.
+
+**In Teams Admin Center:**
+1. Navigate to **Meetings → Meeting settings**
+2. Under **Quality of Service (QoS)**, enable **Insert Quality of Service (QoS) markers for real-time media traffic**
+3. Set the source port ranges:
+   - Audio: 50000–50019
+   - Video: 50020–50039
+   - Application sharing: 50040–50059
+
+This configuration applies to all MTR devices managed by the tenant. It instructs the Teams application to use these specific UDP source port ranges for each media type — enabling the Windows OS QoS policy to identify and mark the traffic correctly.
+
+<Callout type="tip">
+  The port ranges in TAC and the Windows QoS policy must match exactly. If the
+  ranges differ, the QoS policy marks the wrong ports and Teams media goes out
+  unmarked.
+</Callout>
+
+---
+
+## Step 2 — Windows Endpoint Marking: Group Policy
+
+For organizations managing MTR Windows devices through Active Directory and Group Policy, the QoS marking policy is configured as a Windows QoS policy in GPO.
+
+**Creating the QoS GPO:**
+
+Create a new GPO (or add to an existing MTR device GPO) and navigate to:
+`Computer Configuration → Windows Settings → Policy-based QoS`
+
+Create three separate QoS policies — one per traffic type:
+
+**Audio policy:**
+- Policy name: Teams Audio QoS
+- DSCP value: 46
+- Application name: teams.exe (or leave blank to apply to all applications)
+- Source IP address: Any
+- Source port range: 50000:50019
+- Protocol: UDP
+
+**Video policy:**
+- Policy name: Teams Video QoS
+- DSCP value: 34
+- Source port range: 50020:50039
+- Protocol: UDP
+
+**App sharing policy:**
+- Policy name: Teams App Sharing QoS
+- DSCP value: 18
+- Source port range: 50040:50059
+- Protocol: UDP
+
+Apply the GPO to the OU containing the MTR Windows computer accounts. The policy takes effect after the next Group Policy refresh cycle or device reboot.
+
+---
+
+## Step 3 — Windows Endpoint Marking: Intune (for Non-Domain Devices)
+
+For MTR Windows devices managed through Intune (cloud-native or hybrid-joined), the QoS marking is configured through an Intune device configuration profile using the Windows QoS CSP.
+
+**Intune configuration profile:**
+- Platform: Windows 10 and later
+- Profile type: Templates → Administrative templates (or custom OMA-URI)
+
+Using custom OMA-URI:
+
+```
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/DSCPAction
+Data type: Integer
+Value: 46
+
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/SourcePortMatchCondition
+Data type: String
+Value: 50000-50019
+
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/IPProtocolMatchCondition
+Data type: Integer
+Value: 17 (UDP)
+```
+
+Repeat for video (DSCP 34, ports 50020–50039) and app sharing (DSCP 18, ports 50040–50059).
+
+Assign the profile to the device group containing MTR Windows devices.
+
+---
+
+## Step 4 — Switch Configuration
+
+The switch must be configured to trust the DSCP markings from the MTR subnet and map them to the appropriate egress queues.
+
+**Key switch configuration elements:**
+
+**DSCP trust on MTR-facing ports:** On the switch ports connected to MTR devices, configure DSCP trust (`mls qos trust dscp` on Cisco IOS syntax, or equivalent on the organization's switch platform). Without this, the switch strips or ignores the DSCP markings from the endpoint.
+
+**Queue mapping:** Configure the switch's egress queue scheduler to map DSCP values to priority queues:
+- DSCP 46 (EF) → Priority queue (strict priority or highest weighted)
+- DSCP 34 (AF41) → High-priority queue
+- DSCP 18 (AF21) → Medium-priority queue
+- DSCP 0 (Best Effort) → Default queue
+
+**Example Cisco IOS queue mapping (illustrative — syntax varies by platform):**
+```
+mls qos map dscp-cos 46 to 7
+mls qos map dscp-cos 34 to 5
+mls qos map dscp-cos 18 to 3
+```
+
+The network engineer responsible for the switch infrastructure should apply and validate the switch-level configuration against the organization's specific platform.
+
+**Upstream consistency:** QoS marking must be honored at every hop between the MTR device and the Microsoft network edge. If any intermediate device (router, firewall, WAN edge) does not honor the DSCP markings or re-marks traffic, QoS fails at that point in the path. Confirm with the network team that the QoS policy extends through the WAN and internet edge, not just the access layer.
+
+---
+
+## Verification
+
+After configuring all three layers, verify QoS is functioning end-to-end:
+
+**Step 1 — Confirm port ranges in use:** During an active meeting on the MTR device, run `netstat -an` (from a local admin command prompt or via remote management) and confirm that UDP connections on ports 50000–50059 are visible as established connections.
+
+**Step 2 — Confirm DSCP marking:** Use Wireshark (or equivalent packet capture tool) on a mirror port or network tap on the MTR switch port. Capture traffic during an active meeting and filter for UDP traffic from the MTR device. Inspect the IP header DSCP field — audio packets should show DSCP 46, video DSCP 34, app sharing DSCP 18.
+
+**Step 3 — Verify switch queue behavior:** During a congestion test (generate competing traffic on the same switch port or uplink), confirm that Teams audio packets are not being dropped while lower-priority traffic is queued. Most enterprise switch platforms provide per-queue statistics (drops, bytes forwarded) visible via SNMP or CLI.
+
+<DownloadButton
+  file="p2-t1-m1-l4-qos-implementation-guide.pdf"
+  label="MTR QoS Implementation Guide"
+  sizeKb={60}
+  description="Step-by-step QoS implementation guide covering TAC port range configuration, Windows GPO policy creation, Intune OMA-URI settings, switch DSCP trust and queue mapping, and verification procedures with expected outputs."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m1-l4-kc">
+  <Question>
+    A packet capture during an active MTR meeting shows all Teams UDP traffic
+    leaving the device with DSCP 0. The Windows QoS GPO has been applied and
+    the GPO reports as applied on the device. What is the most likely cause?
+  </Question>
+  <Answer>DSCP marking requires a Teams Rooms Pro license to enable in GPO</Answer>
+  <Answer>The Teams application is running as a different user than the one the GPO targets</Answer>
+  <Answer correct>The Teams Admin Center QoS port range configuration has not been enabled — without the TAC setting, Teams uses random source ports that fall outside the port ranges the GPO is configured to mark, so the GPO never matches the traffic</Answer>
+  <Answer>The switch is stripping DSCP markings before the capture point</Answer>
+  <Explanation>
+    The Windows QoS GPO marks packets based on matching source port ranges.
+    If Teams Admin Center has not been configured to enable QoS and set the
+    port ranges (50000–50019 for audio, etc.), the Teams application uses random
+    high-numbered UDP ports. The GPO policy conditions never match, so no
+    packets get marked. DSCP 0 in the capture confirms the OS is not marking.
+    Both layers must be configured: TAC sets the port ranges, GPO marks the
+    traffic using those ranges.
+  </Explanation>
+
+  <Question>
+    After deploying QoS, a network engineer reports that the switch shows DSCP
+    46 packets arriving on the MTR switch ports but they are being treated
+    identically to DSCP 0 traffic. What is the switch-level issue?
+  </Question>
+  <Answer>The GPO DSCP value should be 48, not 46, for switches to recognize EF traffic</Answer>
+  <Answer correct>DSCP trust has not been configured on the switch ports connected to the MTR devices — without `mls qos trust dscp` (or equivalent), the switch ignores the DSCP markings from the endpoint and applies its own default classification</Answer>
+  <Answer>The switch needs a software update to support DSCP 46</Answer>
+  <Answer>The MTR VLAN must be a native VLAN for DSCP trust to function</Answer>
+  <Explanation>
+    By default, many managed switches do not trust DSCP markings from connected
+    endpoints — they apply their own QoS classification based on CoS (802.1p)
+    or simply treat all traffic as best effort. Configuring DSCP trust on the
+    switch port (`mls qos trust dscp` in Cisco IOS, or equivalent commands on
+    other platforms) tells the switch to read and honor the incoming DSCP value
+    from the device. Without this setting, the markings arrive intact but have
+    no effect on queue treatment.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Configure TAC:** Enable QoS, set port ranges: Audio 50000–50019, Video 50020–50039, App sharing 50040–50059.
+- **Deploy GPO marking:** Three Windows QoS policies (one per traffic type), source port range matching, DSCP 46/34/18, applied to MTR device OU.
+- **Deploy Intune marking:** NetworkQoSPolicy CSP OMA-URI entries for domain-free MTR devices.
+- **Configure switches:** DSCP trust on MTR switch ports + queue mapping for EF/AF41/AF21.
+- **Verify:** netstat for port ranges in use → Wireshark for DSCP values in IP header → switch queue statistics.
+
+---
+
+## What's Next
+
+The network design is complete. The final lesson in this module covers Wi-Fi — the network layer consideration for rooms that cannot use wired connections.
+
+[Wi-Fi Design and Validation for MTR Deployments →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/wifi-design-validation/)

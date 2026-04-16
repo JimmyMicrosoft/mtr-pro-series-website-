@@ -1,0 +1,226 @@
+---
+id: "p2-t1-m2-l4"
+slug: "network-readiness-validation"
+title: "Network Readiness Validation Tools and Methodology"
+shortTitle: "Network Readiness Validation"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 2
+moduleSlug: "bandwidth-media-flow"
+moduleTitle: "Bandwidth, Media Flow, and Call Quality"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Use the Microsoft 365 Network Connectivity Test to validate M365 connectivity from the MTR VLAN"
+  - "Run the Teams Network Assessment Tool to measure media quality metrics from the network path"
+  - "Produce a network readiness report documenting test results against acceptance criteria"
+
+prerequisites:
+  - "p2-t1-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "validation"
+  - "testing"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m2-l4-network-readiness-report-template.docx"
+    label: "Network Readiness Report Template"
+    sizeKb: 45
+
+relatedLessons:
+  - "p2-t1-m2-l3"
+  - "p2-t1-m3-l5"
+
+metaDescription: "MTR network readiness validation — Microsoft 365 Network Connectivity Test, Teams Network Assessment Tool, PSTN media quality tests, test methodology, acceptance criteria, and network readiness report documentation."
+
+keywords:
+  - "Teams Rooms network readiness test"
+  - "Microsoft 365 connectivity test MTR"
+  - "Teams Network Assessment Tool"
+  - "MTR network validation"
+  - "Teams Rooms pre-deployment network test"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Network design and configuration work is validated through testing — not through trust. The pre-deployment network readiness validation provides documented evidence that the network meets MTR requirements before devices are installed. Running these tests takes less than an hour per site but creates a paper trail that protects the integrator when post-deployment quality issues arise, and gives the client confidence that the network was verified, not assumed.
+
+---
+
+## Tool 1: Microsoft 365 Network Connectivity Test
+
+The M365 Network Connectivity Test (`connectivity.office.com`) is a web-based tool that runs directly from a browser and tests connectivity from the current network location to Microsoft 365 services.
+
+**What it tests:**
+- DNS resolution for M365 endpoints
+- Reachability and latency to Exchange Online, SharePoint, and Teams endpoints
+- Whether the connection uses optimal Microsoft network egress points
+- Proxy configuration (whether traffic is proxied and latency impact)
+- Whether UDP media transport (ports 3478–3481) is accessible or blocked
+
+**Running the test from the MTR VLAN:**
+
+The test must be run from the MTR VLAN to validate the path that MTR devices will use — not from an IT workstation on the general office VLAN. Options:
+1. Connect a laptop to an MTR switch port (access port in the MTR VLAN) and run the test from a browser
+2. Run the test from the MTR Windows device itself using a browser during commissioning (before Teams app setup)
+3. Use a network device plugged into the MTR VLAN and run the test remotely
+
+**Interpreting results:**
+
+The test produces a scored assessment with green/yellow/red indicators per category. Key items to confirm green:
+- Teams UDP media transport: **green is required** — if this is red, firewall rules for ports 3478–3481 are not configured
+- Proxy usage: green indicates direct route; yellow indicates proxied (verify SSL inspection bypass)
+- Exchange connectivity: green required for calendar and resource account function
+
+---
+
+## Tool 2: Teams Network Assessment Tool
+
+The Teams Network Assessment Tool (TNAT) is a command-line tool from Microsoft that simulates Teams media traffic and measures the network's actual media transport performance — not just connectivity.
+
+**Download:** Available from Microsoft's documentation (search "Teams Network Assessment Tool download").
+
+**What it tests:**
+- Simulates Teams audio media streams to Microsoft's relay servers
+- Measures: packet loss, jitter, and round-trip time for the simulated media path
+- Tests both UDP and TCP transport paths
+- Reports the results against Teams quality thresholds
+
+**Running TNAT from the MTR VLAN:**
+
+Install TNAT on a laptop connected to the MTR VLAN. Run from command prompt:
+
+```
+NetworkAssessmentTool.exe
+```
+
+Default test duration is approximately 5 minutes. Output is written to a results file in the tool's directory.
+
+**TNAT acceptance thresholds:**
+
+| Metric | Pass Threshold |
+|--------|---------------|
+| Packet Loss | < 1% |
+| Jitter | < 30 ms |
+| Round-Trip Time | < 100 ms |
+
+Results above these thresholds indicate network conditions that will produce poor Teams call quality under load. Investigate and remediate before proceeding with device deployment.
+
+---
+
+## Tool 3: iPerf (Bandwidth Validation)
+
+iPerf is an open-source network throughput testing tool. Use it to validate available bandwidth from the MTR VLAN to an internet reference point or internal iPerf server.
+
+**Typical test approach:**
+- Set up an iPerf server at the internet egress point or use a public iPerf3 server
+- Run iPerf3 client from a device on the MTR VLAN
+- Test both upload and download at the expected peak load bandwidth
+
+```
+iperf3 -c [server-ip] -t 60 -P 4
+```
+
+`-t 60` runs for 60 seconds; `-P 4` uses 4 parallel streams to stress the connection similarly to multiple concurrent meeting sessions.
+
+**Pass criterion:** Measured throughput equals or exceeds the calculated capacity requirement from the bandwidth model. If the measured throughput is significantly below the provisioned connection speed, investigate for WAN-side issues, QoS rate limiting, or equipment limitations before deployment.
+
+---
+
+## Documentation: The Network Readiness Report
+
+The network readiness validation produces a report that serves as the pre-deployment sign-off for the network layer. The report documents:
+
+1. **Test date, site, and network segments tested** (VLAN numbers, subnets)
+2. **M365 Network Connectivity Test results** — screenshot of the scored output
+3. **Teams Network Assessment Tool results** — packet loss, jitter, RTT values vs. pass thresholds
+4. **Bandwidth validation results** — measured vs. required throughput
+5. **Open items** — any test that did not pass, with remediation plan and responsible party
+6. **Sign-off** — network engineer acknowledgment that the network meets MTR requirements
+
+This report is a project deliverable. It protects the integrator by documenting that the network was tested and passed before device deployment. If quality issues arise post-deployment, the report establishes the baseline — if the network passes today but quality degrades next month, the cause is a post-deployment network change, not an installation deficiency.
+
+<DownloadButton
+  file="p2-t1-m2-l4-network-readiness-report-template.docx"
+  label="Network Readiness Report Template"
+  sizeKb={45}
+  description="Network readiness report template for MTR deployments — pre-formatted sections for M365 connectivity test results, TNAT media quality metrics, bandwidth validation, open items log, and network engineer sign-off. Word format for client delivery."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m2-l4-kc">
+  <Question>
+    The Teams Network Assessment Tool reports: Packet Loss 0.3%, Jitter 28ms,
+    RTT 95ms from the MTR VLAN. Do these results pass the network readiness
+    acceptance criteria?
+  </Question>
+  <Answer>No — packet loss must be 0% for MTR deployments</Answer>
+  <Answer correct>Yes — all three metrics are within the pass thresholds: packet loss &lt;1% (0.3% passes), jitter &lt;30ms (28ms passes), RTT &lt;100ms (95ms passes). This network is ready for MTR deployment</Answer>
+  <Answer>No — jitter must be below 20ms for Teams Rooms devices</Answer>
+  <Answer>Results are borderline — additional testing over 24 hours is required before any result is acceptable</Answer>
+  <Explanation>
+    The TNAT pass thresholds are: packet loss &lt;1%, jitter &lt;30ms, RTT &lt;100ms.
+    The reported values (0.3% loss, 28ms jitter, 95ms RTT) all fall within
+    their respective thresholds. This network is ready for MTR deployment.
+    The values are close to the thresholds in jitter and RTT — these should
+    be noted in the readiness report as items to monitor in CQD post-deployment,
+    but they do not prevent deployment.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **M365 Connectivity Test:** `connectivity.office.com`; run from MTR VLAN; confirms UDP 3478–3481 open, proxy bypass, M365 endpoint reachability.
+- **Teams Network Assessment Tool:** Command-line tool; simulates media streams; measures packet loss (<1%), jitter (<30ms), RTT (<100ms).
+- **iPerf:** Validates bandwidth throughput against capacity model; compare measured vs. required.
+- **Network Readiness Report:** Documents all test results, open items, and network engineer sign-off — project deliverable before device deployment.
+
+---
+
+## Module Complete
+
+You have completed Module 1.2: Bandwidth, Media Flow, and Call Quality. Module 1.3 completes the track with the diagnostic skills for investigating and resolving network-layer problems after deployment.
+
+[Continue to Module 1.3: Network Problem Diagnosis →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/)

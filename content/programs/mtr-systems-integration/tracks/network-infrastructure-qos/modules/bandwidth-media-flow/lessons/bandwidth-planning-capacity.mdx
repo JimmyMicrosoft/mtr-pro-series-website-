@@ -1,0 +1,231 @@
+---
+id: "p2-t1-m2-l2"
+slug: "bandwidth-planning-capacity"
+title: "Bandwidth Planning and Capacity Modeling"
+shortTitle: "Bandwidth Planning"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 2
+moduleSlug: "bandwidth-media-flow"
+moduleTitle: "Bandwidth, Media Flow, and Call Quality"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Build a bandwidth capacity model for a multi-room MTR deployment using room count, concurrency estimate, and per-session bandwidth"
+  - "Identify the appropriate concurrency assumption for different client environments"
+  - "Validate an existing internet connection against the calculated demand and communicate findings to a client"
+
+prerequisites:
+  - "p2-t1-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+  - "pre-sales"
+
+topicTags:
+  - "network"
+  - "bandwidth"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m2-l2-bandwidth-model-template.xlsx"
+    label: "MTR Bandwidth Capacity Model Template"
+    sizeKb: 25
+
+relatedLessons:
+  - "p2-t1-m2-l1"
+  - "p2-t1-m2-l3"
+
+metaDescription: "MTR bandwidth capacity modeling — concurrency assumptions by room type, per-session budget, aggregate site demand calculation, internet connection validation, and communicating bandwidth requirements to clients."
+
+keywords:
+  - "Teams Rooms bandwidth capacity planning"
+  - "MTR site bandwidth model"
+  - "Teams Rooms internet bandwidth"
+  - "MTR bandwidth calculation"
+  - "conference room bandwidth planning"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Knowing the per-session bandwidth budget is the starting point — the question a client needs answered is whether their internet connection can support all their rooms running simultaneously at peak quality. The capacity model translates per-session numbers into a site-level requirement and compares it against available capacity. This is a pre-sales and pre-deployment calculation, not a post-deployment fix — bandwidth shortfalls should be identified and resolved before devices go live.
+
+---
+
+## The Capacity Model Formula
+
+The aggregate bandwidth requirement for a site is:
+
+```
+Required Bandwidth = Number of Rooms × Concurrency Rate × Per-Session Budget × Headroom Factor
+```
+
+**Each variable:**
+
+**Number of rooms:** The total count of MTR-equipped rooms at the site. Include all room sizes — huddle rooms, small conference rooms, medium and large conference rooms. Verify this against the bill of materials or room survey documentation.
+
+**Concurrency rate:** The percentage of rooms expected to be in active meetings simultaneously at peak load. This is not 100% — not every room is in a meeting at every moment, even at peak. The appropriate concurrency assumption depends on the organization's meeting culture.
+
+**Per-session budget:** The expected bandwidth per active meeting. Use the per-session budget from the previous lesson:
+- Audio-only meeting: 100 kbps
+- Standard HD meeting (720p video): 5 Mbps symmetrical
+- High-quality meeting (1080p video + content sharing): 10 Mbps symmetrical
+
+**Headroom factor:** Add 20–25% above the calculated requirement to accommodate spikes, firmware updates, device telemetry, and OEM management portal traffic. Use 1.25 as the headroom multiplier.
+
+---
+
+## Concurrency Rate Assumptions
+
+Choosing the right concurrency rate requires understanding the client's environment:
+
+| Environment | Typical Peak Concurrency | Rationale |
+|-------------|--------------------------|-----------|
+| Flexible workspace (hot-desking) | 40–50% | Rooms used heavily but not all simultaneously |
+| Traditional corporate office | 50–70% | Heavy meeting culture; peak at 10:00–11:00 and 14:00–15:00 |
+| Financial services / call center | 70–80% | Near-continuous use with formal meeting schedules |
+| Academic / training environment | 80–90% | Scheduled classes; most rooms in use simultaneously |
+
+When in doubt, use 70% as a conservative estimate for a corporate office environment. If the client has utilization data from existing meeting room booking systems (Exchange room analytics, Teams usage reports), use that data to refine the estimate.
+
+---
+
+## Worked Example
+
+**Site:** Corporate office, 45 conference rooms of varying sizes
+**Room types:**
+- 20 huddle rooms (1–4 people) — mostly audio + lower-quality video
+- 18 medium conference rooms (4–8 people) — full HD video + content sharing
+- 7 large conference rooms (8–20 people) — full HD video + content
+
+**Per-session budget:**
+- Huddle rooms: 3 Mbps (allow for HD but lower utilization)
+- Medium rooms: 8 Mbps
+- Large rooms: 12 Mbps (multiple incoming video streams)
+
+**Concurrency rate:** 60% (typical corporate office)
+
+**Calculation:**
+```
+Huddle rooms:   20 × 0.60 × 3 Mbps  = 36 Mbps
+Medium rooms:   18 × 0.60 × 8 Mbps  = 86.4 Mbps
+Large rooms:     7 × 0.60 × 12 Mbps = 50.4 Mbps
+
+Subtotal: 172.8 Mbps
+× 1.25 headroom = 216 Mbps required
+```
+
+**This is the total internet bandwidth required to support peak concurrent Teams Rooms usage for this site alone.** Note that general office workstation traffic is separate and must be added to this figure for total internet capacity planning.
+
+---
+
+## Validating the Existing Connection
+
+For brownfield deployments (adding MTR to an existing site), validate whether the current internet connection can support the additional MTR load.
+
+**Step 1 — Determine available internet capacity:** Get the contracted and actual available bandwidth for the site from the IT team. Use a speed test from the network core (not a workstation) to confirm actual throughput.
+
+**Step 2 — Calculate existing utilization baseline:** Ask the IT team for current peak internet utilization data (from firewall or WAN monitoring). A site at 60% utilization on a 500 Mbps connection has 200 Mbps available headroom.
+
+**Step 3 — Compare against MTR requirement:** If the MTR bandwidth requirement fits within the available headroom (with appropriate buffer), the existing connection is adequate. If it does not fit, an internet upgrade or traffic shaping strategy is required before deployment.
+
+**Step 4 — Document the finding:** Produce a simple table showing current capacity, current utilization, MTR requirement, and recommendation. This is a client deliverable — it creates a paper trail and sets expectations before devices are deployed.
+
+<Callout type="tip">
+  Clients often push back on bandwidth upgrade costs. Frame the calculation
+  around meeting quality: "Without the additional bandwidth, rooms will
+  operate at reduced video quality during peak hours, which affects the
+  value of the investment in room hardware." The cost of a bandwidth
+  upgrade is typically far lower than replacing or reconfiguring 45 rooms.
+</Callout>
+
+---
+
+## Traffic Shaping as a Mitigation
+
+If a bandwidth upgrade is not immediately feasible, traffic shaping can protect Teams media quality by deprioritizing non-critical traffic (software updates, backup jobs, streaming video) in favor of Teams traffic during business hours. This is a mitigation, not a solution — it reclaims bandwidth that non-critical traffic is consuming rather than adding new capacity.
+
+Effective traffic shaping for MTR environments:
+- Schedule software update distribution (WSUS, Intune, OEM updates) to off-hours maintenance windows
+- Rate-limit or restrict streaming media (YouTube, Netflix) during business hours
+- Implement QoS at the WAN edge to prioritize Teams Optimize-category traffic over other internet-bound traffic
+
+<DownloadButton
+  file="p2-t1-m2-l2-bandwidth-model-template.xlsx"
+  label="MTR Bandwidth Capacity Model Template"
+  sizeKb={25}
+  description="Spreadsheet template for MTR bandwidth capacity modeling — enter room counts by type, concurrency rate, and per-session budget to calculate aggregate site requirements. Includes comparison against existing connection capacity and recommendation output."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m2-l2-kc">
+  <Question>
+    A site has 30 conference rooms. Using a 65% concurrency rate and 8 Mbps
+    per session, with a 25% headroom factor, what is the approximate MTR
+    bandwidth requirement for this site?
+  </Question>
+  <Answer>156 Mbps</Answer>
+  <Answer>195 Mbps</Answer>
+  <Answer correct>195 Mbps — calculated as: 30 × 0.65 × 8 Mbps = 156 Mbps × 1.25 headroom = 195 Mbps</Answer>
+  <Answer>240 Mbps</Answer>
+  <Explanation>
+    The calculation: 30 rooms × 65% concurrency = 19.5 concurrent rooms.
+    19.5 × 8 Mbps = 156 Mbps base requirement. 156 Mbps × 1.25 headroom
+    factor = 195 Mbps total requirement. This is the bandwidth required
+    for Teams Rooms traffic only — general workstation internet traffic
+    is additional and must also be accounted for in the total internet
+    capacity plan.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Formula:** Rooms × Concurrency Rate × Per-Session Budget × 1.25 headroom.
+- **Concurrency:** 50–70% for typical corporate office; use booking/utilization data when available.
+- **Validation:** Compare calculated requirement against available internet headroom; document findings.
+- **Mitigation:** Schedule non-critical traffic to off-hours if bandwidth upgrade is not immediately feasible.
+
+---
+
+## What's Next
+
+With capacity planning covered, the next lesson introduces the Call Quality Dashboard — Microsoft's analytics tool for monitoring and investigating Teams quality across the fleet.
+
+[Call Quality Dashboard — Analysis and Investigation →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/call-quality-dashboard/)

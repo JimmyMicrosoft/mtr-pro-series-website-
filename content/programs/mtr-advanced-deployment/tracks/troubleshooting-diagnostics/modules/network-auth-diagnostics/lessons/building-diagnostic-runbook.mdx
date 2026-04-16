@@ -1,0 +1,350 @@
+---
+id: "p3-t2-m3-l5"
+slug: "building-diagnostic-runbook"
+title: "Building a Diagnostic Runbook for MTR"
+shortTitle: "Building a Diagnostic Runbook"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 3
+moduleSlug: "network-auth-diagnostics"
+moduleTitle: "Network and Authentication Diagnostics"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Define what a runbook is and what it is not, and explain why it accelerates MTTR for known issue patterns"
+  - "Design a runbook structure appropriate for an MTR support team including a symptom index, procedure sections, and escalation decision points"
+  - "Extract the top 10 runbook entries from Pro Management incident history data"
+  - "Describe a runbook maintenance process that keeps the runbook current over time"
+  - "Identify the distribution channels and onboarding use cases for a completed runbook"
+
+prerequisites:
+  - "p3-t2-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l1"
+
+downloads:
+  - file: "p3-t2-m3-l5-diagnostic-runbook-template.docx"
+    label: "MTR Diagnostic Runbook Template"
+    sizeKb: 50
+
+metaDescription: "Building a diagnostic runbook for Microsoft Teams Rooms — runbook purpose and structure, symptom index design, populating from Pro Management incident history, maintenance process, and distribution to support teams."
+
+keywords:
+  - "MTR diagnostic runbook"
+  - "Teams Rooms runbook"
+  - "MTR support documentation"
+  - "Teams Rooms MTTR"
+  - "MTR incident runbook"
+  - "Teams Rooms knowledge base"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A diagnostic runbook is the institutional knowledge of a support organization made actionable. Every novel issue that the team investigates and resolves contains a pattern — a symptom, a set of evidence, a root cause, a resolution. Without documentation, that pattern lives in the memory of the engineer who resolved it. With a runbook, it becomes available to every engineer on the team, including new hires, on-call staff, and Tier 1 technicians who would otherwise escalate prematurely. This lesson covers what a runbook is (and is not), how to structure one for an MTR support team, how to extract the initial runbook entries from existing incident data, and how to maintain and distribute it so it remains useful over time.
+
+---
+
+## What a Runbook Is and Is Not
+
+**What a runbook is:**
+
+A runbook is a decision tree and procedure guide for known MTR issue patterns. It answers the question "Given this symptom and this evidence, what do I do next?" for each known issue type. It provides step-by-step instructions for diagnostic actions and resolution steps, and it defines escalation decision points — the conditions under which an issue should move from Tier 1 to Tier 2 or from the internal team to Microsoft support.
+
+A runbook accelerates resolution for known patterns by converting investigation time to pattern recognition time. An engineer who recognizes a symptom as a known pattern can go directly to the procedure instead of rebuilding the diagnostic logic from first principles each time.
+
+**What a runbook is not:**
+
+- It is not a substitute for the diagnostic methodology. An issue that matches no existing runbook entry requires applying the hypothesis-driven methodology from this track; the runbook does not eliminate the need for diagnostic thinking.
+- It is not a guarantee of resolution. Even with a matching symptom, an engineer must verify that the evidence matches the runbook entry before applying the procedure. Applying a procedure without confirming the evidence is the most common runbook misuse.
+- It is not static. A runbook that is not maintained becomes obsolete and harmful — procedures that were correct for an older Teams Rooms app version may be incorrect for the current version.
+
+---
+
+## Runbook Structure for MTR
+
+A production MTR runbook has three sections:
+
+**Section 1: Symptom Index**
+
+An alphabetical list of observable symptoms, each linking to a specific runbook procedure. The symptom index allows a Tier 1 engineer who has received a complaint to locate the relevant procedure without reading the entire runbook.
+
+Example symptom index entries:
+
+| Symptom | Runbook Entry |
+|---|---|
+| Audio choppy — far end reports | Procedure: Audio-002 (Network Packet Loss) |
+| Audio choppy — near end reports | Procedure: Audio-001 (DSP Output / Speaker) |
+| Camera not detected | Procedure: Peripheral-001 (USB Camera Failure) |
+| Device shows Critical in TAC | Procedure: Health-001 (TAC Critical State) |
+| Echo heard by far end | Procedure: Audio-003 (AEC Failure) |
+| Meeting cannot be joined | Procedure: Meeting-001 (Meeting Join Failure) |
+| No audio — microphone not working | Procedure: Peripheral-002 (Microphone Failure) |
+| Room shows Not signed in | Procedure: Auth-001 (Resource Account Sign-out) |
+| Video freezes during call | Procedure: Video-001 (Video Freeze) |
+| Display does not turn on | Procedure: Display-001 (Display Control Failure) |
+
+**Section 2: Procedures**
+
+One procedure page per known issue. The standard procedure format:
+
+```
+PROCEDURE ID: [e.g., Audio-002]
+TITLE: [e.g., Audio Choppy — Far End Reports]
+VERSION: [e.g., 1.2]
+LAST VERIFIED: [e.g., 2026-01-15, Teams Rooms app 5.0.x]
+
+SYMPTOM:
+  [What the user reports / what Pro Management shows]
+
+PREREQUISITE EVIDENCE:
+  [Data that must be gathered before applying this procedure;
+   confirms the issue matches this procedure and not another]
+
+DIAGNOSTIC STEPS:
+  Step 1: [Action]
+  If result A → go to Step 2
+  If result B → go to Step 4
+  Step 2: [Action]
+  ...
+
+RESOLUTION STEPS:
+  [Step-by-step remediation]
+
+VERIFICATION:
+  [How to confirm the issue is resolved]
+
+ESCALATION POINT:
+  [Condition that triggers escalation: if Step 3 shows X and
+   Step 5 shows Y, escalate to Tier 2 with evidence package Z]
+
+KNOWN RELATED ISSUES:
+  [Other procedures that address similar symptoms with different root causes]
+```
+
+**Section 3: Escalation Decision Points**
+
+A single-page guide that defines when to escalate from each tier level:
+
+| Condition | Escalate To |
+|---|---|
+| Procedure applied; issue recurs within 24 hours | Tier 2 — with incident history and procedure steps applied |
+| Multiple rooms in the same building showing the same symptom | Tier 2 or network team — likely a shared infrastructure issue |
+| Teams app crash more than once per week | Microsoft Support — with crash dump package |
+| Pro Management shows device offline > 4 hours despite LAN connectivity confirmed | Microsoft Support — with device health data and logs |
+| Auth failure that persists after App State Reset | Microsoft/Entra ID Support — with sign-in log export and AADSTS code |
+| Issue involves security or compliance implication | Security team + CISO notification — do not attempt self-remediation |
+
+---
+
+## Populating the Runbook from Pro Management Incident History
+
+The most efficient starting point for runbook content is existing incident data. The incidents that the team has already resolved contain documented patterns — they simply need to be extracted and formatted.
+
+**Step 1: Export 90 days of incident data from Pro Management.**
+
+In Pro Management: **Reports → Incident Summary → Export to CSV** for the past 90 days. The export includes incident type, room, creation time, resolution time, and resolution notes (if the team has been documenting resolutions in the portal).
+
+**Step 2: Identify the top 10 incident types by frequency.**
+
+In the exported CSV, sort or pivot by the `Incident Type` column. The top 10 incident types by count over 90 days become the first 10 runbook entries. Common types found in MTR fleets:
+
+| Incident Type | Typical Frequency Rank |
+|---|---|
+| Camera not detected | 1 or 2 |
+| Teams app not running | 1 or 2 |
+| Resource account signed out | 3 |
+| Device offline | 4 |
+| Microphone not detected | 5 |
+| Display control failure | 6 |
+| Meeting join failure | 7 |
+| Audio quality — far end reports poor | 8 |
+| Video quality — pixelation | 9 |
+| Speaker not detected | 10 |
+
+**Step 3: For each incident type, extract the resolution pattern.**
+
+Review the resolved incidents of each type. Look for patterns in:
+- What diagnostic steps were taken (from resolution notes)
+- What the confirmed root cause was
+- What the resolution action was
+- How long it took (to identify where the process can be accelerated)
+
+This data directly populates the Prerequisite Evidence, Diagnostic Steps, and Resolution Steps sections of each procedure.
+
+**Step 4: Write the first draft procedures.**
+
+With the incident data, write the first 10 procedure pages. Do not wait for perfect data — a first draft based on available evidence is infinitely more useful than a blank runbook. The maintenance cycle will improve accuracy over time.
+
+---
+
+## Runbook Maintenance
+
+A runbook that is not maintained becomes obsolete. Maintenance must be scheduled and owned.
+
+**Quarterly review cycle:**
+
+Every quarter, the runbook owner (typically the Tier 2 or senior support engineer) performs:
+
+1. **Incident frequency review:** Pull the latest 90-day incident data. If the top-10 list has changed, new entries should be added and rare entries may be archived.
+2. **Procedure accuracy review:** For each existing procedure, verify it is still accurate for the current Teams Rooms app version and current Windows version on the fleet. Changes in Teams app behavior between major versions frequently require procedure updates.
+3. **Resolution notes mining:** Review all incidents resolved in the past quarter for novel issues — any new pattern that appeared 3 or more times and is not in the runbook is a candidate for a new entry.
+4. **Retired entries:** If a known issue was resolved at the platform level (a Teams app update fixed the bug), remove or archive the corresponding runbook entry to prevent technicians from applying an obsolete procedure.
+
+**Adding a new entry trigger:**
+
+A new runbook entry should be added immediately (not deferred to the quarterly cycle) when:
+- A novel issue pattern results in an escalation to Tier 2 and the Tier 2 engineer resolves it with a documented procedure
+- A Microsoft support case is resolved with a specific remediation that is likely to recur in the environment
+- A pattern is identified during the intermittent failure investigation process (Module 2, Lesson 5) that is confirmed and documented
+
+**Version control for the runbook document:**
+
+The runbook document should be version-controlled. Options:
+- SharePoint document library with version history enabled (SharePoint retains previous versions automatically)
+- A Git repository (if the team is comfortable with Git — allows diffing between versions to see exactly what changed)
+- A knowledge base platform (ServiceNow, Confluence) with built-in versioning
+
+Each quarterly review should produce a new version number and a change log entry listing what was added, updated, or removed.
+
+---
+
+## Distributing the Runbook
+
+A runbook that no one can find or that is not in the hands of the people who need it provides no value.
+
+**Making it accessible to Tier 1 support:**
+
+The runbook must be in the first place a Tier 1 engineer looks when receiving an MTR incident. Distribution options:
+- **ServiceNow Knowledge Base:** Each runbook procedure becomes a Knowledge Article, linked from the MTR incident category. The symptom index becomes the search terms attached to each article.
+- **SharePoint site:** A dedicated "MTR Support" SharePoint site with the runbook as the primary document, indexed so that searches within SharePoint find the correct procedure.
+- **Teams channel:** A pinned tab in the MTR support team's Teams channel linking to the runbook document.
+
+**Training new team members using the runbook:**
+
+When onboarding a new support engineer:
+1. Provide the runbook as the primary reference material for their first 30 days.
+2. Have them work through 3–5 actual resolved incidents (closed cases with resolution notes) and trace the resolution path through the runbook — does the runbook correctly guide them to the resolution? Where did the runbook fall short?
+3. Assign new hires to write the first draft of one new runbook entry (from a recent novel incident) as part of their onboarding — this both validates their understanding of the diagnostic process and contributes to the runbook.
+
+**Feedback loop for runbook gaps:**
+
+Establish a mechanism for any engineer to flag a runbook gap — a case where the runbook was consulted, did not lead to the correct resolution, and the issue was resolved a different way. Options:
+- A "Runbook Gap" ticket category in the incident management system
+- A comments section on each knowledge article in ServiceNow
+- A shared "Runbook Feedback" channel in the MTR support Teams channel
+
+Runbook gaps logged during the quarter are reviewed at the quarterly maintenance cycle and used to improve existing entries.
+
+---
+
+## Download the Runbook Template
+
+The following template provides the complete runbook structure described in this lesson — ready to populate with your organization's incident data.
+
+<DownloadButton
+  file="p3-t2-m3-l5-diagnostic-runbook-template.docx"
+  label="MTR Diagnostic Runbook Template"
+  sizeKb={50}
+/>
+
+The template includes:
+- Cover page with version history table
+- Symptom index template (alphabetical, with blank procedure cross-references)
+- 3 sample procedure pages (Camera Not Detected, Resource Account Sign-out, Audio Choppy — Far End) to illustrate the format
+- Blank procedure template (copy and complete for each new entry)
+- Escalation decision matrix template
+- Quarterly maintenance checklist
+
+---
+
+<KnowledgeCheck id="p3-t2-m3-l5-kc">
+  <Question>
+    A support team lead is beginning to build the team's first MTR diagnostic
+    runbook. She has 90 days of Pro Management incident data showing the top
+    incident type is "Camera not detected" (38 incidents), followed by "Teams
+    app not running" (27 incidents), and "Resource account signed out" (18
+    incidents). She has detailed resolution notes for 30 of the 38 camera
+    incidents — most were resolved by either reconnecting or replacing the USB
+    cable, with 6 resolved by updating the camera firmware. She has minimal
+    resolution notes for the app-not-running incidents. Which of the following
+    represents the most effective sequence for building the initial runbook?
+  </Question>
+  <Answer>Build the runbook for "Teams app not running" first because it is a more severe incident type — availability of resolution notes should not influence priority</Answer>
+  <Answer>Delay building the runbook until resolution notes exist for all three incident types — a runbook based on incomplete data will mislead engineers and cause incorrect resolutions</Answer>
+  <Answer correct>Start with "Camera not detected" because it has the highest incident frequency and sufficient resolution data to write a high-quality procedure immediately. The 30 incidents with detailed resolution notes provide clear patterns: the procedure should branch between USB cable fault (most common) and camera firmware issue (6 instances), with the USB peripheral diagnosis sequence as the primary diagnostic path. Write "Resource account signed out" second — authentication failures follow a well-documented pattern (NTP, CA policy, refresh token expiry) covered in this track's lessons, even if the team's own notes are sparse. Address "Teams app not running" last or concurrently while collecting better resolution notes by improving the incident closure process going forward. A first draft based on available evidence is immediately useful; waiting for perfect data means the runbook is never started</Answer>
+  <Answer>Delegate runbook writing to the Tier 1 engineers — they are the primary users and will write more practically useful procedures than Tier 2 engineers who handle escalations</Answer>
+  <Explanation>
+    Runbook prioritization should follow incident frequency (highest ROI from
+    resolving the most common incidents faster) combined with data availability
+    (you can only write a good procedure if you have evidence for what the
+    procedure should say). "Camera not detected" has both: it is the highest
+    frequency incident and has 30 detailed resolution notes forming two clear
+    patterns. "Resource account signed out" can be written using the systematic
+    knowledge from this track even with limited team-specific notes — the
+    diagnostic patterns for authentication failures are well-established.
+    Delaying until complete data exists means the runbook never gets built —
+    the quarterly maintenance cycle is designed to improve accuracy over time.
+    Tier 1 engineers should be involved in the feedback loop and eventually
+    contribute new entries, but the first draft should come from senior engineers
+    who can validate the procedures against their investigation experience.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **What a runbook is:** A decision tree and procedure guide for known MTR issue patterns — it converts investigation time to pattern recognition for recurring issues. It is not a substitute for the diagnostic methodology and is not static.
+- **Structure:** Three sections — Symptom Index (alphabetical, links to procedures), Procedures (one per known issue pattern with prerequisite evidence, diagnostic steps, resolution, verification, and escalation point), and Escalation Decision Matrix.
+- **Populating from incident data:** Export 90 days of Pro Management incident data; identify the top 10 incident types by frequency; extract resolution patterns from incident notes; write first-draft procedures. The first 10 entries provide the highest ROI.
+- **Maintenance:** Quarterly review against new incident data; immediate new entry for novel escalated issues; retire obsolete entries; version control the document with a change log.
+- **Distribution:** ServiceNow Knowledge Base or SharePoint for Tier 1 accessibility; new-hire onboarding using the runbook as primary reference; feedback loop (gap tickets, article comments) to continuously improve quality.
+
+---
+
+## What's Next
+
+[Track 3: Automation and Reporting →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/)

@@ -1,0 +1,128 @@
+{
+  "trackSlug": "practice-operations",
+  "trackTitle": "Practice Operations",
+  "programSlug": "mtr-practice-leadership",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "A managed service provider is designing a three-tier service offering for MTR customers. A 'Silver' tier includes proactive monitoring, remote remediation within 4 hours, and quarterly reviews. Which additional feature would most clearly differentiate a 'Gold' tier from Silver?",
+      "answers": [
+        "Access to an online customer portal for logging tickets.",
+        "A dedicated named service delivery manager, on-site response SLA (e.g., next business day), 24/7 monitoring with 1-hour remote response, and annual strategic technology review.",
+        "Monthly automated reporting emailed to the customer.",
+        "Inclusion of software licensing in the per-room monthly fee."
+      ],
+      "correct": 1,
+      "explanation": "Gold tier differentiation typically comes from premium response commitments (faster and including on-site), dedicated named resource (service delivery manager), 24/7 coverage, and strategic engagement — elements that go beyond monitoring and remote support to provide a genuinely premium experience that justifies a significantly higher PRPM price."
+    },
+    {
+      "id": 2,
+      "text": "A managed service provider charges £65 per room per month (PRPM) for their MTR managed service. Their direct costs per room per month are: monitoring platform £8, Microsoft licence £12, engineer labour allocation £18. What is the gross margin percentage on this service?",
+      "answers": [
+        "41.5%",
+        "52.3%",
+        "58.5%",
+        "73.8%"
+      ],
+      "correct": 0,
+      "explanation": "Total direct cost per room per month = £8 + £12 + £18 = £38. Gross profit = £65 - £38 = £27. Gross margin = £27 ÷ £65 = 41.5%. This is below the >50% target, indicating the pricing model needs review — either by increasing the PRPM rate or reducing direct costs to achieve the target margin."
+    },
+    {
+      "id": 3,
+      "text": "An enterprise customer's MTR room displays a blank screen during a critical board meeting and cannot be restarted remotely. Under the MSP's incident classification framework, what P-level does this represent, and what is the expected initial response time?",
+      "answers": [
+        "P3 — Low impact, 8 business hours initial response.",
+        "P2 — Significant impact, 2 business hours initial response.",
+        "P1 — Critical business impact, 15–30 minute initial response with immediate escalation to senior engineer.",
+        "P4 — Informational, next business day response."
+      ],
+      "correct": 2,
+      "explanation": "A room completely down during an active critical meeting is a P1 — it has immediate, significant business impact (a board meeting cannot proceed). P1 incidents require the fastest response (typically 15–30 minutes) and immediate senior engineer involvement, regardless of time of day if 24/7 support is contracted."
+    },
+    {
+      "id": 4,
+      "text": "A practice manager reviews the monthly KPIs and notes: churn rate = 3.5%, NPS = 42, engineer utilisation = 85%. Which KPI requires the most urgent attention, and what does it indicate?",
+      "answers": [
+        "Engineer utilisation at 85% — this is too high and risks engineer burnout.",
+        "Churn rate at 3.5% — this exceeds the <2%/month target and, if sustained, means the practice is losing approximately 42% of its customer base annually, threatening revenue stability.",
+        "NPS at 42 — this is slightly below the >50 target but is the most urgent issue.",
+        "All three KPIs are acceptable and require no action."
+      ],
+      "correct": 1,
+      "explanation": "Churn at 3.5%/month is the most urgent concern. Annualised, this means approximately 42% of the customer base is lost each year (compound). At >50% target gross margins on managed services, each lost customer represents significant recurring revenue that is expensive to replace. NPS of 42 is a contributing indicator but churn directly affects financial viability."
+    },
+    {
+      "id": 5,
+      "text": "What is the purpose of a PSA (Professional Services Automation) tool in the context of an MTR managed service practice?",
+      "answers": [
+        "It is used to configure and deploy MTR devices remotely.",
+        "It manages the business operations of the MSP: tracking time, managing projects, handling customer contracts, billing, and generating invoices — providing visibility into profitability per customer and per project.",
+        "It provides real-time monitoring of MTR device health and generates automated alerts.",
+        "It is a marketing automation platform used to generate leads for the MTR practice."
+      ],
+      "correct": 1,
+      "explanation": "A PSA tool (such as ConnectWise Manage, Autotask, or HaloPSA) handles the business operations layer: time entry, project management, contract management, SLA tracking, billing, and invoicing. It is distinct from an RMM (Remote Monitoring and Management) tool, which handles device monitoring and remote access."
+    },
+    {
+      "id": 6,
+      "text": "A practice has a monthly recurring revenue (MRR) of £120,000 from managed services. Sales leadership sets a pipeline coverage target of greater than 3× MRR. What is the minimum qualified pipeline value required to meet this target?",
+      "answers": [
+        "£120,000",
+        "£240,000",
+        "£360,000",
+        "£480,000"
+      ],
+      "correct": 2,
+      "explanation": "Pipeline coverage target = 3 × MRR = 3 × £120,000 = £360,000. The 3× target accounts for typical conversion rates and deal slippage — not all pipeline converts in a given period, so maintaining 3× coverage ensures sufficient opportunities to sustain and grow the monthly recurring revenue."
+    },
+    {
+      "id": 7,
+      "text": "An MSP wants to hire a team member to manage customer relationships, handle renewals, identify upsell opportunities, and act as the primary business contact for key accounts. Which role best describes this function?",
+      "answers": [
+        "Service Desk Analyst",
+        "Account Manager",
+        "Project Manager",
+        "Solutions Architect"
+      ],
+      "correct": 1,
+      "explanation": "An Account Manager owns the customer relationship commercially: managing renewals, identifying upsell and cross-sell opportunities, conducting regular business reviews, and serving as the primary commercial point of contact. This is distinct from a Service Desk Analyst (technical support), Project Manager (delivery), or Solutions Architect (technical design)."
+    },
+    {
+      "id": 8,
+      "text": "Which Microsoft certification is specifically designed for professionals who deploy and manage Microsoft Teams, including Teams Rooms, policies, and governance — and is the foundational certification for an MTR practice's technical team?",
+      "answers": [
+        "MS-900: Microsoft 365 Fundamentals",
+        "MS-700: Managing Microsoft Teams",
+        "MS-721: Collaboration Communications Systems Engineer",
+        "AZ-104: Microsoft Azure Administrator"
+      ],
+      "correct": 1,
+      "explanation": "MS-700 (Managing Microsoft Teams) covers Teams deployment, meeting policies, Teams devices (including MTR), governance, and lifecycle management. It is the foundational Teams certification. MS-721 is the advanced collaboration systems engineer certification for specialists in Teams Rooms and telephony, building on MS-700."
+    },
+    {
+      "id": 9,
+      "text": "An SLA defines a 'resolution time' for P2 incidents as 4 business hours. A P2 ticket is logged at 3:00 PM on a Friday; business hours are 8 AM–6 PM Monday–Friday. When does the SLA resolution clock expire?",
+      "answers": [
+        "7:00 PM Friday (4 hours from logging, regardless of business hours).",
+        "9:00 AM Monday (3 business hours consumed Friday 3–6 PM, 1 remaining hour on Monday).",
+        "11:00 AM Monday (the clock restarts from zero at 8 AM Monday).",
+        "8:00 AM Monday (the clock pauses over the weekend and the full 4 hours restart on Monday)."
+      ],
+      "correct": 1,
+      "explanation": "Business hours SLA calculation: ticket logged at 3:00 PM Friday. Business hours end at 6:00 PM, so 3 of the 4 SLA hours are consumed on Friday (3:00 PM–6:00 PM). The clock pauses over the weekend. It resumes at 8:00 AM Monday and the final 1 SLA hour expires at 9:00 AM Monday."
+    },
+    {
+      "id": 10,
+      "text": "An engineer utilisation target range of 70–80% is commonly used for managed service practices. Why is 100% utilisation considered undesirable?",
+      "answers": [
+        "At 100% utilisation, engineers are not allowed to work overtime.",
+        "100% billable utilisation leaves no capacity for training, internal projects, pre-sales support, or handling unexpected demand spikes — leading to burnout, quality degradation, and an inability to respond to urgent P1 incidents without impacting scheduled work.",
+        "Microsoft certification requires engineers to have at least 20% of their time allocated to certification study.",
+        "100% utilisation triggers automatic overtime payments that eliminate managed service margin."
+      ],
+      "correct": 1,
+      "explanation": "Targeting 70–80% utilisation ensures engineers have capacity for non-billable essential activities: training and certification, internal process improvement, pre-sales support, and surge capacity for P1 incidents. Sustained 100% utilisation causes burnout, leaves no buffer for emergencies, and prevents investment in skill development — ultimately degrading service quality."
+    }
+  ]
+}

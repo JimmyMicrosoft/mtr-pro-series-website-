@@ -1,0 +1,126 @@
+---
+id: "p2-t1-m3"
+slug: "network-problem-diagnosis"
+title: "Network Problem Diagnosis"
+shortTitle: "Network Diagnosis"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+moduleIndex: 3
+
+type: "module"
+duration: 130
+lessonCount: 5
+
+difficulty: "intermediate"
+bloomLevelRange: "analyze–evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Diagnose and resolve proxy authentication issues blocking MTR connectivity to Microsoft 365"
+  - "Identify firewall and SSL inspection misconfigurations causing MTR sign-in or quality failures"
+  - "Resolve DNS and NTP failures in enterprise environments that cause intermittent MTR authentication issues"
+  - "Use packet capture to analyze MTR network traffic and identify the layer causing a connectivity failure"
+  - "Complete a network validation sign-off using a structured checklist"
+
+prerequisites:
+  - "p2-t1-m2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "troubleshooting"
+  - "proxy"
+  - "firewall"
+  - "dns"
+  - "ntp"
+  - "packet-capture"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-resource-pack.zip"
+    label: "Module 1.3 Resource Pack"
+    sizeKb: 340
+
+metaDescription: "MTR network problem diagnosis — proxy and authentication issues, firewall and certificate inspection failures, DNS and NTP problems, packet capture analysis, and network validation sign-off. 5 lessons, 130 minutes."
+
+keywords:
+  - "Teams Rooms network troubleshooting"
+  - "MTR proxy issues"
+  - "Teams Rooms firewall troubleshooting"
+  - "MTR DNS NTP problems"
+  - "Teams Rooms packet capture"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Network problems are the most common root cause of MTR issues that present as "Teams is broken." This module builds the diagnostic skills to systematically identify and resolve the network-layer failures most frequently encountered in enterprise MTR deployments — proxy authentication, firewall misconfigurations, DNS resolution failures, NTP drift, and SSL inspection conflicts. The final lesson covers packet capture — the definitive diagnostic tool when other methods have not isolated the root cause.
+
+---
+
+## What you will learn
+
+By completing this module, you will be able to:
+
+- Diagnose proxy-related connectivity failures and apply the bypass configurations that resolve them
+- Identify firewall and SSL inspection issues and build the specific rule changes that fix them
+- Resolve DNS and NTP configuration problems in enterprise environments that cause intermittent authentication failures
+- Conduct a packet capture session on an MTR device and analyze the results to identify connectivity failures at the protocol level
+- Complete the network validation checklist and produce a signed network readiness sign-off document
+
+---
+
+## Lessons in this module
+
+This module contains **5 lessons** with an estimated total duration of **2 hours 10 minutes**.
+
+| # | Lesson | Format | Duration |
+|---|--------|--------|----------|
+| 1 | [Proxy and Authentication Issues](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/proxy-authentication-issues/) | Reading | 25 min |
+| 2 | [Firewall, Certificate Inspection, and TLS Issues](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/firewall-tls-issues/) | Reading | 25 min |
+| 3 | [DNS and NTP Issues in Enterprise Environments](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/dns-ntp-issues/) | Reading | 25 min |
+| 4 | [Packet Capture and Network Analysis for MTR](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/packet-capture-analysis/) | Reading | 30 min |
+| 5 | [Network Validation Checklist and Sign-Off](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/network-validation-signoff/) | Reading | 25 min |
+
+---
+
+## Downloadable resources
+
+<DownloadButton
+  file="p2-t1-m3-resource-pack.zip"
+  label="Module 1.3 Resource Pack"
+  sizeKb={340}
+  description="Contains all reference materials for this module: MTR network problem diagnosis decision tree, proxy bypass configuration reference, Wireshark filter cheat sheet for MTR analysis, network validation checklist, and sign-off template."
+/>
+
+---
+
+## What's next
+
+Completing this module completes Track 1: Network Infrastructure and QoS. Track 2 covers the Microsoft 365 administration layer — resource accounts at scale, policy management, and the Teams Rooms Pro Management platform.
+
+[Continue to Track 2: Microsoft 365 Administration →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/)

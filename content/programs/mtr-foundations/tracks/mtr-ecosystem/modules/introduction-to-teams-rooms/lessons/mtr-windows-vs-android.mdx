@@ -1,0 +1,293 @@
+---
+id: "p1-t1-m1-l2"
+slug: "mtr-windows-vs-android"
+title: "MTR Windows vs. MTR Android — Platform Differences and Feature Gaps"
+shortTitle: "Windows vs. Android"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 1
+moduleSlug: "introduction-to-teams-rooms"
+moduleTitle: "Introduction to Microsoft Teams Rooms"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "analyze"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Distinguish the architectural differences between MTR running on Windows 10/11 IoT Enterprise and MTR running on Android AOSP-based firmware"
+  - "Identify at least six feature areas where MTR Windows and MTR Android differ, and explain the practical impact on room design and client expectation-setting"
+  - "Select the appropriate platform for a given room scenario based on room size, feature requirements, and client IT environment"
+
+prerequisites:
+  - "p1-t1-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+
+topicTags:
+  - "platform-architecture"
+  - "feature-comparison"
+
+vendorTags:
+  - "microsoft"
+  - "lenovo"
+  - "poly"
+  - "yealink"
+  - "logitech"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads: []
+
+relatedLessons:
+  - "p1-t1-m1-l1"
+  - "p1-t1-m1-l3"
+
+metaDescription: "Understand the architectural differences between MTR Windows and MTR Android, including feature gaps, update behavior, and how to choose the right platform for each room."
+
+keywords:
+  - "MTR Windows"
+  - "MTR Android"
+  - "Teams Rooms Android"
+  - "feature parity"
+  - "AV integrator platform selection"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+At some point in nearly every MTR project, someone asks the question: Windows or Android? It might come from a client who just saw a sleek bar-style device at a trade show. It might come from a project manager who found a lower-cost Android option and wants to know if it is "just as good." It might come from an IT administrator who has a preference based on their existing management infrastructure. Whatever the context, your answer will shape the feature set, the installation approach, the management workflow, and the client's long-term satisfaction with the room.
+
+This is not a question with a universal right answer. Both platforms run the Microsoft Teams Rooms application. Both join meetings, display calendars, route audio and video through certified peripherals, and appear in the Teams Admin Center. But beneath that surface similarity, the two platforms have meaningful architectural differences that determine which features are available, how the system is updated, and how flexible the hardware choices are. Getting this wrong — specifying Android hardware for a room that needs Intelligent Speaker, or overbuilding a four-seat huddle space with a full Windows compute stack — costs money and credibility.
+
+By the end of this lesson you will be able to articulate those differences clearly, identify the feature areas where the platforms diverge, and make a confident platform recommendation for any room scenario you encounter.
+
+---
+
+## MTR on Windows — Architecture and Capabilities
+
+<GlossaryTerm slug="mtr-windows">MTR Windows</GlossaryTerm> runs on Windows 10 or Windows 11 IoT Enterprise, a specialized edition of Windows designed for fixed-function kiosk deployments. When a Windows-based MTR compute unit boots, it launches directly into the Teams Rooms application — there is no standard Windows desktop, no Start menu, no ability for a room user to open a browser or run other applications. The OS is locked into a kiosk shell that exposes only the Teams Rooms interface. This is not a limitation; it is the intentional design. The room is a meeting endpoint, not a general-purpose computer.
+
+The compute unit is a discrete hardware component — a small form-factor PC that mounts in an AV rack, behind a display, or inside AV furniture. It connects to all room peripherals via USB 3.0 (camera, audio device, touch console in most configurations) and to displays via HDMI or DisplayPort. Some configurations use IP-based touch consoles (like the Logitech Tap IP or the Crestron Flex panel), which connect to the compute unit via Ethernet rather than USB, extending cable run lengths significantly and simplifying installation in rooms with greater distances between the table and the rack.
+
+The Windows platform supports the full Teams Rooms feature set. Intelligent Speaker, Front Row layout, Coordinated Meetings, dual display with content on second screen, content camera AI, NDI output, deep XML configuration — if Microsoft has shipped a feature for Teams Rooms, it is available on Windows first and in its most complete form. This is because Microsoft's engineering teams develop primarily against the Windows platform, and Android support is added subsequently as OEM firmware matures to support new capabilities.
+
+Representative Windows-based compute solutions include the Lenovo ThinkSmart Core, the Crestron UC-MX70-T, the HP Presence Compute Module, and Intel NUC-based bundles paired with controllers like the Logitech Tap IP. These units vary in processing power, port count, and form factor, but all run the same Teams Rooms application stack.
+
+<Callout type="note">
+  The kiosk lockdown on MTR Windows means the IT team cannot use the device as a general-purpose
+  workstation. This is by design and should be communicated clearly to clients who ask whether
+  they can "also use the Teams Rooms PC for presentations from a laptop." The answer is no —
+  the device is dedicated to the Teams Rooms function. Laptop content is shared via HDMI input
+  to the room system, not by running software on the compute unit.
+</Callout>
+
+{/* MEDIA: Split-screen architecture diagram. Left side: MTR Windows stack (Windows IoT Enterprise → Teams Rooms Application → USB peripherals: camera, audio bar, touch console, optional content camera). Right side: MTR Android stack (OEM AOSP firmware → Teams Rooms Android app → integrated or OEM-certified peripherals). Filename: p1-t1-m1-l2-platform-architecture-diagram.png */}
+
+---
+
+## MTR on Android — Architecture and Form Factors
+
+<GlossaryTerm slug="mtr-android">MTR Android</GlossaryTerm> runs on a custom Android AOSP (Android Open Source Project) build created by each device OEM. Unlike the Windows platform — where the OS is standardized across manufacturers — on Android, Poly ships its own firmware, Yealink ships its own, Logitech ships its own, and so on. The Teams Rooms application itself is the same Microsoft application across all Android OEMs, but the underlying firmware layer that supports it is manufacturer-specific.
+
+The defining characteristic of Android MTR hardware is the all-in-one form factor. Rather than a separate compute unit, display, camera, and audio device, Android devices integrate most or all of these functions into a single bar or panel. The Yealink MeetingBar A40 mounts above or below a display and contains an integrated camera, microphone array, and speakers — all in one device powered by a single connection. The Poly Studio X52 does the same. The Neat Bar, the DTEN D7X, and similar devices follow the same concept. For small rooms and huddle spaces, this simplicity is a genuine advantage: fewer mounting points, fewer cables, faster installation, and less for the IT team to manage.
+
+Because the compute function is integrated into the device, there is no separate compute unit to spec or rack-mount for an Android deployment. The hardware selection is the device itself. This is an important distinction when building BOMs and writing SOWs — the installation scope for an Android room is structurally simpler than a Windows room.
+
+The tradeoff for this simplicity is that Android hardware has historically lagged the Windows platform on feature parity. The reasons are architectural: new Teams Rooms features often require OS-level capabilities that must be built into OEM firmware, and each OEM ships firmware updates on their own schedule. When Microsoft releases a new feature for Teams Rooms, Windows devices receive it through the Microsoft Store and Windows Update relatively quickly. Android devices receive it when their OEM ships an updated firmware build — which may be weeks or months later.
+
+<Callout type="tip">
+  Before committing to Android hardware for any project, check the current Microsoft Teams Rooms
+  feature comparison matrix at learn.microsoft.com. The gap between Windows and Android narrows
+  with each app release, but specific features — particularly AI-driven capabilities — may not
+  yet be available on Android. Never rely on documentation that is more than a few months old;
+  feature availability changes frequently.
+</Callout>
+
+---
+
+## The Feature Parity Gap
+
+The feature parity gap between Windows and Android is not a flaw in Microsoft's product strategy — it is a natural consequence of how the platforms are structured. What matters for integrators is knowing which gaps are material to a given project and communicating them accurately to clients. Here are the feature areas where the two platforms differ most significantly at the current product release:
+
+**Intelligent Speaker** is available on MTR Windows only. This feature, which identifies individual meeting participants by voice using a Teams Rooms Pro license and certain certified microphone arrays, is not available on Android devices. It is one of the most requested features for executive boardrooms and premium deployments — confirm platform before specifying.
+
+**Front Row layout** — which places remote participant video in a horizontal strip at the bottom of the display to create a more natural eye-contact experience — is supported fully on Windows and partially on select Android devices. Not all Android hardware supports it and behavior can vary across OEMs.
+
+**Dual display** with independent content and people feeds is fully supported on Windows (up to two displays, configurable via XML). Android support for dual display is improving but varies significantly across devices — some Android hardware supports it, some does not, and behavior differs from the Windows implementation.
+
+**Content camera AI**, which digitizes and enhances whiteboard content and optionally removes the presenter standing in front of the whiteboard, is a Windows-only feature. Android does not support content camera AI processing.
+
+**Coordinated Meetings**, which allows MTR rooms and Surface Hub devices in the same physical space to join a meeting together with shared audio management, is a Windows feature with no equivalent on Android.
+
+**XML configuration depth** is substantially greater on Windows. The SkypeSettings.xml schema on Windows covers dozens of configuration parameters including display layout, meeting defaults, theming, and peripheral selection. Android devices support a more limited XML subset, and some configuration must be done through the Teams Admin Center or the device's OEM management interface.
+
+**NDI output**, which streams room audio and video over the network for integration with broadcast or recording tools, is available on Windows and not on Android.
+
+{/* MEDIA: Feature parity heat map — grid table with feature rows and platform columns (Windows, Android). Color-coded: green = full support, yellow = partial or limited support, red = not supported. Features listed: Intelligent Speaker, Front Row layout, Dual display, Content camera AI, Coordinated Meetings, XML configuration depth, NDI output, Auto-framing, Proximity join, HDMI ingest, One-touch join, Teams panel integration. Filename: p1-t1-m1-l2-feature-parity-heatmap.png */}
+
+<Callout type="warning">
+  This feature comparison reflects the state of the platforms at the time of writing. Microsoft
+  updates the Teams Rooms application frequently and OEM Android firmware updates shift the
+  parity landscape regularly. The authoritative source is the Microsoft documentation page
+  "Features supported on Teams Rooms platforms" at learn.microsoft.com. Verify current feature
+  status before every project where platform selection is a factor.
+</Callout>
+
+---
+
+## Update Control and Peripheral Flexibility
+
+Beyond features, the two platforms differ in how they receive updates and in how flexible the peripheral ecosystem is — both of which have practical consequences for integrators and IT teams.
+
+On Windows, Teams Rooms app updates are delivered through the Microsoft Store, and Windows OS updates come through Windows Update. IT administrators who manage devices with Intune or Windows Update for Business can defer updates, test them in a pilot group before broad deployment, and roll back if a problematic release affects room functionality. This degree of control is important for organizations that operate in regulated industries or that have experienced issues with automatic updates disrupting room behavior. The update pipeline is predictable and manageable.
+
+On Android, the Teams Rooms application updates on a similar cadence, but the firmware layer is controlled by the OEM. A new firmware build from Yealink or Poly may be required to support features in a new app release, and that firmware ships on the OEM's schedule. In practice, this can create a situation where the Teams Rooms app on an Android device references a capability that the current OEM firmware does not yet support. The result is a feature that appears to be configured but does not work — which generates support calls and client confusion. Integrators should communicate this update model honestly to clients who are evaluating Android hardware.
+
+On the peripheral side, the Windows platform's modularity is a significant advantage. Because all peripherals connect via USB or IP, and because Microsoft maintains a broad certified peripherals catalog, integrators can mix and match cameras, audio devices, and controllers from different manufacturers on the same Windows compute unit. Want a Shure ceiling microphone array with a Logitech camera and a Crestron touch console? Provided all three are certified for MTR Windows, that combination works. This flexibility is valuable when rooms have specific audio or visual requirements that no single vendor's bundle satisfies.
+
+Android devices are more constrained. Most all-in-one Android devices have integrated cameras and microphones designed to work as a unit. Adding external peripherals is possible on some devices — for example, connecting a PTZ camera via USB to a MeetingBar — but the OEM determines what is certified for their device, and the options are narrower than the Windows catalog. For rooms where the integrated camera and audio bar meets the requirement, this is fine. For rooms with specific peripheral requirements, Windows gives you more options.
+
+---
+
+## Choosing the Right Platform
+
+Given everything above, a practical framework for platform selection looks like this. Choose MTR Windows when: the room is medium to large and the integrated camera and audio of an Android bar would not provide adequate coverage; when the client requires Intelligent Speaker, Front Row, or content camera AI; when dual display with independent feeds is needed; when the IT team wants Intune-managed update deferral; or when deep XML configuration is needed for custom room behavior.
+
+Choose MTR Android when: the room is small (up to six seats) and an all-in-one bar form factor is appropriate; when installation simplicity and a minimal device footprint are priorities; when the required feature set is core meeting join, one-touch join, audio and video, and content sharing — and the Android platform delivers all of those reliably; or when the client's IT team prefers fewer managed endpoints (one Android device vs. a compute unit plus multiple peripherals).
+
+{/* MEDIA: Room size and platform selection matrix — visual table showing small (up to 6 seats), medium (6–12 seats), and large (12+ seats) room profiles with recommended platform, typical device example, and key decision factors for each. Filename: p1-t1-m1-l2-platform-selection-matrix.png */}
+
+The key point is this: Android is not inferior to Windows — it is optimized for a different use case. An Android bar in a four-seat huddle room is an excellent solution. The same Android bar in a fourteen-seat boardroom where the client expects Intelligent Speaker and a 180-degree dual-camera view is the wrong specification. Match the platform to the requirement.
+
+---
+
+## Hands-On Exercise
+
+Complete the two-part Platform Selection Worksheet. Part one is a feature classification exercise: twelve Teams Rooms features are listed (Front Row layout, Intelligent Speaker, HDMI ingest, dual display, content camera AI, Teams panel integration, Coordinated Meetings, proximity join, whiteboard collaboration, NDI output, SIP/H.323 calling via Cloud Video Interop, and auto-framing). For each, you will classify it as Windows only, Android only, available on both, or not available on either platform at the current release. This exercise builds the precise feature knowledge you need to answer client questions accurately.
+
+Part two presents three room scenarios. A four-seat huddle room with a tight budget and a preference for minimal installation complexity. A twelve-seat boardroom with a dual display requirement and an executive team that wants Front Row layout. A large training room with 24 seats where the IT team has requested Intelligent Speaker for speaker attribution in meeting recordings. For each scenario, select a platform and write a two-sentence justification referencing the specific feature or constraint that drives your decision.
+
+<DownloadButton
+  file="p1-t1-m1-l2-platform-selection-worksheet.pdf"
+  label="Platform Selection Worksheet"
+  sizeKb={180}
+  description="Part 1: feature classification lab for 12 Teams Rooms features. Part 2: three platform selection scenarios with answer key."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m1-l2-kc">
+  <Question>
+    Which MTR platform supports Intelligent Speaker — the feature that identifies individual
+    meeting participants by voice and requires a Teams Rooms Pro license?
+  </Question>
+  <Answer>MTR Android — it is optimized for AI-driven features</Answer>
+  <Answer correct>MTR Windows — Intelligent Speaker is not available on Android</Answer>
+  <Answer>Both platforms support Intelligent Speaker equally</Answer>
+  <Answer>Neither platform supports Intelligent Speaker in the current release</Answer>
+  <Explanation>
+    Intelligent Speaker is available on MTR Windows only. It requires Teams Rooms Pro licensing
+    and certified microphone hardware that supports voice identification. MTR Android does not
+    support this feature as of the current product release.
+  </Explanation>
+
+  <Question>
+    An AV integrator is designing a four-seat huddle room. The client wants minimal installation
+    complexity, a clean aesthetic with no visible compute unit, and core meeting functionality
+    (join, audio, video, content sharing). Which platform recommendation is most appropriate?
+  </Question>
+  <Answer>MTR Windows — it has the full feature set and is the safer choice</Answer>
+  <Answer correct>MTR Android — an all-in-one bar form factor matches the requirements and keeps the installation simple</Answer>
+  <Answer>Either platform is equally appropriate for this scenario</Answer>
+  <Answer>MTR Android should not be used in rooms smaller than 6 seats</Answer>
+  <Explanation>
+    For a small room where core meeting functionality is sufficient and installation simplicity
+    is a priority, MTR Android all-in-one devices are the right fit. Specifying a full Windows
+    compute stack for a four-seat huddle room adds unnecessary complexity and cost.
+    MTR Android delivers the required feature set cleanly in this context.
+  </Explanation>
+
+  <Question>
+    A client reports that their MTR Android device does not have the Front Row layout option,
+    despite having seen it demonstrated at a partner briefing on an MTR system. What is the
+    most accurate explanation?
+  </Question>
+  <Answer>The IT admin has not enabled Front Row in the Teams Admin Center policy</Answer>
+  <Answer>Front Row requires a Teams Rooms Pro license, and the device has Teams Rooms Basic</Answer>
+  <Answer correct>Front Row has limited availability on Android and may not be supported on the client's specific device or OEM firmware version</Answer>
+  <Answer>The device's camera resolution is below the minimum required for Front Row</Answer>
+  <Explanation>
+    Front Row layout availability on Android depends on the specific device and OEM firmware
+    version. It is not uniformly available across all Android hardware the way it is on Windows.
+    The demonstration the client saw was likely on a Windows-based system. This is a platform
+    feature gap, not a configuration or licensing issue.
+  </Explanation>
+
+  <Question>
+    Which of the following best explains why Android firmware updates may create feature
+    discrepancies that are difficult to troubleshoot?
+  </Question>
+  <Answer>Android devices do not receive Teams Rooms app updates from Microsoft</Answer>
+  <Answer correct>OEM Android firmware updates ship on the manufacturer's schedule and may lag the Teams Rooms app release, causing app features to reference capabilities the firmware does not yet support</Answer>
+  <Answer>Microsoft intentionally withholds features from Android to encourage Windows adoption</Answer>
+  <Answer>Android firmware updates require manual installation and are often missed</Answer>
+  <Explanation>
+    Each Android OEM maintains their own firmware build schedule. When Microsoft ships a new
+    Teams Rooms app feature, it may depend on OS-level capabilities in the Android firmware
+    that have not yet been released by the OEM. The result is a feature that appears configured
+    but does not function — a difficult support scenario because the Teams Rooms app and the
+    device firmware are technically out of sync.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Describe the MTR Windows architecture:** A Windows IoT Enterprise kiosk shell running the Teams Rooms application on a discrete compute unit connected to USB and IP peripherals. Supports the full Teams Rooms feature set and allows flexible mix-and-match peripheral selection from the certified catalog.
+- **Describe the MTR Android architecture:** An OEM-specific AOSP firmware layer running the Teams Rooms Android application, typically in an all-in-one form factor. Simpler to install, smaller footprint, but historically trails Windows on feature parity and has less flexible peripheral options.
+- **Identify the key feature gaps:** Intelligent Speaker, content camera AI, Coordinated Meetings, full dual display support, NDI output, and deep XML configuration are Windows advantages. Android excels in all-in-one simplicity for small rooms.
+- **Apply a platform selection framework:** Match platform to the room's size, feature requirements, and IT management preferences — not to a default assumption that one is better than the other.
+
+---
+
+## What's Next
+
+You now understand how the two MTR platforms are built and where they differ. The next lesson takes you inside the hardware itself — the certified device catalog, the components that make up an MTR system, and how to match hardware to rooms of different sizes.
+
+[The MTR Hardware Ecosystem — Certified Compute, Displays, Cameras, and Audio →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/introduction-to-teams-rooms/lessons/mtr-hardware-ecosystem/)

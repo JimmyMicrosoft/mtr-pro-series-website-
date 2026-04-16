@@ -1,0 +1,353 @@
+---
+id: "p3-t2-m1-l4"
+slug: "network-trace-analysis-mtr"
+title: "Network Trace Analysis for MTR"
+shortTitle: "Network Trace Analysis"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 1
+moduleSlug: "diagnostic-methodology"
+moduleTitle: "Diagnostic Methodology"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Capture a network trace from an MTR Windows device using netsh and convert it to pcap format for Wireshark analysis"
+  - "Apply MTR-specific Wireshark display filters to isolate ICE negotiation, TURN allocation, DTLS handshake, and QoS-marked media streams"
+  - "Determine from a Wireshark trace whether an MTR device is using direct media or TURN relay, and explain the quality implications"
+  - "Verify DSCP marking is present and preserved through the network path using captured packet data"
+  - "Identify common trace-confirmed network failure patterns: UDP blocked, DSCP stripped, and TCP RST on port 443"
+
+prerequisites:
+  - "p3-t2-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "network"
+  - "packet-capture"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m1-l3"
+  - "p3-t2-m1-l5"
+
+metaDescription: "Network trace analysis for Microsoft Teams Rooms on Windows — netsh capture and ETL to pcap conversion, Wireshark filters for ICE/TURN/DTLS/QoS analysis, reading ICE negotiation results, DSCP verification, and identifying UDP-blocked and DSCP-stripped network issues from packet data."
+
+keywords:
+  - "MTR network trace"
+  - "Teams Rooms Wireshark"
+  - "netsh trace MTR"
+  - "Teams Rooms packet capture"
+  - "ICE negotiation Teams Rooms"
+  - "DSCP verification Teams Rooms"
+  - "MTR TURN relay trace"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+CQD provides aggregate and per-call quality metrics, and app logs record application-layer events — but neither source shows exactly what is happening at the packet level on the wire. A network trace is the ground truth: it shows whether UDP is reaching the network, whether DSCP markings are present and preserved, whether TURN allocation is succeeding, and whether the DTLS handshake that protects media encryption is completing normally. For complex network-related MTR issues — particularly those involving firewall rules, QoS policy, NAT, or media path problems — a packet-level trace is often the only way to confirm or eliminate hypotheses definitively.
+
+---
+
+## Capturing a Network Trace
+
+There are three capture points for MTR network analysis, each with a different purpose:
+
+| Capture Point | What It Shows | Use For |
+|--------------|--------------|---------|
+| On the MTR device (netsh) | All traffic leaving and arriving at the device, including DSCP markings applied by the OS | Confirming DSCP is being marked; ICE negotiation from the device perspective; full Teams traffic profile |
+| At the switch port (SPAN/mirror) | Traffic as it crosses the access layer — DSCP may be rewritten here | Verifying DSCP is preserved through the access switch; confirming QoS policy enforcement |
+| At the firewall | Traffic as it exits the site — post-NAT addresses, post-firewall DSCP | Confirming which traffic the firewall permits; verifying DSCP survives through the firewall |
+
+**Capturing on the MTR device using netsh:**
+
+The MTR device does not have Wireshark installed (and should not — it is a managed appliance). Use the built-in `netsh trace` command instead, which captures to an `.etl` file that must then be converted for Wireshark.
+
+1. Enter Windows admin mode on the MTR device.
+2. Open an elevated Command Prompt.
+3. Start the trace:
+
+```cmd
+netsh trace start capture=yes tracefile=C:\mtr-trace.etl maxsize=500 overwrite=yes
+```
+
+- `maxsize=500` limits the file to 500 MB before it wraps (adjust for longer captures).
+- `overwrite=yes` allows the trace to wrap at the size limit rather than stopping.
+
+4. Reproduce the issue (join a meeting, trigger the symptom).
+5. Stop the trace:
+
+```cmd
+netsh trace stop
+```
+
+The trace writes to `C:\mtr-trace.etl`. Copy this file off the device.
+
+**Converting ETL to pcap for Wireshark:**
+
+Wireshark cannot natively open `.etl` files. Convert using `etl2pcapng`, a Microsoft-provided open-source tool:
+
+1. Download `etl2pcapng.exe` from the [Microsoft GitHub repository](https://github.com/microsoft/etl2pcapng).
+2. Run the conversion:
+
+```cmd
+etl2pcapng.exe C:\mtr-trace.etl C:\mtr-trace.pcapng
+```
+
+3. Open `mtr-trace.pcapng` in Wireshark.
+
+Note: `etl2pcapng` preserves DSCP markings from the Windows network stack — this is important for QoS verification. If you need to verify DSCP at the wire level rather than the OS stack level, a SPAN port capture at the switch is more authoritative.
+
+**Capturing at a switch SPAN port:**
+
+Configure a SPAN (Switch Port Analyzer) port on the access switch to mirror the MTR device's switch port to a monitoring port. Connect a laptop running Wireshark to the monitoring port and capture directly to `.pcapng`. This method captures the exact frames leaving the wire — DSCP values visible here reflect what the switch passes forward, which may differ from what the OS marked if the switch is configured to remark DSCP.
+
+---
+
+## MTR-Specific Wireshark Display Filters
+
+The following display filters isolate the specific traffic types relevant to Teams Rooms analysis. Apply them in the Wireshark display filter bar.
+
+**ICE connectivity (STUN binding requests):**
+
+```
+stun.type == 0x0001
+```
+
+STUN Binding Requests are the mechanism by which ICE candidates are tested. When the MTR device is negotiating a media path, it sends Binding Requests to each candidate address (including direct addresses and relay addresses). Observing these tells you which ICE candidates are being tested.
+
+Filter for only STUN responses to see which candidates succeeded:
+```
+stun.type == 0x0101
+```
+
+A `0x0101` (Binding Success Response) to a direct candidate means direct media is possible. Absence of success responses to direct candidates, with only relay candidates succeeding, confirms that direct ICE is failing.
+
+**TURN allocation (relay usage):**
+
+```
+stun.type == 0x0003
+```
+
+STUN type `0x0003` is a TURN Allocate Request — the client is requesting a relay allocation from a TURN server. Seeing Allocate Requests in the trace confirms the device is attempting to use TURN relay. A subsequent `0x0103` (Allocate Success Response) confirms the TURN allocation succeeded and relay media is in use.
+
+If you see `0x0003` requests followed by error responses (type `0x0113`), TURN allocation is failing — which can mean the TURN server is unreachable or the firewall is blocking the TURN allocation port (UDP/TCP 3478 or 443).
+
+**DTLS handshake (media encryption):**
+
+```
+dtls.handshake.type == 1
+```
+
+DTLS (Datagram Transport Layer Security) `handshake.type == 1` is a ClientHello — the start of the DTLS handshake that protects the SRTP media stream. Seeing this confirms media negotiation has reached the encryption layer. If you see ClientHellos with no corresponding ServerHello responses (type 2), the DTLS handshake is being blocked or dropped.
+
+**Teams signaling (TLS on port 443):**
+
+```
+tcp.port == 443 && tls
+```
+
+Teams signaling (SIP over TLS) runs on TCP 443. This filter shows all TLS-encapsulated traffic on port 443 — you cannot decrypt the signaling content without the TLS session keys, but you can verify the TCP connection is establishing, the TLS handshake is completing, and the connection remains stable throughout the meeting.
+
+**TCP retransmissions (network loss indicator):**
+
+```
+tcp.analysis.retransmission
+```
+
+TCP retransmissions appear when packets are lost and the TCP stack resends them. In a Teams media context, retransmissions indicate that media fallback to TCP is experiencing loss — this is one of the clearest trace indicators that UDP-blocked TCP relay is performing poorly.
+
+---
+
+## Reading ICE Negotiation from a Trace
+
+ICE (Interactive Connectivity Establishment) is the process by which Teams determines the best media path. Reading the ICE negotiation from a Wireshark trace tells you definitively whether the MTR device ends up on a direct media path or a relay path — and why.
+
+**ICE candidate types visible in a trace:**
+
+| Candidate Type | What It Means | Wireshark Observable |
+|---------------|--------------|---------------------|
+| Host candidate | Direct device IP:port | STUN requests sourced from the device's local IP |
+| Server-reflexive (srflx) | Device's public IP as seen by a STUN server | STUN Binding Request/Response to a STUN server; response contains the mapped address |
+| Relay candidate | TURN server allocated address | TURN Allocate Request (stun.type == 0x0003) to a TURN server |
+
+**Normal ICE sequence (direct media):**
+
+1. STUN Binding Requests sent to direct/srflx candidate addresses.
+2. Binding Success Responses received from the media server.
+3. ICE connectivity check succeeds for a direct candidate.
+4. Media flows directly (no TURN allocation visible as the selected path).
+5. DTLS ClientHello appears on the selected media port.
+
+**ICE sequence when UDP is blocked (TURN relay):**
+
+1. STUN Binding Requests to direct candidates — no response (firewall drops UDP).
+2. TURN Allocate Requests sent to the TURN server (on UDP 3478 or TCP 443 if UDP is also blocked at 3478).
+3. Allocate Success Response received — TURN relay established.
+4. Media flows via the relay address.
+5. If UDP 3478 is also blocked, TURN fallback occurs over TCP 443.
+
+**Quality implication of TURN relay:**
+
+When media flows through TURN relay, every packet traverses an additional network hop through the relay server. This adds 10–50 ms of latency compared to a direct path, depending on the relay server's geographic proximity. For audio streams where total acceptable RTT is under 150 ms, a relay hop from a distant TURN server can be the difference between acceptable and poor quality.
+
+---
+
+## Interpreting DSCP Markings
+
+DSCP (Differentiated Services Code Point) markings allow network devices to prioritize Teams media over general traffic. Verifying that the MTR device is applying DSCP and that the network is preserving it requires examining the IP header of captured packets.
+
+**Wireshark filter for DSCP values:**
+
+Teams Rooms applies the following DSCP markings per Microsoft's QoS guidance:
+
+| Traffic Type | DSCP Value | Decimal | Wireshark Filter |
+|-------------|-----------|---------|-----------------|
+| Audio (EF) | 46 | 46 | `ip.dsfield.dscp == 46` |
+| Video (AF41) | 34 | 34 | `ip.dsfield.dscp == 34` |
+| App sharing / screenshare (AF21) | 18 | 18 | `ip.dsfield.dscp == 18` |
+| Signaling (CS3) | 24 | 24 | `ip.dsfield.dscp == 24` |
+
+**Verifying DSCP at source (device capture):**
+
+Apply the filter `ip.dsfield.dscp == 46` to a netsh-captured trace. Audio RTP packets from the MTR device should match this filter. If no packets match, the QoS policy is not applied on the device — check the Intune QoS policy deployment status.
+
+**Verifying DSCP preservation (switch SPAN or firewall capture):**
+
+Apply the same filter to a trace captured at the switch SPAN port or firewall. If packets show `ip.dsfield.dscp == 0` (Best Effort) in the switch capture but `46` in the device capture, the access switch is stripping the DSCP marking. This is common when:
+- The switch port is configured with a QoS ingress policy that remarks all incoming traffic.
+- The switch is in a default configuration that does not trust DSCP markings from endpoints.
+
+Fix: configure the switch port to **trust DSCP** (`mls qos trust dscp` on Cisco IOS, or equivalent on other platforms) for the MTR device's access port.
+
+---
+
+## Common Trace-Confirmed Issues
+
+The following patterns each produce a specific, unambiguous signature in a Wireshark trace.
+
+**Issue 1: UDP blocked — all media through TCP relay**
+
+Trace signature:
+- No STUN Binding Success Responses to direct candidates (UDP Binding Requests receive no response).
+- TURN Allocate Requests and Responses on TCP 443.
+- Media RTP packets visible flowing over TCP connections (not raw UDP).
+- TCP retransmissions present during periods of poor quality.
+
+```
+# Wireshark filter to confirm TCP relay media
+tcp.port == 443 && (stun.type == 0x0003 || stun.type == 0x0103)
+```
+
+Resolution: Open UDP 3478–3481 outbound to `*.turn.teams.microsoft.com` on the firewall. After fix, re-capture and confirm direct ICE candidates succeed.
+
+**Issue 2: DSCP marking being stripped**
+
+Trace signature (compared between device capture and switch SPAN):
+- Device capture: audio packets show `ip.dsfield.dscp == 46`.
+- Switch SPAN capture: same audio packets show `ip.dsfield.dscp == 0`.
+
+```
+# Wireshark filter to find audio packets with no DSCP marking
+ip.dsfield.dscp == 0 && udp.port >= 3478 && udp.port <= 3481
+```
+
+Resolution: Configure the access switch port connected to the MTR device to trust DSCP markings. Verify end-to-end preservation by also capturing at the WAN egress point.
+
+**Issue 3: TCP RST on port 443 — signaling blocked**
+
+Trace signature:
+- TCP SYN packets sent to Microsoft signaling IPs on port 443.
+- Immediate TCP RST received in response (or no response, with SYN retransmitted).
+- Teams Rooms app shows sign-in failure or cannot join meetings.
+
+```
+# Wireshark filter to find TCP RST events on port 443
+tcp.port == 443 && tcp.flags.reset == 1
+```
+
+This pattern indicates the firewall is actively refusing or blocking TCP 443 connections to Microsoft's signaling infrastructure. Teams Rooms cannot operate without TCP 443 to the Teams signaling endpoints. Resolution: review firewall allow rules for `*.teams.microsoft.com` and `*.lync.com` on TCP 443.
+
+---
+
+<KnowledgeCheck id="p3-t2-m1-l4-kc">
+  <Question>
+    A network trace captured at the switch SPAN port of an MTR device's access
+    port shows: STUN Binding Requests sent to direct candidates on UDP with
+    no Binding Success Responses received; TURN Allocate Requests and Responses
+    on TCP port 443; audio RTP packets arriving at the SPAN port with
+    ip.dsfield.dscp == 0 throughout the call. A separate device-side netsh
+    trace shows the same audio packets leaving the device with
+    ip.dsfield.dscp == 46. How many distinct network issues are present, and
+    what are they?
+  </Question>
+  <Answer>One issue: UDP is blocked. The DSCP discrepancy is expected because DSCP is only applied on outbound paths and the SPAN port shows both directions</Answer>
+  <Answer>One issue: DSCP is being stripped. The TURN relay usage is normal behavior and does not represent an issue</Answer>
+  <Answer correct>Two distinct network issues are present. Issue 1: UDP is blocked — the absence of STUN Binding Success Responses to direct candidates on UDP, combined with TURN relay falling back to TCP 443, confirms that UDP is not passing through the network from this device. This will degrade media quality due to TCP relay latency and retransmission behavior. Issue 2: DSCP is being stripped at the access switch — the device-side trace confirms DSCP 46 is applied by the OS (QoS policy is working correctly on the device), but the SPAN capture shows DSCP 0 on the same packets, meaning the access switch is remarking audio packets to Best Effort before they enter the network. This means even if UDP is fixed, the network will not prioritize the MTR audio traffic. Both issues must be remediated: open UDP 3478–3481 to Microsoft's TURN infrastructure, and configure the switch port to trust DSCP markings from the MTR device</Answer>
+  <Answer>Three issues: UDP blocked, DSCP stripped, and DTLS handshake failing — the absence of DTLS records in the SPAN capture indicates encryption is not being established over the TCP relay path</Answer>
+  <Explanation>
+    The two traces together provide complementary evidence. The device-side
+    netsh trace shows what the OS sends (DSCP 46 marked audio). The switch
+    SPAN trace shows what the network receives (DSCP 0). The discrepancy
+    between these two captures is unambiguous evidence of DSCP remarking at
+    the switch — not at the device, and not at the firewall. Simultaneously,
+    the absence of UDP STUN responses with TCP 443 TURN relay in use confirms
+    UDP is blocked. These are independent issues with independent remediations.
+    The DTLS concern in the fourth answer is a distractor — DTLS operates
+    over whatever transport is established (including TCP relay), so DTLS
+    records may appear as TLS-encapsulated content within the TCP 443 stream
+    and would not be separately visible as dtls.handshake frames in the
+    SPAN capture without deeper inspection.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Capture methods:** netsh trace on-device (convert ETL to pcapng with etl2pcapng); switch SPAN port for wire-level DSCP verification; firewall capture for post-NAT/post-policy view.
+- **Key Wireshark filters:** `stun.type == 0x0001` (ICE binding requests); `stun.type == 0x0003` (TURN allocation); `dtls.handshake.type == 1` (media encryption start); `ip.dsfield.dscp == 46/34` (DSCP-marked media); `tcp.analysis.retransmission` (TCP loss indicator).
+- **ICE negotiation:** Binding Success Responses to direct candidates = direct media path; Allocate Requests followed by relay media = TURN relay in use; absent responses to direct candidates = UDP blocked.
+- **DSCP verification:** Compare device-side trace (should show DSCP 46/34) with switch SPAN trace (should also show DSCP 46/34 if switch trusts DSCP); discrepancy confirms switch is stripping markings.
+- **Three common trace-confirmed issues:** (1) UDP blocked — TURN TCP relay, TCP retransmissions, no direct ICE success; (2) DSCP stripped — DSCP 46 at source, DSCP 0 at switch; (3) TCP RST on 443 — firewall blocking Teams signaling.
+
+---
+
+## What's Next
+
+[Escalation to Microsoft Support →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/diagnostic-methodology/lessons/microsoft-support-escalation/)

@@ -1,0 +1,238 @@
+---
+id: "p1-t3-m1-l2"
+slug: "resource-account-sign-in-verification"
+title: "Resource Account Sign-In and Verification"
+shortTitle: "Sign-In & Verification"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 1
+moduleSlug: "mtr-windows-initial-setup"
+moduleTitle: "MTR Windows — Initial Setup"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Sign an MTR Windows device into a resource account and verify full authentication and operational status"
+  - "Diagnose resource account sign-in failures using error messages, application logs, and Teams Admin Center"
+  - "Document the signed-in device's state in the project's acceptance documentation"
+
+prerequisites:
+  - "p1-t3-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+  - "exchange-online"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+
+topicTags:
+  - "resource-accounts"
+  - "sign-in"
+  - "verification"
+  - "tac"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m1-l2-signin-verification-checklist.pdf"
+    label: "Post-Sign-In Verification Checklist"
+    sizeKb: 50
+
+relatedLessons:
+  - "p1-t3-m1-l1"
+  - "p1-t3-m1-l3"
+
+metaDescription: "Sign an MTR Windows device into a resource account and verify operational status — local checks, Teams Admin Center device health, calendar sync verification, sign-in error codes, and log file diagnostics."
+
+keywords:
+  - "MTR sign in resource account"
+  - "Teams Rooms sign in verification"
+  - "MTR TAC device health check"
+  - "Teams Rooms sign in failure"
+  - "MTR application logs"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A successful sign-in is not the same as a verified sign-in. The Teams application accepting the resource account credentials is one data point; the device appearing healthy in Teams Admin Center with all peripherals green and a synced calendar is the complete picture. The verification sequence in this lesson covers both the local checks (what you see on the device) and the TAC checks (what Microsoft's cloud reports about the device) that together confirm the room is ready to use.
+
+---
+
+## Signing In
+
+From the MTR application welcome screen, select **Sign In** and enter the resource account UPN (the room's email address — e.g., boardroom-a@contoso.com) and the resource account password.
+
+The device authenticates using Modern Authentication (OAuth 2.0) against Entra ID. The device does not store the password after initial authentication — it stores an OAuth token that is automatically refreshed. If the token refresh fails (due to account expiry, MFA policy change, or license removal), the device will sign out automatically and display a sign-in prompt on the console.
+
+On successful authentication, the MTR home screen appears with the room name displayed and the calendar panel showing upcoming meetings (if any are scheduled).
+
+---
+
+## Local Verification — On the Device
+
+After sign-in, verify the following items directly on the device:
+
+**1. Room name display:** The room name shown on the MTR home screen should match the resource account's display name as configured in Exchange Online. If it shows an email address instead of a room name, the display name on the resource account's Entra ID object may not be set correctly — ask IT to update the account's display name.
+
+**2. Calendar panel:** If a test meeting has been scheduled and invited the resource account, the meeting should appear on the calendar panel. Allow up to 5 minutes after sign-in for the initial calendar sync. If no test meeting was scheduled, confirm at least that the calendar panel is displayed and not showing an error state.
+
+**3. Peripheral devices visible:** Navigate to the MTR settings (gear icon, enter admin PIN) → Peripherals. Confirm that the camera, microphone, and speaker devices appear in the device list and are not showing error states. A device that is absent from this list has not been enumerated by Windows — USB connection issue or driver problem requiring investigation before accepting the installation.
+
+**4. Audio test:** From the Peripherals settings page, use the built-in microphone test to confirm audio pickup, and the speaker test to confirm audio output. Confirm the correct devices are selected as the default microphone and speaker.
+
+**5. Camera preview:** From the Peripherals settings page or the Camera section, confirm the camera feed is visible and showing a live image. No image indicates a USB connection or driver issue.
+
+---
+
+## TAC Verification — In Teams Admin Center
+
+Within 5–15 minutes of sign-in, the device should appear in Teams Admin Center under **Devices → Teams Rooms on Windows.** The device registration with Microsoft's cloud services has a propagation delay — if the device does not appear within 20 minutes, check that the device has internet connectivity and that TAC is being viewed with an appropriate administrator account.
+
+On the device detail page, verify:
+
+- **Device status:** Should show Healthy or, if there are minor issues, Needs Attention (not Offline or Critical)
+- **Peripheral health:** Camera, Microphone, and Speaker tiles should all show green (healthy) indicators
+- **Resource account:** Confirm the correct UPN is shown as the signed-in account
+- **App version:** Compare the shown app version against the current Teams Rooms release version in Microsoft's documentation
+- **Last activity:** Should show a recent timestamp (within the last few minutes)
+
+{/* MEDIA: Annotated TAC device detail page — screenshot showing successfully signed-in device with all status indicators green. Callout labels on each field: device status, peripheral health tiles, resource account UPN, app version, last activity. Filename: p1-t3-m1-l2-tac-device-detail.png */}
+
+---
+
+## Sign-In Failure Codes
+
+When sign-in fails, the on-screen error message typically identifies the cause:
+
+| Error Message | Likely Cause | First Response |
+|--------------|-------------|---------------|
+| "We couldn't sign you in" | Incorrect UPN or password, or generic auth failure | Verify UPN and password; check if MFA is blocking sign-in |
+| "Your account doesn't have a license" | Teams Rooms license not assigned to the resource account | IT must assign a Teams Rooms Basic or Pro license |
+| "Exchange connectivity issue" | Exchange Online mailbox not provisioned, license lapsed, or mailbox configuration error | Run Get-CalendarProcessing to verify mailbox; check M365 license status |
+| "Can't connect to the server" | Network or firewall blocking Microsoft 365 endpoints | Verify internet connectivity; confirm M365 endpoints are accessible |
+| MFA prompt appears | Resource account not excluded from MFA Conditional Access policy | IT must add resource account to MFA policy exclusion |
+
+---
+
+## Application Log Diagnostics
+
+For sign-in failures where the on-screen error message does not provide sufficient information, the MTR application writes detailed logs to:
+
+`C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_...\LocalState\`
+
+(The full package folder name includes a hash — search for the folder beginning with "Microsoft.SkypeRoomSystem" in Windows Explorer while logged in as the local admin account.)
+
+Log files are in text format and can be opened with Notepad or any text editor. Search for the error timestamp and look for authentication error codes or service connection failure messages. Microsoft Support can also request log collection directly through TAC for escalated cases.
+
+<DownloadButton
+  file="p1-t3-m1-l2-signin-verification-checklist.pdf"
+  label="Post-Sign-In Verification Checklist"
+  sizeKb={50}
+  description="Structured verification checklist covering local device checks (room name, calendar, peripherals, audio, camera) and TAC checks (device status, peripheral health, app version) with pass/fail documentation fields."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m1-l2-kc">
+  <Question>
+    After signing in a resource account on an MTR Windows device, the home screen shows
+    the account's email address instead of the room's friendly name (e.g.,
+    "boardroom-a@contoso.com" instead of "Board Room A"). What is the likely cause?
+  </Question>
+  <Answer>The Teams Rooms application version is outdated and does not support room name display</Answer>
+  <Answer>The resource account does not have an Exchange Online mailbox</Answer>
+  <Answer correct>The resource account's Entra ID display name property is not set to the desired room name — IT must update the display name on the Entra ID user object</Answer>
+  <Answer>The room name setting in MTR app settings needs to be manually configured to override the UPN</Answer>
+  <Explanation>
+    The MTR home screen displays the resource account's Entra ID display name, not the
+    UPN. If the display name was not set (or was set to the email address by default),
+    the UPN appears instead. The IT administrator needs to update the DisplayName property
+    on the Entra ID user object for the resource account. This can also be overridden in
+    SkypeSettings.xml using the RoomName element (covered in Module 3.3).
+  </Explanation>
+
+  <Question>
+    An MTR Windows device signs in successfully and the home screen appears, but no
+    meetings show on the calendar panel even though a test meeting was scheduled and
+    the room was invited 30 minutes ago. What should be checked first?
+  </Question>
+  <Answer>Restart the device — the calendar sync is a one-time event that must be triggered by a restart</Answer>
+  <Answer>The Teams Rooms Pro license is required for calendar sync functionality</Answer>
+  <Answer correct>Verify that the Exchange Online room mailbox has AutomateProcessing set to AutoAccept — the meeting invite may have been received but not automatically accepted, so it is not appearing on the calendar</Answer>
+  <Answer>Check that the test meeting was created within the last 15 minutes — older meetings are not displayed</Answer>
+  <Explanation>
+    Calendar-based meeting display requires that the meeting invite was sent to the resource
+    account AND automatically accepted. If AutomateProcessing is not set to AutoAccept,
+    the invite may have been received but left in the inbox unaccepted — and unaccepted
+    invites do not appear on the MTR console. Run Get-CalendarProcessing to verify the
+    setting and Set-CalendarProcessing to correct it. After correction, the meeting organizer
+    may need to resend the invite.
+  </Explanation>
+
+  <Question>
+    How long after a successful sign-in should you expect the device to appear in the
+    Teams Admin Center Devices section?
+  </Question>
+  <Answer>Immediately — TAC updates in real time when a device signs in</Answer>
+  <Answer correct>Within 5–20 minutes — there is a propagation delay between device sign-in and TAC device registration visibility</Answer>
+  <Answer>Up to 24 hours — TAC device synchronization is a batch process that runs nightly</Answer>
+  <Answer>TAC visibility requires the Teams Rooms Pro license — Basic licenses do not appear in TAC</Answer>
+  <Explanation>
+    TAC device registration has a propagation delay of approximately 5–20 minutes after
+    a successful sign-in. During this window, the device is registering with Microsoft's
+    cloud services and the registration data is propagating to TAC. If the device has
+    not appeared after 20 minutes, investigate internet connectivity and Microsoft 365
+    endpoint access. Both Basic and Pro licensed devices appear in TAC.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Sign in and verify locally:** Room name, calendar sync, peripheral devices in settings, audio test, camera preview — all verified on the device before leaving the room.
+- **Verify in TAC:** Device status, peripheral health (all green), correct resource account, current app version — all verified in TAC within 20 minutes of sign-in.
+- **Diagnose sign-in failures:** Error message → cause mapping; log file location for deeper diagnostics.
+- **Document the sign-in state:** Completion of the verification checklist creates a timestamped record of the device's post-sign-in state.
+
+---
+
+## What's Next
+
+With sign-in verified, the next lesson goes deep on the MTR application settings — every configuration category and the specific settings that must be tuned for each room scenario.
+
+[MTR App Settings Deep Dive — Display, Audio, Meeting, Peripherals →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-windows-initial-setup/lessons/mtr-app-settings/)

@@ -1,0 +1,230 @@
+---
+id: "p4-t2-m1-l3"
+slug: "multi-vendor-architecture"
+title: "Multi-Vendor Architecture Decisions"
+shortTitle: "Multi-Vendor Architecture"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 1
+moduleSlug: "solution-design"
+moduleTitle: "Solution Architecture and Design"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["solutions-architect", "presales-engineer"]
+
+objectives:
+  - "Evaluate the trade-offs between single-vendor and multi-vendor MTR hardware strategies"
+  - "Define the criteria for selecting MTR hardware vendors for different room types and client contexts"
+  - "Identify the integration constraints that limit multi-vendor combinations"
+  - "Make and defend hardware architecture recommendations in a client context"
+
+prerequisites:
+  - "p4-t2-m1-l1"
+
+technologyTags: ["MTR", "Teams Rooms", "Logitech", "Poly", "Yealink", "Crestron", "Biamp"]
+roleTags: ["solutions-architect", "presales-engineer"]
+topicTags: ["solution-design", "hardware-selection", "vendor-strategy", "architecture"]
+vendorTags: ["Microsoft", "Logitech", "Poly", "Yealink", "Crestron", "Biamp", "QSC"]
+
+relatedLessons:
+  - "p4-t2-m1-l1"
+  - "p4-t2-m1-l4"
+
+metaDescription: "Learn to make and defend multi-vendor architecture decisions for MTR deployments, including hardware vendor selection criteria, integration constraints, and single vs multi-vendor strategies."
+keywords: ["MTR hardware selection", "Teams Rooms vendors", "Logitech vs Poly vs Yealink", "multi-vendor AV design"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Multi-Vendor Reality
+
+Enterprise MTR deployments rarely involve a single hardware vendor across all room types. The MTR-certified hardware ecosystem includes dozens of OEM partners, and different vendors have genuine strengths for different use cases.
+
+A solution architect who recommends the same vendor for every room type regardless of suitability is either not thinking about the client's needs or is optimising for their own vendor relationships rather than the client's outcome.
+
+The architecture decision framework establishes the criteria for vendor selection, the known integration constraints, and when a single-vendor strategy is preferable despite its limitations.
+
+---
+
+## Primary MTR Hardware Vendors
+
+### Logitech
+
+**Strengths**:
+- Widest range from huddle (Rally Bar Huddle) to large room (Rally Plus)
+- IntelliFrame AI framing available across the range
+- Strong Intune/MDM support
+- Mature Teams Rooms App integration
+- Most widely deployed in enterprise environments
+
+**Weaknesses**:
+- Rally system (modular) is a larger physical footprint than competitors
+- Limited BYOD hub options vs Poly
+- Premium pricing for integrated Rally Bar vs equivalent Poly/Yealink systems
+
+**Best for**: Standard and large meeting rooms; clients prioritising management consistency across the fleet.
+
+### Poly (HP)
+
+**Strengths**:
+- Studio X range covers huddle through large room in a compact form factor
+- E70 dual camera system for large room tracking
+- Strong legacy in video conferencing market (trust factor with procurement)
+- HP Poly Lens fleet management integration
+
+**Weaknesses**:
+- Poly Lens is a parallel management platform — adds complexity to Pro Management strategy
+- Some models have firmware update cadences that differ from Windows Update
+- HP acquisition has created some product roadmap uncertainty
+
+**Best for**: Clients with existing Poly hardware; huddle to standard room (Studio X range); large rooms requiring dual-camera tracking.
+
+### Yealink
+
+**Strengths**:
+- Highly competitive pricing (20–30% below Logitech/Poly equivalents in many segments)
+- Full MTR-certified range from huddle to large room
+- Good build quality for the price point
+
+**Weaknesses**:
+- Less established brand recognition in UK/Europe (can create procurement hesitancy)
+- Support ecosystem less mature than Logitech/Poly
+- Fewer partner integrations
+
+**Best for**: Cost-sensitive deployments; SMB clients; when budget is the primary constraint.
+
+### Crestron Flex
+
+**Strengths**:
+- Native integration with Crestron control systems
+- Best choice for AV control system environments (boardrooms, auditoriums)
+- UC-MX and UC-CX ranges cover a wide span of room types
+- Strong in higher education and government sectors
+
+**Weaknesses**:
+- Higher cost than standalone MTR compute units
+- Requires Crestron expertise for configuration and support
+- Overkill for simple standard meeting rooms
+
+**Best for**: Boardrooms and large rooms with Crestron control systems; projects where AV control integration is a primary requirement.
+
+---
+
+## DSP and Audio Component Vendors
+
+When the MTR compute unit's integrated audio is insufficient (typically rooms >6m), an external DSP is required.
+
+### Biamp (Tesira, Devio)
+
+- Market-leading DSP platform; mature, well-documented Teams integration
+- Devio SC series: simplified USB DSP specifically for Teams Rooms
+- Tesira: full programmable DSP for complex installations (boardrooms, auditoriums)
+- Best for: large rooms, boardrooms, complex AV environments
+
+### QSC (Core/NV series)
+
+- Strong in the North American market; growing UK/Europe presence
+- Q-SYS platform: network-based audio/video/control convergence
+- Best for: multi-room sites where unified AV management is desired
+
+### Shure (MXA series + Intellimix P300)
+
+- MXA910/MXA710 ceiling array microphones widely specified in enterprise boardrooms
+- Intellimix P300 AEC processor provides standalone AEC without full DSP
+- Best for: architecturally constrained boardrooms where ceiling mic aesthetics are critical
+
+---
+
+## Single-Vendor vs Multi-Vendor Strategy
+
+### The Case for Single-Vendor
+
+**Management consistency**: All devices appear the same way in Teams Admin Centre, Intune, and Pro Management. Policy templates, update rings, and compliance policies apply uniformly.
+
+**Support simplicity**: One vendor support contract; one escalation path; one set of product documentation.
+
+**Spares**: Holding one spare device covers any failure across the fleet.
+
+**Training**: Installation, configuration, and support teams learn one hardware platform deeply rather than multiple platforms superficially.
+
+**Recommended when**: The vendor's range genuinely covers all required room types well (Logitech covers huddle through large room adequately for most enterprise scenarios); client has an existing vendor relationship; managed service is included.
+
+### The Case for Multi-Vendor
+
+**Best-of-breed per room type**: An integrated soundbar is optimal for a huddle space; a PTZ camera + DSP + ceiling mics is optimal for a boardroom. These are different products from different vendors.
+
+**Price optimisation**: Using a cost-efficient vendor (Yealink) for standard rooms and premium vendor (Logitech/Crestron) for high-visibility rooms optimises cost without compromising where it matters.
+
+**Client constraints**: Client may have existing vendor relationships, lease agreements, or procurement frameworks that require certain vendors.
+
+**Recommended when**: The room mix includes genuinely distinct requirements that no single vendor satisfies well; control system integration is required (Crestron); boardroom audio quality is paramount (Biamp + Shure).
+
+---
+
+## Integration Constraints
+
+Not all combinations of MTR hardware components are compatible or supported.
+
+### MTR Compute + Peripheral Pairing
+
+- Most MTR compute units (Logitech, Poly, Yealink, Crestron) use USB-connected peripherals
+- Mixing a Logitech compute unit with a Poly camera is generally possible but is **not officially supported** and creates a grey area for technical support
+- **Recommendation**: Keep camera, microphone, and compute from the same ecosystem unless there is a specific technical reason not to
+
+### DSP + MTR Compute Integration
+
+When using an external DSP with an MTR compute unit:
+- The DSP presents to the MTR device as a USB audio interface
+- USB audio class 2.0 compatibility is required (verify in DSP documentation)
+- Audio echo cancellation must be disabled on the MTR device when AEC is handled by the DSP (avoid double AEC)
+- Biamp Tesira + Logitech/Poly compute: well-documented; Biamp publishes configuration notes specifically for Teams Rooms integration
+
+### Control System + MTR Integration
+
+- MTR does not natively support third-party control system commands to the Teams app itself
+- Control systems (Crestron, Extron) control AV peripherals (display, matrix, lighting) independently
+- MTR join/leave actions can be triggered via calendar (one-touch join) but not via RS-232/LAN command from a control system to the MTR app
+- Exception: Microsoft Graph API can be used for some programmatic room control (requires custom development)
+
+---
+
+## Making the Recommendation
+
+When presenting architecture to a client, frame vendor selection around three factors:
+
+1. **Room type fitness**: Does this vendor's product perform well for this specific room type?
+2. **Management consistency**: Can we manage this fleet without unnecessary tool complexity?
+3. **Total cost of ownership**: What does this choice cost over a 5-year lifecycle (hardware + support + management time)?
+
+Be explicit about trade-offs. Clients trust architects who explain their reasoning, not those who just list products.
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client's estate includes 20 standard meeting rooms and 2 executive boardrooms. The boardrooms require Crestron control system integration. What is the recommended architecture strategy?">
+    <Answer>Crestron Flex for all 22 rooms to maintain single-vendor consistency</Answer>
+    <Answer>Logitech for all 22 rooms — adapt the boardrooms to avoid Crestron</Answer>
+    <Answer correct>Logitech or equivalent for the 20 standard rooms (management consistency, cost efficiency); Crestron Flex for the 2 boardrooms (control system integration requirement)</Answer>
+    <Answer>Three separate vendors — one per room type — for best-of-breed in every scenario</Answer>
+    <Explanation>This is a legitimate multi-vendor strategy: the standard rooms have no control system requirement, so a simpler and more cost-efficient vendor is appropriate. The boardrooms have a genuine control system integration requirement that Crestron Flex solves natively. Three vendors for three room types would create unnecessary management complexity.</Explanation>
+  </Question>
+</KnowledgeCheck>

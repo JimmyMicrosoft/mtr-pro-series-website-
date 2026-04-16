@@ -1,0 +1,182 @@
+---
+id: "p4-t2-m2-l2"
+slug: "competitive-positioning-mtr"
+title: "Competitive Positioning: MTR vs Zoom Rooms vs Webex"
+shortTitle: "Competitive Positioning"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 2
+moduleSlug: "presales-competitive"
+moduleTitle: "Pre-Sales and Competitive Positioning"
+
+lessonIndex: 2
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 30
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["solutions-architect", "presales-engineer", "account-manager"]
+
+objectives:
+  - "Compare and contrast Microsoft Teams Rooms, Zoom Rooms, and Cisco Webex Rooms across key evaluation dimensions"
+  - "Identify the scenarios where MTR is the strongest choice and articulate the reasons clearly"
+  - "Anticipate and respond to competitive objections with factual, client-focused responses"
+  - "Use Microsoft 365 integration as the primary competitive differentiator"
+
+prerequisites:
+  - "p4-t2-m2-l1"
+
+technologyTags: ["MTR", "Teams Rooms", "Zoom Rooms", "Webex", "Cisco"]
+roleTags: ["solutions-architect", "presales-engineer", "account-manager"]
+topicTags: ["competitive-analysis", "presales", "positioning", "Teams Rooms"]
+vendorTags: ["Microsoft", "Zoom", "Cisco"]
+
+relatedLessons:
+  - "p4-t2-m2-l1"
+  - "p4-t2-m2-l3"
+
+metaDescription: "Learn to competitively position Microsoft Teams Rooms against Zoom Rooms and Cisco Webex, including comparison across key dimensions and response to common competitive objections."
+keywords: ["MTR vs Zoom Rooms", "Teams Rooms competitive", "Webex vs Teams Rooms", "video conferencing comparison"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Competitive Landscape
+
+The enterprise meeting room technology market is contested primarily between three platforms:
+
+- **Microsoft Teams Rooms (MTR)**: Windows or Android-based, tightly integrated with Microsoft 365
+- **Zoom Rooms**: Android or Mac-based, integrated with Zoom's cloud platform
+- **Cisco Webex Rooms (Webex Devices)**: Cisco-proprietary hardware, integrated with Webex cloud and on-premises Cisco infrastructure
+
+A fourth category — Google Meet Hardware — exists but has limited penetration in the enterprise market outside of Google Workspace-dominant organisations.
+
+Understanding where MTR wins, where it is genuinely competitive, and where competitors have real advantages is essential for credible sales conversations. Overstating MTR's strengths destroys trust; understanding trade-offs builds it.
+
+---
+
+## Comparison Framework
+
+### Primary Meeting Platform
+
+| Criterion | MTR | Zoom Rooms | Webex Rooms |
+|---|---|---|---|
+| Native platform | Microsoft Teams | Zoom | Cisco Webex |
+| Cross-platform join | Good (with RTCP/SIP) | Good | Good |
+| Calendar integration | Native M365/Exchange | Native Zoom calendar + Google/M365 | Native Webex + Google/M365 |
+| Identity integration | Entra ID/Azure AD | Zoom identity + SSO | Cisco identity + SSO |
+
+**MTR advantage**: In M365-dominant organisations (the majority of the UK enterprise market), MTR's native integration with Exchange calendar, Entra ID, and Teams is a structural advantage. One sign-in, one calendar, one meeting platform.
+
+**Competitor advantage**: In Zoom-first organisations or Google Workspace organisations, Zoom Rooms or Google Meet Hardware has the equivalent advantage. Know when you're fighting the tide.
+
+### Hardware Ecosystem
+
+| Criterion | MTR | Zoom Rooms | Webex Rooms |
+|---|---|---|---|
+| Certified hardware vendors | 25+ (Logitech, Poly, Yealink, Crestron, DTEN, etc.) | 15+ (Logitech, Poly, DTEN, etc.) | Primarily Cisco-proprietary (Room Kit range) |
+| Price range | £1,500–£30,000+ | £800–£25,000+ | £2,500–£50,000+ |
+| Flexibility | High — choose hardware per room type | High | Low — primarily Cisco hardware |
+
+**MTR advantage**: Hardware flexibility and competitive pricing across a wide vendor ecosystem.
+
+**Competitor advantage**: Cisco Webex Rooms hardware (Room Bar, Board series) is highly integrated with excellent build quality, but the closed ecosystem limits flexibility and increases cost.
+
+### Management and Administration
+
+| Criterion | MTR | Zoom Rooms | Webex Rooms |
+|---|---|---|---|
+| Fleet management portal | Pro Management (Teams Admin Centre + dedicated portal) | Zoom Device Management | Cisco Control Hub |
+| MDM integration | Full Intune/SCCM support (Windows) | Limited (Android) | Limited (proprietary OS) |
+| OS updates | Windows Update via Intune/WUfB | Android OEM updates | Cisco-managed |
+| ITSM integration | Webhook/Graph API | Webhook | Webhook |
+
+**MTR advantage**: For organisations with existing Intune/SCCM infrastructure, MTR devices are managed exactly like any other Windows PC endpoint. Security policy, compliance reporting, and update management all operate through existing tooling. This is a significant operational advantage.
+
+**Competitor advantage**: Zoom Device Management and Cisco Control Hub are simpler for organisations without existing MDM infrastructure.
+
+### Security and Compliance
+
+| Criterion | MTR | Zoom Rooms | Webex Rooms |
+|---|---|---|---|
+| Compliance certifications | Microsoft 365 compliance (ISO 27001, SOC 2, etc.) | Zoom compliance | Cisco compliance |
+| Conditional Access | Full Entra ID Conditional Access support | Zoom SSO | Cisco SSO |
+| Data residency | M365 data residency options | Zoom data residency options | Cisco data residency options |
+| GCC/GCC-High support | Yes (MTR for GCC, GCC-High) | Limited | No |
+
+**MTR advantage**: For public sector, defence, financial services, and other regulated clients, MTR in Microsoft's GCC/GCC-High clouds is often the only compliant option. Competitor offerings in these compliance categories are significantly more limited.
+
+### Meeting Experience
+
+| Criterion | MTR | Zoom Rooms | Webex Rooms |
+|---|---|---|---|
+| Front Row layout | Yes (Windows MTR) | No equivalent | Limited |
+| IntelliFrame (individual framing) | Yes (Pro license, compatible hardware) | Smart Gallery (similar) | People Focus (similar) |
+| Noise suppression | Microsoft NLP-based | Zoom AI NLP | Cisco AI NLP |
+| Background blur | Yes | Yes | Yes |
+| Whiteboard integration | Microsoft Whiteboard | Zoom Whiteboard | Webex Whiteboard |
+| Companion mode | Yes (Teams mobile as companion) | Yes | Yes |
+
+**Assessment**: At the meeting experience level, all three platforms are broadly comparable for standard use cases. MTR differentiates primarily on Front Row for hybrid equity.
+
+---
+
+## When MTR Wins
+
+MTR is the strongest competitive choice when:
+
+1. **M365-dominant organisation**: Exchange, Teams, and Entra ID are the existing infrastructure. MTR is the natural continuation of the same ecosystem.
+
+2. **Existing Windows MDM environment**: Intune or SCCM is already managing Windows endpoints. MTR adds zero management tool complexity.
+
+3. **Regulated industries**: GCC/GCC-High compliance requirements, or sector-specific compliance that Microsoft 365 satisfies.
+
+4. **Large scale**: Enterprise deployments benefit from MTR's Intune management, Pro Management, and policy-based fleet governance more than small deployments.
+
+5. **Consolidated managed service**: Contractor managing M365 tenant + network + rooms = natural fit for MTR.
+
+---
+
+## Responding to Competitive Objections
+
+### "Zoom Rooms has a lower price per room"
+
+**Response**: "Per-device cost is one component of total cost of ownership. In your environment with Intune already managing 500 Windows PCs, adding MTR devices costs almost nothing in incremental management overhead. Zoom Rooms requires either Zoom Device Management (additional subscription) or an Android MDM tool you may not have. What's your current endpoint management spend per device per year?"
+
+### "We already use Zoom for meetings"
+
+**Response**: "If Teams is the primary collaboration platform for your workforce, rooms that join Teams meetings natively will always provide a better experience than rooms running a different platform. Do most of your meeting invites originate from Teams calendars, or Zoom calendars?" If genuinely Zoom-first, acknowledge it.
+
+### "Cisco Webex has better hardware quality"
+
+**Response**: "Cisco's Room Kit hardware is excellent — it's also 30–50% more expensive and locks you into a single vendor. With MTR, you can choose Logitech, Poly, or Crestron per room type, at competitive pricing, while all devices are managed through a single portal. What is driving the Cisco preference — is it existing Cisco infrastructure?"
+
+### "We looked at MTR two years ago and it wasn't mature enough"
+
+**Response**: "That's a fair concern from two years ago. The MTR platform has changed significantly — Pro Management portal, IntelliFrame, Front Row, full Intune integration — most of these features were released in the last 18 months. I can show you a live system. Would it be worth a 30-minute demo?"
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client's CIO says 'We use Zoom for all our video meetings and we're considering Zoom Rooms for the meeting rooms.' What is the most effective response?">
+    <Answer>"Teams Rooms is much better than Zoom Rooms in every way."</Answer>
+    <Answer>Immediately concede and offer to help with Zoom Rooms instead</Answer>
+    <Answer correct>"That makes sense if Zoom is your primary meeting platform. Can I ask — what platform does the organisation use for email, calendar, and internal collaboration? If it's Microsoft 365 and Teams, there's a question of whether the rooms should match the majority platform." Then listen and qualify.</Answer>
+    <Answer>"Zoom Rooms has security vulnerabilities you should know about."</Answer>
+    <Explanation>The correct response acknowledges the client's perspective, asks a qualifying question about their actual M365 environment, and positions the conversation around fit rather than making unsubstantiated claims. If the client is genuinely Zoom-first, this may be the wrong opportunity — and it's better to discover that early.</Explanation>
+  </Question>
+</KnowledgeCheck>

@@ -1,0 +1,211 @@
+---
+id: "p1-t3-m1-l4"
+slug: "windows-os-settings"
+title: "Windows OS Settings Relevant to MTR — Power, Updates, Networking"
+shortTitle: "Windows OS Settings"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 1
+moduleSlug: "mtr-windows-initial-setup"
+moduleTitle: "MTR Windows — Initial Setup"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Configure Windows power settings to prevent unscheduled sleep or restart events during business hours"
+  - "Verify and configure Windows Update settings to prevent update reboots during meeting hours"
+  - "Apply correct network adapter settings for an MTR Windows device in an enterprise environment"
+
+prerequisites:
+  - "p1-t3-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+
+topicTags:
+  - "windows-settings"
+  - "power-management"
+  - "network-configuration"
+  - "windows-update"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m1-l4-windows-settings-checklist.pdf"
+    label: "Windows OS Settings Audit Checklist"
+    sizeKb: 50
+
+relatedLessons:
+  - "p1-t3-m1-l3"
+  - "p1-t3-m1-l5"
+
+metaDescription: "Windows OS configuration for MTR devices — power plan settings to prevent sleep, Windows Update active hours, network adapter configuration, DHCP vs. static IP, proxy exclusion, and Wi-Fi management."
+
+keywords:
+  - "MTR Windows power settings"
+  - "Teams Rooms Windows Update"
+  - "MTR network adapter configuration"
+  - "Teams Rooms DHCP static IP"
+  - "MTR proxy settings"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The MTR application runs on top of Windows, and Windows has default behaviors that are not appropriate for a device that must be available 24 hours a day, never sleep during business hours, and maintain stable network connectivity. The Teams app settings (covered in the previous lesson) configure the meeting experience. The Windows OS settings configure the foundation that keeps the device running reliably. Both must be correct — a perfectly configured Teams app on a Windows system that sleeps after 15 minutes of inactivity will generate room-unavailable complaints on day one.
+
+Windows OS settings for MTR are accessed through the local admin account (not through the Teams app's settings menu). Navigate to Windows Settings via the "..." More menu in the MTR app → Windows Settings, or by logging in with the local admin account through an attached keyboard.
+
+---
+
+## Power Settings
+
+The MTR device must never enter a sleep state. An MTR in sleep mode does not receive calendar invites, does not respond to proximity join signals, and cannot join meetings without a user manually waking it and waiting for the Teams app to reinitialize.
+
+**Configure via Windows Settings → System → Power & sleep:**
+
+- **Screen sleep:** Set to "Never" (or the same timeout value as the MTR app's display timeout — but use Windows display timeout only if you understand the interaction, otherwise set to Never and let the MTR app handle display sleep)
+- **Computer sleep (system sleep):** Set to **Never** — no exceptions
+- **Fast startup:** Enabled (allows faster boot times without affecting always-on operation)
+
+**Configure via Power Options (Control Panel) → Power Plan:**
+Select **High Performance** or create a custom plan. The default Balanced plan throttles processor speed during periods of low activity, which can cause initial meeting join delays and audio encoding latency. High Performance maintains consistent processor speed.
+
+**Windows Update restart behavior:** Confirm that Windows Update is not configured with an "Active hours" window that is shorter than the facility's actual operating hours. If Windows Update is set to update outside active hours of 8AM-6PM, but the building operates until 9PM, updates may trigger restarts during evening meetings. Set active hours to cover the full facility operating window, typically 6AM–11PM for commercial facilities.
+
+---
+
+## Windows Update Settings
+
+**Active hours:** In Windows Settings → Update & Security → Windows Update → Active hours, set the active hours window to cover the facility's operating hours. Windows Update will perform restarts only outside this window. For MTR devices that are operational 24/7, consider using a managed update approach through Intune to control the exact timing of restarts.
+
+**Update deferral:** For standalone (non-Intune) deployments, Windows Update can be set to defer feature updates by up to 35 days and quality updates by up to 30 days. A modest deferral (7–14 days for quality updates) allows time for the MTR community to identify any update issues before applying to production devices. For enterprise Intune deployments, update rings are the standard approach.
+
+**Microsoft Store app updates:** The Teams Rooms application itself updates through the Microsoft Store. Verify that the Microsoft Store is accessible from the device's network (not blocked by firewall or Group Policy). Microsoft Store app updates for Teams Rooms typically install automatically during off-hours when the device is signed in and idle.
+
+<Callout type="warning">
+  Do not disable Windows Update entirely on MTR devices. Security updates are required
+  for maintaining a secure and compliant endpoint. The goal is to control timing and
+  prevent business-hours disruptions — not to block updates indefinitely.
+</Callout>
+
+---
+
+## Network Adapter Settings
+
+**Prefer wired Ethernet:** If an Ethernet cable is connected, disable Wi-Fi on the NIC or in Windows Settings → Network & Internet → Wi-Fi. Having both Ethernet and Wi-Fi active can cause routing confusion — the device may attempt to route traffic over the weaker connection or alternate between interfaces. On a wired MTR device, Wi-Fi should be off.
+
+**Speed and duplex:** In the Network Adapter advanced settings (Device Manager → Network Adapter → Properties → Advanced), the speed and duplex setting should be left at Auto-Negotiate for modern switches. If the switch is known to have duplex mismatch issues (an older managed switch), setting both the NIC and the switch port to 1 Gbps Full Duplex explicitly prevents the issue.
+
+**DHCP vs. static IP:** For managed deployments with asset tracking and firewall rules based on IP, static IP assignment is preferred. Options: configure a static IP directly in Windows NIC settings, or configure a DHCP reservation on the network switch or DHCP server (the device's MAC address is assigned a fixed IP by the DHCP server — the device still uses DHCP protocol but always receives the same address). Document the IP address, subnet, gateway, and DNS servers in the as-built documentation regardless of assignment method.
+
+**DNS configuration:** Verify that DNS is resolving Microsoft 365 FQDNs correctly. A quick test: from a command prompt (local admin access), run `nslookup teams.microsoft.com` — a successful response confirms DNS resolution is functional.
+
+**Proxy server:** MTR devices should not route through a proxy server. Microsoft recommends that MTR devices bypass proxy requirements and access Microsoft 365 endpoints directly. If the enterprise uses a proxy, configure a proxy exception (proxy bypass) for the MTR device's IP address or for the Microsoft 365 IP ranges. Proxy authentication during Teams media transmission introduces latency and is not supported by the MTR application.
+
+**Jumbo Frames:** Disable Jumbo Frames on the MTR NIC unless the entire network path to Microsoft's services supports Jumbo Frames (which it does not — the internet does not support Jumbo Frames). Jumbo Frames enabled on the NIC against a network that does not support them causes packet fragmentation issues.
+
+---
+
+<KnowledgeCheck id="p1-t3-m1-l4-kc">
+  <Question>
+    An MTR Windows device is configured with Windows Update active hours set to 9AM–5PM.
+    The facility operates from 7AM–9PM. What is the risk?
+  </Question>
+  <Answer>No risk — Windows updates only install during the active hours window, not outside it</Answer>
+  <Answer correct>Windows Update may initiate a restart during evening meeting hours (5PM–9PM) since those hours fall outside the configured active hours window</Answer>
+  <Answer>The device will never update since the active hours window is too short</Answer>
+  <Answer>Windows Update will disable itself when meeting activity is detected</Answer>
+  <Explanation>
+    Windows Update performs automatic restarts outside the configured active hours window.
+    If the active hours window is 9AM–5PM and the facility operates until 9PM, Windows
+    Update will consider 5PM–9PM as valid restart time — potentially interrupting evening
+    meetings. The active hours window must cover the full facility operating period to
+    prevent business-hours restarts.
+  </Explanation>
+
+  <Question>
+    An MTR device has both an Ethernet connection and a Wi-Fi adapter active. Ethernet
+    is providing connectivity but both adapters are enabled in Windows. What is the
+    recommended action?
+  </Question>
+  <Answer>Leave both active — having a Wi-Fi fallback improves reliability</Answer>
+  <Answer correct>Disable the Wi-Fi adapter — having both Ethernet and Wi-Fi active can cause routing confusion, and the MTR device should use a single, stable wired connection</Answer>
+  <Answer>Disable the Ethernet adapter — Wi-Fi is preferred for MTR devices</Answer>
+  <Answer>Configure both adapters with static IPs so the device always knows which path to use</Answer>
+  <Explanation>
+    With both Ethernet and Wi-Fi active, Windows may alternate between interfaces or
+    create routing conflicts. The MTR device is a fixed installation with a wired connection
+    — Wi-Fi provides no benefit and introduces potential instability. Disable the Wi-Fi
+    adapter in Windows Settings or Device Manager to ensure all traffic uses the reliable
+    wired connection.
+  </Explanation>
+
+  <Question>
+    A client's IT team uses a corporate proxy server for all internet traffic. The MTR
+    room device shows intermittent audio quality issues during meetings, particularly
+    during periods of high corporate network use. What is the most likely connection
+    between the proxy and the audio issues?
+  </Question>
+  <Answer>Proxies are not involved with audio — the audio issues are a separate hardware problem</Answer>
+  <Answer>The proxy needs to have QoS enabled to prioritize Teams traffic</Answer>
+  <Answer correct>Proxy servers introduce latency into media traffic paths. Teams audio packets routed through a proxy experience added latency and potential packet loss under high load. MTR devices should bypass the proxy for Microsoft 365 endpoints</Answer>
+  <Answer>The proxy should be configured with a higher bandwidth allocation for Teams traffic</Answer>
+  <Explanation>
+    Real-time Teams media (audio and video) is latency-sensitive. Routing it through a
+    corporate proxy adds latency, introduces additional network hops, and during high
+    proxy utilization periods causes packet queuing that manifests as audio dropouts and
+    quality degradation. Microsoft's guidance is clear: MTR devices should bypass proxy
+    for Microsoft 365 traffic. Configure a proxy bypass rule for the device's IP or for
+    Microsoft 365 IP ranges.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Set power correctly:** System sleep = Never; High Performance power plan; active hours for Windows Update covering the full facility operating window.
+- **Manage updates safely:** Active hours protect business hours; modest quality update deferral (7–14 days) for standalone devices; Microsoft Store accessible for Teams app updates.
+- **Configure the network adapter:** Wi-Fi disabled when Ethernet is present; static IP or DHCP reservation documented in as-built; proxy bypass configured for Microsoft 365 endpoints; Jumbo Frames disabled.
+
+---
+
+## What's Next
+
+With the device configured and all Windows OS settings correct, the final step before handing the room to the client is the formal acceptance test — verifying every hardware, software, and functional item against a structured checklist and producing a signed acceptance document.
+
+[Post-Installation Health Verification Checklist →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-windows-initial-setup/lessons/post-installation-verification/)

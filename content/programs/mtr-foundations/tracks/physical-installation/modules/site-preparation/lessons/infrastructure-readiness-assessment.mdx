@@ -1,0 +1,232 @@
+---
+id: "p1-t2-m1-l2"
+slug: "infrastructure-readiness-assessment"
+title: "Infrastructure Readiness Assessment — Power, Network, AV Pathways"
+shortTitle: "Infrastructure Assessment"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 1
+moduleSlug: "site-preparation"
+moduleTitle: "Site Preparation & Pre-Installation Planning"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "analyze"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Assess a room's electrical infrastructure for MTR readiness, including circuit capacity, outlet placement, and UPS requirements"
+  - "Evaluate network infrastructure readiness, including bandwidth, PoE capacity, VLAN configuration, and QoS implementation"
+  - "Identify deficiencies in AV pathway infrastructure and specify remediation requirements in pre-installation documentation"
+
+prerequisites:
+  - "p1-t2-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "infrastructure"
+  - "network"
+  - "power"
+  - "av-pathways"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m1-l2-infrastructure-checklist.pdf"
+    label: "Infrastructure Readiness Checklist"
+    sizeKb: 85
+
+relatedLessons:
+  - "p1-t2-m1-l1"
+  - "p1-t2-m1-l3"
+
+metaDescription: "Assess electrical, network, and AV pathway infrastructure readiness for MTR deployment — circuit capacity, PoE, VLAN, QoS, and AV pathway deficiencies."
+
+keywords:
+  - "MTR network requirements"
+  - "Teams Rooms power assessment"
+  - "PoE requirements MTR"
+  - "QoS Teams Rooms"
+  - "AV infrastructure readiness"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Finding an infrastructure deficiency during installation is expensive. Finding it during the pre-installation assessment is just documentation. The difference between those two outcomes is a systematic infrastructure readiness check before the installation team ever arrives on-site. This lesson covers the three infrastructure domains you need to assess for every MTR deployment: electrical, network, and AV pathways. Each domain has specific criteria, and each deficiency has a remediation path that needs to be documented and resolved before work begins.
+
+---
+
+## Electrical Infrastructure Assessment
+
+**Circuit Capacity:** A typical medium conference room MTR system — compute unit, dual displays, audio bar, camera, and a PoE network switch — draws 8–12 amperes at 120V. This load should be on a dedicated circuit separate from general office loads. Shared circuits with copiers, space heaters, or other high-draw devices introduce power fluctuations that can affect equipment reliability and void equipment warranties. Identify the circuit breaker serving the AV equipment area and confirm its amperage rating (typically 15A or 20A) and that it is not shared with problematic loads.
+
+**Outlet Placement and Quantity:** Count and map all outlets in the AV equipment area. A typical medium room MTR system needs: one outlet for the compute unit (or power strip serving compute and small peripherals), one outlet per display (commercial displays draw too much power to reliably run through a shared power strip), and one outlet for the PoE switch if it requires local power rather than PoE. Confirm that outlet positions allow for concealed power cable routing — a power cord running exposed across a wall or under carpet is not a professional installation outcome.
+
+**UPS Requirements:** MTR compute units and network switches should be on an uninterruptible power supply sized for the connected load with at least 5–10 minutes of runtime. This allows for graceful shutdown during power outages and protects against power fluctuations. Size the UPS based on total VA load: total watts ÷ average power factor (0.75–0.85 for typical AV equipment) = required VA. Add 20–25% margin for thermal headroom. Large commercial displays are typically excluded from UPS due to their high VA draw — connect them to a quality surge protector only.
+
+{/* MEDIA: Power distribution diagram — single-line diagram showing AV room power from panel → circuit breaker → UPS → power strip/PDU → individual equipment loads, with amperage and VA annotations at each stage. Filename: p1-t2-m1-l2-power-distribution-diagram.png */}
+
+---
+
+## Network Infrastructure Assessment
+
+**Bandwidth:** Microsoft recommends 10–20 Mbps dedicated bandwidth at the MTR room endpoint for HD video, audio, and content sharing simultaneously. Confirm with IT that the building's WAN connection and the local network segment can support this for the number of conference rooms in the deployment. Bandwidth contention between multiple simultaneous meetings in different rooms is a real issue in large deployments — worth raising with IT during the assessment.
+
+**Wired Ethernet:** MTR devices should be on a wired Ethernet connection. Wi-Fi is not recommended for production conference room deployments due to latency variability, packet loss sensitivity, and reliability concerns. Confirm that a wired Ethernet port is available at the compute unit location or can be extended from the nearest IDF without exceeding the 100-meter channel limit.
+
+**PoE Capacity:** If any MTR peripherals are PoE-powered (touch consoles, IP cameras, ceiling microphones), verify that the switch ports at those devices support the required PoE class. IEEE 802.3af (PoE) delivers up to 15.4W per port; 802.3at (PoE+) delivers up to 30W. Some newer audio devices require 802.3bt (PoE++, up to 90W). Confirm the switch's total PoE budget and per-port allocation supports all connected PoE devices with adequate margin.
+
+**VLAN and Network Segmentation:** A dedicated VLAN for AV/conferencing devices is strongly recommended. It enables QoS policies to be applied specifically to conference room traffic and provides network security segmentation. Verify with IT whether an AV VLAN exists and whether the switch ports that will serve MTR devices are configured for it. If no AV VLAN exists, document this as a recommendation — it is an IT configuration decision, not something the integrator configures independently.
+
+**QoS Implementation:** Microsoft publishes DSCP marking recommendations for Teams traffic: audio (DSCP 46 / Expedited Forwarding), video (DSCP 34 / AF41), application sharing and content (DSCP 18 / AF21). QoS must be implemented on the network infrastructure, not just on the MTR device itself — the network switches and routers must be configured to honor DSCP markings and prioritize Teams traffic accordingly. Verify with IT whether QoS is implemented before scheduling acceptance testing. Poor or absent QoS is a leading cause of video quality complaints that get misattributed to AV hardware.
+
+<Callout type="warning">
+  Never accept a network that "works fine for video calls" as a substitute for verified
+  QoS implementation. An unloaded network hides QoS problems. The first multi-room
+  all-hands meeting will expose them, and the client will call the AV integrator, not
+  the IT team.
+</Callout>
+
+---
+
+## AV Pathway Assessment
+
+**Existing Pathways:** Identify conduit runs, J-hook arrays, cable trays, and access floor systems that can carry new AV cable infrastructure. Note the pathway type (enclosed conduit vs. open cable tray), capacity (is there room for additional cables?), and accessibility (can cables be pulled without demolition?). A usable existing pathway from the conference room to the IDF is the single most valuable infrastructure asset the room can have.
+
+**Pathway Distance:** Measure the cable pathway distance from the equipment location in the conference room to the IDF termination point. This measurement — along with routing bends and routing allowances — drives the cable schedule and determines whether extenders are required for long-run signal paths. For Cat6A, the maximum channel length is 100 meters. For USB 3.x, passive distance limits are 3–5 meters. Any run exceeding passive limits needs an active cable or extender factored into the BOM.
+
+**Fire-Rated Assemblies:** Identify all fire-rated walls and floor assemblies that cable pathways cross. Every penetration of a fire-rated assembly requires appropriate firestopping — fire-rated caulk, intumescent putty, or a listed firestop system approved for the opening size and cable fill. This is a code requirement. Failing to firestop penetrations will fail an inspection and may require remediation under drywall or flooring. Document all fire-rated assembly crossings during the survey so firestopping materials and labor can be included in the BOM.
+
+**Remediation Requirements:** Where no usable pathways exist, specify the remediation: new conduit (requires electrician in some jurisdictions), surface-mounted raceway, cable channel furniture solutions, or access floor work. Document each remediation item with sufficient detail to obtain accurate subcontractor pricing or to quote the work yourself.
+
+---
+
+## Documenting Deficiencies
+
+Infrastructure deficiencies found during the assessment should be documented with three elements: what the deficiency is, what the impact is if not addressed, and what the remediation requires. This documentation becomes part of the pre-installation report delivered to the client or project manager. It also protects the integrator: a documented deficiency that was communicated pre-installation and subsequently not addressed by the client becomes the client's scope item — not the integrator's problem on installation day.
+
+<DownloadButton
+  file="p1-t2-m1-l2-infrastructure-checklist.pdf"
+  label="Infrastructure Readiness Checklist"
+  sizeKb={85}
+  description="Structured infrastructure readiness checklist covering electrical (circuit, outlets, UPS), network (bandwidth, PoE, VLAN, QoS), and AV pathway (existing pathways, distances, fire-rated assemblies, remediation) assessments."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t2-m1-l2-kc">
+  <Question>
+    During a network assessment, you discover the building's switch ports are all 802.3af
+    (PoE, 15.4W). The MTR design specifies a ceiling microphone array that requires 802.3at
+    (PoE+, 30W). What is the correct response to this deficiency?
+  </Question>
+  <Answer>Replace the ceiling microphone with a non-PoE USB model</Answer>
+  <Answer>Use a PoE splitter to combine two 802.3af ports to power the microphone</Answer>
+  <Answer correct>Document the deficiency, specify switch port upgrade or a PoE injector as a remediation requirement, and include the remediation in the pre-installation report to the client</Answer>
+  <Answer>Proceed with installation — 802.3af ports will power 802.3at devices at reduced performance</Answer>
+  <Explanation>
+    802.3af ports cannot deliver the 30W required by 802.3at devices. The device will not
+    function correctly at insufficient power. The correct response is to document the
+    deficiency and specify the remediation — either upgrading the switch ports to 802.3at
+    capability or adding a PoE injector for the microphone circuit. This is an IT/facilities
+    scope item that must be resolved before installation.
+  </Explanation>
+
+  <Question>
+    Microsoft's recommended DSCP marking for Teams audio traffic is:
+  </Question>
+  <Answer>DSCP 18 (AF21)</Answer>
+  <Answer>DSCP 34 (AF41)</Answer>
+  <Answer correct>DSCP 46 (Expedited Forwarding)</Answer>
+  <Answer>DSCP 0 (Best Effort)</Answer>
+  <Explanation>
+    Microsoft recommends DSCP 46 (Expedited Forwarding / EF) for Teams audio, DSCP 34
+    (AF41) for video, and DSCP 18 (AF21) for application sharing and content. EF is the
+    highest-priority DSCP marking and provides the lowest latency and jitter for audio
+    traffic — critical for meeting call quality.
+  </Explanation>
+
+  <Question>
+    A cable pathway assessment shows the route from the conference room to the IDF is 95
+    meters through existing conduit. The system design includes USB 3.x camera feeds and
+    HDMI display runs along this path. What does this measurement tell you?
+  </Question>
+  <Answer>The Cat6A network runs will fail — 95 meters exceeds the 100-meter limit</Answer>
+  <Answer correct>The Cat6A network runs are within limits, but the USB 3.x and HDMI runs will require active cables or extenders since their passive limits are far shorter than 95 meters</Answer>
+  <Answer>All signal types can use passive cables at 95 meters</Answer>
+  <Answer>The pathway must be replaced — no signal type supports 95-meter passive runs</Answer>
+  <Explanation>
+    Cat6A supports passive runs up to 100 meters — 95 meters is within spec. However,
+    passive USB 3.x cables are limited to approximately 3–5 meters, and passive HDMI
+    cables are reliable to about 10–15 meters for 4K. At 95 meters, both USB and HDMI
+    require active cables, HDBaseT extenders, or fiber solutions. This must be factored
+    into the system design and BOM before installation.
+  </Explanation>
+
+  <Question>
+    Why should fire-rated assembly crossings be documented during the infrastructure assessment
+    rather than discovered during installation?
+  </Question>
+  <Answer>Fire-rated assemblies require a structural engineer's approval before any AV cables can pass through them</Answer>
+  <Answer correct>Every penetration of a fire-rated assembly requires code-compliant firestopping materials and labor — discovering them during installation means these items were not in the BOM or schedule, causing delays and cost overruns</Answer>
+  <Answer>Fire-rated assemblies prevent cable penetrations — all cable routing must avoid them entirely</Answer>
+  <Answer>Firestopping is the building owner's responsibility and does not need to be in the AV scope</Answer>
+  <Explanation>
+    Firestopping penetrations in fire-rated assemblies is a code requirement under the IBC
+    and NEC. Every penetration must be sealed with listed firestop materials. If these
+    crossings are not identified during the assessment, the firestop materials and labor
+    are not in the BOM, the installation team is not prepared to perform the work, and the
+    installation may fail inspection. Documenting them during the assessment allows proper
+    scoping and scheduling.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Assess electrical readiness:** Dedicated circuit capacity, outlet placement and quantity, UPS sizing based on VA load.
+- **Evaluate network readiness:** Bandwidth availability, wired Ethernet at device locations, PoE class matching, VLAN segmentation, and QoS implementation — all verified with IT before scheduling installation.
+- **Assess AV pathways:** Existing pathway capacity and accessibility, cable run distances (critical for extender decisions), and fire-rated assembly crossings (requires firestopping in BOM).
+- **Document deficiencies professionally:** Describe the deficiency, its impact, and its remediation. Deliver to the client before installation, not after.
+
+---
+
+## What's Next
+
+With the site survey and infrastructure assessment complete, the next step is translating that information into a precise Bill of Materials and equipment delivery schedule that ensures everything you need is on-site when you need it.
+
+[Bill of Materials and Equipment Scheduling →](/programs/mtr-foundations/tracks/physical-installation/modules/site-preparation/lessons/bill-of-materials-equipment-scheduling/)

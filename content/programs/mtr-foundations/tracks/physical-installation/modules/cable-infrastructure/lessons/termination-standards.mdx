@@ -1,0 +1,268 @@
+---
+id: "p1-t2-m2-l3"
+slug: "termination-standards"
+title: "Termination Standards — T568B, Punchdown, Cable Testing"
+shortTitle: "Termination Standards"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 2
+moduleSlug: "cable-infrastructure"
+moduleTitle: "Cable Infrastructure"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Correctly terminate Cat6/6A cable to T568B standard at RJ45 modular plugs and 110-style punchdown blocks using proper technique"
+  - "Perform a post-termination cable test, interpret the results, and identify common failure modes with their root causes"
+  - "Document cable test results in a cable schedule that meets professional project documentation standards"
+
+prerequisites:
+  - "p1-t2-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "termination"
+  - "t568b"
+  - "cable-testing"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m2-l3-cable-schedule-template.xlsx"
+    label: "Cable Schedule Template"
+    sizeKb: 55
+
+relatedLessons:
+  - "p1-t2-m2-l2"
+  - "p1-t2-m2-l4"
+
+metaDescription: "Terminate Cat6/6A cable to T568B standard at RJ45 plugs and 110-style punchdown blocks — correct technique, cable testing with a certifier, interpreting results, and documenting in a cable schedule."
+
+keywords:
+  - "T568B wiring standard"
+  - "Cat6A termination technique"
+  - "cable certification AV installation"
+  - "RJ45 termination commercial AV"
+  - "punchdown technique 110 block"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Cable termination is the most frequently done hands-on task in AV installation and one of the most commonly done wrong. A cable that tests clean immediately after installation will stay clean for the life of the installation. A cable with marginal terminations — too much untwist, undertorqued punchdown, incorrect pin order — will work on some days and not on others, generating support calls that are nearly impossible to diagnose remotely. The investment in correct termination technique pays dividends for the life of every room you install.
+
+This lesson covers the T568B wiring standard, correct punchdown and plug termination technique for Cat6/6A, post-termination testing, and how to document the results.
+
+---
+
+## T568B Wiring Standard
+
+T568B is the de facto standard for commercial AV and IT cable infrastructure in North America. Both ends of every straight-through cable must use the same standard — T568B on both ends. Mixing T568A on one end with T568B on the other creates a crossover cable, which will fail in modern switched network environments and cause diagnostic confusion.
+
+The T568B pin-pair assignment:
+
+| Pin | Wire Color |
+|-----|-----------|
+| 1 | White/Orange |
+| 2 | Orange |
+| 3 | White/Green |
+| 4 | Blue |
+| 5 | White/Blue |
+| 6 | Green |
+| 7 | White/Brown |
+| 8 | Brown |
+
+The mnemonic for remembering the order: pairs go Orange (1-2), Green (3-6), Blue (4-5), Brown (7-8). Note that the Green pair splits across pins 3 and 6 — this is the most common pinout error made by technicians learning T568B for the first time.
+
+This sequence must be memorized. It comes up in every network cable installation and in every cable test result interpretation. There is no looking it up in the field.
+
+{/* MEDIA: T568B wiring diagram — large-format color-coded RJ45 plug face view with all 8 pins labeled by pin number and wire color. Pair groupings highlighted. Both T568A and T568B shown side-by-side for comparison, with the key difference (Orange and Green pairs swapped) annotated. Filename: p1-t2-m2-l3-t568b-diagram.png */}
+
+---
+
+## RJ45 Plug Termination Technique
+
+Field-terminated RJ45 plugs (used for patch cable ends and cable ends where a keystone jack is not used) require specific technique for Cat6A:
+
+1. **Strip the jacket:** Remove approximately 30–40mm of outer jacket without nicking the conductors. Use a cable stripper rated for Cat6A — the larger conductor diameter requires a blade depth adjustment compared to Cat6.
+
+2. **Untwist the pairs:** Untwist each pair only as much as required for insertion into the plug. TIA-568 requires maintaining pair twist within 13mm (0.5 inches) of the termination point for Cat6 and Cat6A. Excessive untwisting degrades NEXT performance.
+
+3. **Arrange in T568B order:** Flatten the eight conductors into T568B pin order while maintaining as much twist as possible.
+
+4. **Insert into the plug:** For Cat6A, use a Cat6A-rated plug with an integrated load bar that aligns the conductors before insertion. Push conductors fully to the front of the plug — each conductor tip should be visible through the plug face.
+
+5. **Crimp:** Use a ratchet crimping tool rated for Cat6A plugs. Incomplete crimping (insufficient force or a non-ratcheting tool) leaves contacts unsatisfactorily seated and creates open or high-resistance connections.
+
+---
+
+## 110-Style Punchdown Technique
+
+Punchdown blocks (used in patch panels, keystone jacks, and wall plates) require a different technique. The conductors are inserted into slots and a punchdown tool drives the conductor down into the IDC (Insulation Displacement Contact), simultaneously seating and trimming the wire.
+
+Correct punchdown technique:
+
+1. **Strip the jacket and separate pairs** without untwisting. Maintain pair twist as close to the terminal as possible — within 13mm for Cat6/6A.
+
+2. **Place the conductor in the correct slot** per the T568B color sequence printed on the jack body. Each slot is color-coded to match the T568B wire color.
+
+3. **Orient the punchdown tool correctly:** The cutting side of the blade faces outward (away from the terminated conductor) so the excess wire is trimmed on the outside of the terminal.
+
+4. **Apply firm, consistent force:** The tool must seat the wire fully in the IDC slot. Most commercial punchdown tools have an adjustable impact setting — use the setting appropriate for the block type (typically "high" impact for Cat6A keystone jacks). An underpowered punch leaves the wire partially seated, causing high resistance.
+
+5. **Verify the trim:** After punching, check that the excess wire was trimmed cleanly. Stray wire strands bridging adjacent terminals are a common short-circuit cause.
+
+---
+
+## Post-Termination Testing
+
+After termination, every cable should be tested before it is concealed in walls, above ceilings, or under raised floors. Post-termination testing is the only practical point at which failures can be quickly corrected — a failed cable can be re-terminated in minutes on the day of installation; the same cable found to be failing during commissioning requires pulling the cable back out of the pathway, which can take hours.
+
+**Field testers** (e.g., Fluke LinkIQ, Klein Scout Pro) verify continuity and wiremap and provide a basic pass/fail result. They confirm the cable is connected correctly without breaks, shorts, or pin transpositions. Field testers are sufficient for verifying cable runs where full TIA certification is not required.
+
+**Cable certifiers** (e.g., Fluke DSX-8000) perform full TIA-568 channel or permanent link certification, measuring attenuation, NEXT, FEXT, return loss, propagation delay, and other electrical parameters. Certifiers produce printable reports that demonstrate the cable meets the TIA-568 performance standard. For commercial installations, certified test results should be a deliverable to the client — both to verify installation quality and to support warranty claims with cable manufacturers.
+
+---
+
+## Common Test Failures and Their Causes
+
+| Failure | Likely Cause | Resolution |
+|---------|-------------|------------|
+| Open (break in conductor) | Excessive bend radius, over-tightened cable tie, cut during installation | Pull cable, re-terminate at both ends; replace cable if conductor is damaged |
+| Short (two conductors bridged) | Stray conductor strand at punchdown, over-stripped jacket, conductor nicked during stripping | Re-terminate the affected end |
+| Wiremap error (transposed pair) | T568A/B mismatch between ends, pair transposition at punchdown | Re-terminate the incorrect end using T568B color code |
+| NEXT failure | Excessive untwist at termination, damaged cable pair, incorrect cable grade | Re-terminate with correct untwist distance; replace cable section if pair is damaged |
+| Length failure | Run exceeds channel limit (100m for 1G, 55m for 10G on Cat6) | Verify routing — add a switch or media converter to create two segments |
+
+---
+
+## Cable Schedule Documentation
+
+Every tested cable should be documented in a cable schedule that becomes part of the project record. The cable schedule correlates physical cable labels to system documentation and provides the baseline for future troubleshooting.
+
+Cable schedule columns: Cable ID (matching the label on the cable), signal type, origin (location and device), destination (location and device), cable type and specification, measured length, test result (PASS/FAIL), test date, tester model, and tester serial number. A cable schedule that is complete at project closeout allows a technician who was not present at installation to trace any cable in the system within minutes.
+
+<DownloadButton
+  file="p1-t2-m2-l3-cable-schedule-template.xlsx"
+  label="Cable Schedule Template"
+  sizeKb={55}
+  description="Cable schedule template with all required columns for a complete project documentation deliverable. Includes a tab for test result entry and a summary view by location."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t2-m2-l3-kc">
+  <Question>
+    In the T568B standard, what wire colors are assigned to pins 3 and 6?
+  </Question>
+  <Answer>Pin 3: White/Orange, Pin 6: Orange</Answer>
+  <Answer>Pin 3: Blue, Pin 6: White/Blue</Answer>
+  <Answer correct>Pin 3: White/Green, Pin 6: Green</Answer>
+  <Answer>Pin 3: White/Brown, Pin 6: Brown</Answer>
+  <Explanation>
+    In T568B, the Green pair is assigned to pins 3 and 6 — White/Green on pin 3, Green
+    on pin 6. This pair splits across non-adjacent pins, which is the most common source
+    of confusion and pinout errors. The complete T568B order: Pin 1: White/Orange, 2:
+    Orange, 3: White/Green, 4: Blue, 5: White/Blue, 6: Green, 7: White/Brown, 8: Brown.
+  </Explanation>
+
+  <Question>
+    A cable certifier reports a NEXT failure on a Cat6A cable that was just terminated.
+    What is the most likely cause?
+  </Question>
+  <Answer>The cable is Cat6 and was tested against Cat6A standards</Answer>
+  <Answer correct>Excessive untwist at the termination point — too much pair twist was removed before insertion into the keystone jack or RJ45 plug</Answer>
+  <Answer>The cable run is too long — NEXT failures occur only on runs over 55 meters</Answer>
+  <Answer>The wrong punchdown tool impact setting was used</Answer>
+  <Explanation>
+    NEXT (Near-End Crosstalk) performance is highly sensitive to the untwist distance
+    at the termination point. TIA-568 specifies maintaining pair twist within 13mm of
+    the termination for Cat6/6A. Removing more twist than this allows adjacent pair
+    conductors to run in parallel, coupling electromagnetic energy between pairs and
+    causing NEXT failures. Re-terminate both ends with correct untwist discipline.
+  </Explanation>
+
+  <Question>
+    Which side of the punchdown tool blade should face outward (away from the terminated
+    conductor) during punchdown termination?
+  </Question>
+  <Answer>The smooth side — the cutting side must face the terminal</Answer>
+  <Answer correct>The cutting side — so the excess wire is trimmed cleanly on the outside of the terminal, not the seated side</Answer>
+  <Answer>Either side — punchdown tools are symmetrical and the orientation does not matter</Answer>
+  <Answer>The spring side — the punchdown mechanism requires the spring to face toward the terminal</Answer>
+  <Explanation>
+    The cutting blade on a punchdown tool trims the excess wire at the edge of the IDC
+    terminal. The cutting side must face outward (away from the terminal toward the
+    excess wire) so the cut happens outside the seated contact, leaving a clean termination.
+    Installing the tool in the wrong orientation cuts the wire inside the terminal instead
+    of outside, which either damages the termination or leaves excess wire that can short
+    to an adjacent terminal.
+  </Explanation>
+
+  <Question>
+    At what point in the installation process should cable testing occur, and why?
+  </Question>
+  <Answer>After all cabling is complete and equipment is installed, to verify the full system</Answer>
+  <Answer>Only during final commissioning testing with the client present</Answer>
+  <Answer correct>Immediately after termination and before the cable is concealed in walls, ceilings, or conduit — so failures can be corrected quickly without requiring cable removal from the pathway</Answer>
+  <Answer>Cable testing is optional if the technician is confident in their termination technique</Answer>
+  <Explanation>
+    Testing before concealment is a fundamental quality control practice. A cable failure
+    discovered at the termination bench is a 5-minute re-termination. The same failure
+    discovered after the cable is run through 40 meters of conduit and above a dropped
+    ceiling requires pulling the cable back out — which may take hours. Test every cable
+    before closing it in.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Recite T568B:** White/Orange, Orange, White/Green, Blue, White/Blue, Green, White/Brown, Brown — pins 1 through 8. Both ends always the same standard.
+- **Terminate correctly:** Maintain pair twist within 13mm of the terminal; crimp plugs fully; orient punchdown tool with cutting side outward.
+- **Test and interpret results:** Open = break, short = bridge, wiremap error = transposition, NEXT failure = excessive untwist.
+- **Document the schedule:** Every cable gets a cable ID, test result, date, and tester serial number. This is a project deliverable.
+
+---
+
+## What's Next
+
+With terminations made and tested, the next lesson covers how to manage and label the cable infrastructure so it can be maintained, traced, and modified for the life of the installation.
+
+[Cable Management and Labeling Conventions →](/programs/mtr-foundations/tracks/physical-installation/modules/cable-infrastructure/lessons/cable-management-labeling/)

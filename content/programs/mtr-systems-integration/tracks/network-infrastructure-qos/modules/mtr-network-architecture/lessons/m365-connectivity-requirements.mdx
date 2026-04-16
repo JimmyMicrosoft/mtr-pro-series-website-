@@ -1,0 +1,255 @@
+---
+id: "p2-t1-m1-l2"
+slug: "m365-connectivity-requirements"
+title: "Microsoft 365 Connectivity Requirements — URLs, IPs, and Ports"
+shortTitle: "M365 Connectivity Requirements"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 1
+moduleSlug: "mtr-network-architecture"
+moduleTitle: "MTR Network Architecture and Design"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the Microsoft 365 endpoint categories and explain which are required versus optional for MTR devices"
+  - "Translate Microsoft's published URL and IP range requirements into firewall rules for an MTR deployment"
+  - "Explain why bypassing proxy and SSL inspection for M365 Optimize-category traffic is required for reliable MTR operation"
+
+prerequisites:
+  - "p2-t1-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "firewall"
+  - "proxy"
+  - "m365-connectivity"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-l2-m365-firewall-reference.pdf"
+    label: "MTR Microsoft 365 Firewall Rule Reference"
+    sizeKb: 55
+
+relatedLessons:
+  - "p2-t1-m1-l1"
+  - "p2-t1-m1-l3"
+  - "p2-t1-m3-l2"
+
+metaDescription: "Microsoft 365 network connectivity requirements for MTR — endpoint categories, required URLs and ports, IP ranges, proxy bypass requirements, SSL inspection bypass, and firewall rule construction for Teams Rooms deployments."
+
+keywords:
+  - "Teams Rooms firewall rules"
+  - "MTR Microsoft 365 URLs ports"
+  - "Teams Rooms proxy bypass"
+  - "M365 network requirements MTR"
+  - "Teams Rooms SSL inspection bypass"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+MTR devices are cloud-connected appliances. They authenticate through Entra ID, receive meeting invitations through Exchange Online, join meetings through the Teams media infrastructure, receive updates through the Microsoft Store and OEM cloud portals, and send telemetry to Microsoft. Every one of these functions requires specific network connectivity — and an enterprise firewall that blocks any of them will produce symptoms that look like software bugs or configuration problems, not network blocks. This lesson provides the complete picture of what MTR devices need to reach and how to configure the network to permit that traffic reliably.
+
+---
+
+## Microsoft's Endpoint Category System
+
+Microsoft publishes all M365 network connectivity requirements in a structured endpoint list at `aka.ms/o365endpoints`. The endpoints are organized into three categories:
+
+**Optimize:** The highest-priority traffic — real-time media (audio, video, screen sharing). These endpoints must be reachable with low latency, must not be proxied, and must not be subject to SSL/TLS inspection. Blocking or proxying Optimize traffic directly degrades meeting quality and causes authentication failures.
+
+**Allow:** Important connectivity for Teams sign-in, authentication, CDN access, and telemetry. Should be permitted through the firewall. Proxying is tolerated but adds latency. SSL inspection can break some Allow endpoints.
+
+**Default:** Standard Microsoft 365 services — shared with all M365 products. Treat the same as general internet traffic.
+
+For MTR deployments, the focus is on the **Optimize** and **Allow** categories for Teams and Exchange Online. The Default category can be handled by the organization's standard internet access policy.
+
+---
+
+## Key URLs and Ports for MTR
+
+The following represent the most critical connectivity requirements for MTR devices. Always verify against the current Microsoft endpoint list, as these are subject to change with Microsoft service updates.
+
+**Teams media (Optimize category):**
+
+| Protocol | Port | Destination | Purpose |
+|----------|------|-------------|---------|
+| UDP | 3478–3481 | 13.107.64.0/18, 52.112.0.0/14, 52.122.0.0/15 | Teams audio/video media transport (STUN/TURN) |
+| TCP | 443 | *.teams.microsoft.com | Teams signaling and fallback media |
+| TCP | 443 | *.skype.com | Skype infrastructure (Teams uses Skype transport layer) |
+
+**Authentication and sign-in (Allow category):**
+
+| Protocol | Port | Destination | Purpose |
+|----------|------|-------------|---------|
+| TCP | 443 | login.microsoftonline.com | Entra ID OAuth authentication |
+| TCP | 443 | *.microsoftonline.com | Microsoft identity platform |
+| TCP | 443 | *.office.com, *.office.net | Microsoft 365 services |
+| TCP | 443 | *.outlook.com | Exchange Online (calendar) |
+
+**Teams application and updates:**
+
+| Protocol | Port | Destination | Purpose |
+|----------|------|-------------|---------|
+| TCP | 443 | *.azure.net, *.azureedge.net | Teams app CDN delivery |
+| TCP | 443 | statics.teams.cdn.office.net | Teams client assets |
+| TCP/UDP | 443/80 | *.sfbassets.com | Teams Rooms app assets |
+
+**OEM cloud management portals (varies by OEM):**
+
+| OEM | Portal | Protocol/Port |
+|-----|--------|---------------|
+| Yealink (YMCS) | ymcs.yealink.com | TCP 443 |
+| Poly (Poly Lens) | lens.poly.com | TCP 443 |
+| Logitech Sync | sync.logitech.com | TCP 443 |
+| Neat Pulse | pulse.neat.no | TCP 443 |
+
+**NTP (if not using internal NTP):**
+
+| Protocol | Port | Destination |
+|----------|------|-------------|
+| UDP | 123 | time.windows.com or pool.ntp.org |
+
+---
+
+## The Proxy and SSL Inspection Problem
+
+This is where most MTR network issues originate. Enterprise networks commonly deploy:
+- **Explicit or transparent HTTP proxies** — all HTTPS traffic is routed through a proxy appliance
+- **SSL/TLS inspection (also called deep packet inspection or HTTPS inspection)** — the proxy terminates and re-encrypts TLS connections to inspect content
+
+Both of these are incompatible with Teams Optimize-category traffic for technical reasons:
+
+**Proxy incompatibility with real-time media:** Teams UDP media transport (ports 3478–3481) cannot be proxied — proxies are TCP-only. If a proxy blocks UDP, Teams falls back to TCP/443 media, which increases latency and degrades call quality significantly. Even TCP-based Teams media performs worse through a proxy because the additional hop adds latency that accumulates during real-time communication.
+
+**SSL inspection incompatibility:** Teams uses certificate pinning and custom TLS extensions for authentication tokens. An SSL inspection proxy substitutes its own certificate, which breaks the certificate chain that Teams relies on for authentication. The result is sign-in failures or intermittent authentication token rejection — symptoms that look exactly like resource account configuration problems.
+
+**The correct network configuration:** Configure the firewall and proxy to bypass both proxy routing and SSL inspection for all Microsoft Optimize-category endpoints (the Teams IP ranges and *.teams.microsoft.com, *.skype.com domains). This is sometimes called "proxy bypass" or "direct route" configuration. The Allow-category endpoints should also be excluded from SSL inspection.
+
+<Callout type="warning">
+  Never enable SSL inspection on Microsoft Teams media endpoints. It is not
+  a security configuration — it is a misconfiguration that causes sign-in
+  failures and meeting quality degradation, and it creates a false sense of
+  security since Teams traffic is end-to-end encrypted regardless of whether
+  the proxy can read it.
+</Callout>
+
+---
+
+## Building the Firewall Rule Set
+
+**Rule construction approach:**
+
+1. Download the current M365 endpoint list from `aka.ms/o365endpoints` — Microsoft provides this as a JSON feed, a CSV, and a web interface
+2. Filter for the Teams and Exchange Online service families
+3. Build explicit permit rules for all Optimize and Allow endpoints (URL-based rules for FQDNs, IP-based rules for the Teams media IP ranges)
+4. Apply proxy bypass configuration for the Optimize category
+5. Apply SSL inspection bypass for Optimize and Allow categories
+6. Test connectivity from the MTR VLAN using the Microsoft 365 Network Connectivity Test tool (`connectivity.office.com`)
+
+**Microsoft 365 IP Change Management:** Microsoft updates the endpoint list regularly — typically with several weeks' notice published via RSS feed and API. Subscribe to the Microsoft 365 IP Address and URL change notification service to receive advance notice of changes that require firewall rule updates. Failing to track these updates results in blocked connectivity when Microsoft moves to a new IP range.
+
+<DownloadButton
+  file="p2-t1-m1-l2-m365-firewall-reference.pdf"
+  label="MTR Microsoft 365 Firewall Rule Reference"
+  sizeKb={55}
+  description="Quick-reference firewall rule set for MTR deployments — Teams Optimize and Allow category endpoints organized by protocol, port, and destination, with proxy bypass and SSL inspection bypass configuration notes."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m1-l2-kc">
+  <Question>
+    An MTR Windows device successfully completes OOBE and signs in, but meeting
+    audio is poor quality and video frequently freezes. The network team confirms
+    TCP 443 to Microsoft is open. What is the most likely network cause?
+  </Question>
+  <Answer>The device needs a firmware update to improve audio/video quality</Answer>
+  <Answer>TCP 443 is the wrong port — Teams requires TCP 80 for media</Answer>
+  <Answer correct>UDP ports 3478–3481 to the Teams media IP ranges are likely blocked — Teams primary media transport uses UDP on these ports, and blocking UDP forces fallback to TCP 443 which has significantly higher latency and degrades real-time audio and video quality</Answer>
+  <Answer>The device's resource account is missing the Teams Rooms Pro license</Answer>
+  <Explanation>
+    Teams real-time audio and video media uses UDP on ports 3478–3481 to
+    Microsoft's media relay infrastructure. When UDP is blocked, Teams falls
+    back to TCP 443, which adds latency from TCP's connection overhead and
+    retransmission behavior — unacceptable for real-time audio and video.
+    The symptom (choppy audio, freezing video) even though TCP 443 is open
+    is a classic sign of UDP media being blocked. The fix is to open UDP
+    3478–3481 from the MTR VLAN to the Teams media IP ranges in the firewall.
+  </Explanation>
+
+  <Question>
+    Why must SSL inspection be bypassed for Teams Optimize-category endpoints
+    on MTR deployments?
+  </Question>
+  <Answer>SSL inspection is computationally expensive and slows down video encoding on the device</Answer>
+  <Answer correct>Teams uses certificate pinning and custom TLS extensions for authentication. An SSL inspection proxy substitutes its own certificate, breaking the certificate chain Teams relies on — causing sign-in failures and authentication token rejection that appear as resource account problems</Answer>
+  <Answer>Microsoft licensing prohibits SSL inspection of Teams traffic</Answer>
+  <Answer>SSL inspection converts HTTPS to HTTP, which Teams does not support</Answer>
+  <Explanation>
+    SSL inspection proxies work by terminating the TLS connection, inspecting
+    the decrypted content, and re-encrypting with the proxy's own certificate.
+    Teams expects specific Microsoft certificates in the TLS chain for its
+    authentication mechanisms. When a proxy certificate appears instead, Teams
+    authentication fails. The symptoms — sign-in failures, intermittent
+    sign-outs, or token validation errors — appear identical to resource account
+    misconfiguration, making SSL inspection a difficult-to-diagnose root cause
+    without network visibility. The fix is proxy bypass for Optimize-category
+    endpoints.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Navigate the endpoint categories:** Optimize (real-time media — must not be proxied or SSL-inspected), Allow (auth and services — should be permitted), Default (standard internet treatment).
+- **Build the firewall rule set:** UDP 3478–3481 to Teams media IPs + TCP 443 to Teams/M365 domains. NTP UDP 123. OEM portal TCP 443.
+- **Configure proxy and SSL bypass:** Bypass both for all Optimize-category endpoints. SSL bypass for Allow category. Failure to do so causes media degradation and authentication failures.
+- **Track endpoint changes:** Subscribe to Microsoft's M365 endpoint change notification to keep firewall rules current.
+
+---
+
+## What's Next
+
+With the firewall rule set established, the next lesson introduces QoS — the mechanism that prioritizes Teams media traffic within the network so it is protected from congestion by other traffic types.
+
+[QoS Fundamentals — DSCP Marking and Traffic Classification →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/qos-fundamentals/)

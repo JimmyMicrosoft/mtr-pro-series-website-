@@ -1,0 +1,230 @@
+---
+id: "p4-t2-m1-l1"
+slug: "enterprise-room-design-patterns"
+title: "Enterprise Room Design Patterns"
+shortTitle: "Design Patterns"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 1
+moduleSlug: "solution-design"
+moduleTitle: "Solution Architecture and Design"
+
+lessonIndex: 1
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 30
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "presales-engineer"]
+
+objectives:
+  - "Define the standard enterprise room design patterns and the use cases each serves"
+  - "Select the appropriate design pattern for a room based on physical dimensions, headcount, and use case"
+  - "Specify the hardware and software configuration for each design pattern"
+  - "Apply the patterns as building blocks to generate a complete multi-room proposal architecture"
+
+prerequisites:
+  - "p1-t1 (MTR Ecosystem fundamentals)"
+  - "p2-t3-m2 (Video and Display Systems)"
+  - "p2-t3-m1 (Conference Room Audio)"
+
+technologyTags: ["MTR", "Teams Rooms", "Logitech", "Poly", "Yealink"]
+roleTags: ["solutions-architect", "presales-engineer"]
+topicTags: ["solution-design", "room-design", "architecture", "hardware-specification"]
+vendorTags: ["Microsoft", "Logitech", "Poly", "Yealink", "Crestron"]
+
+downloads:
+  - label: "Enterprise Room Design Pattern Library"
+    filename: "mtr-room-design-pattern-library.pdf"
+
+relatedLessons:
+  - "p4-t2-m1-l2"
+  - "p4-t2-m1-l3"
+  - "p4-t2-m3-l1"
+
+metaDescription: "Learn the standard enterprise MTR room design patterns — from huddle space to executive boardroom — and how to apply them as building blocks for multi-room proposals."
+keywords: ["MTR room design", "Teams Rooms design patterns", "enterprise AV design", "room specification"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Value of Standardised Design Patterns
+
+Enterprise clients deploying MTR across multiple rooms need consistency — in user experience, in management approach, and in support cost. Every room having a unique bespoke design creates complexity at every level: installation, commissioning, training, helpdesk, and spares.
+
+Design patterns are pre-defined, validated hardware and configuration specifications for a defined room type. A practice with four or five well-designed, tested patterns can scope a 50-room enterprise deployment in a fraction of the time required to design each room individually.
+
+This library of patterns is the foundation of your proposals. Every room in a proposal maps to one of these patterns; the bill of materials is generated from the pattern, not designed from scratch.
+
+---
+
+## Pattern 1: Huddle Space
+
+**Use case**: 2–4 people; informal collaboration; frequent spontaneous use
+
+**Physical parameters**:
+- Room dimensions: 3–5m × 3–5m
+- Typical ceiling height: 2.4–2.7m
+- Seated capacity: 2–4
+
+**Design specification**:
+
+| Component | Specification | Notes |
+|---|---|---|
+| MTR device | All-in-one soundbar (e.g., Logitech Rally Bar Huddle, Poly Studio E20) | Integrated compute, camera, mic, speaker |
+| Display | 55"–65" commercial display | Wall-mounted; HDMI or direct connect |
+| Cabling | HDMI/USB-C for content share | Single cable from table |
+| Mounting | Display on wall or mobile stand | Flexible for open-plan areas |
+
+**Configuration**: Standard room policy; Basic or Pro license; no touch console required (optional: Tap IP or Logi Tap IP for one-touch join).
+
+**Key selling points**: Simple installation, minimal cabling, single device to manage, low cost per room.
+
+---
+
+## Pattern 2: Standard Meeting Room
+
+**Use case**: 4–8 people; scheduled meetings; regular hybrid collaboration
+
+**Physical parameters**:
+- Room dimensions: 5–7m × 3.5–4m
+- Ceiling height: 2.4–3m
+- Seated capacity: 6–8
+
+**Design specification**:
+
+| Component | Specification | Notes |
+|---|---|---|
+| MTR compute | Dedicated compute unit (e.g., Logitech Rally Bar, Poly Studio X70, Yealink MVC860) | Integrated or modular |
+| Display | 75"–86" commercial display | Single display; table-to-wall distance drives sizing |
+| Camera | Wide-angle integrated or separate USB camera with IntelliFrame | Verify FoV covers all seats |
+| Microphone | Integrated array or tabletop expansion mic for rooms >5m | Consider table length |
+| Touch console | Logitech Tap IP or equivalent | One-touch join; room controls |
+| Content cable | HDMI/USB-C table cable | Length: table to front of room |
+
+**Configuration**: Standard room policy; Pro license recommended for Pro Management and IntelliFrame.
+
+**Key design decision**: Integrated soundbar vs modular system. Integrated is faster to install and simpler to manage; modular gives more flexibility for rooms with awkward acoustics or specific camera placement requirements.
+
+---
+
+## Pattern 3: Large Meeting Room / Training Room
+
+**Use case**: 8–16 people; all-hands, training, client presentations
+
+**Physical parameters**:
+- Room dimensions: 7–10m × 4–5m
+- Ceiling height: 2.7–3.5m
+- Seated capacity: 10–16
+
+**Design specification**:
+
+| Component | Specification | Notes |
+|---|---|---|
+| MTR compute | High-spec compute unit (e.g., Logitech Rally Plus system, Crestron Flex UC-MX70) | Must support dual display and multiple peripherals |
+| Display | Dual 86"–98" commercial displays | Dual display required for large rooms (video + content simultaneously) |
+| Camera | PTZ camera (e.g., Logitech PTZ Pro 2, Poly Studio E70) | Pan/tilt required; AI framing preferred |
+| Microphone | Ceiling microphone array or distributed tabletop mics | Coverage for full table length |
+| Speaker | Ceiling speakers with DSP amplifier, or high-powered soundbar | SPL adequate for room volume |
+| DSP | If ceiling mics and separate speakers: standalone DSP required | Biamp, QSC, or Shure |
+| Touch console | Full room control console or Tap IP with control system | |
+
+**Configuration**: Large room policy in Teams Admin Centre (DualScreenMode enabled); Pro license; PTZ camera control from console.
+
+**Key design decision**: Integrated system vs modular with DSP. Rooms over 8m typically benefit from distributed DSP for AEC and gain management.
+
+---
+
+## Pattern 4: Executive Boardroom
+
+**Use case**: 8–20 people; board meetings, exec briefings, high-stakes video calls; often dual-purpose (projection and video)
+
+**Physical parameters**:
+- Room dimensions: 8–14m × 4–6m
+- Ceiling height: 2.7–4m
+- Seated capacity: 12–20
+
+**Design specification**:
+
+| Component | Specification | Notes |
+|---|---|---|
+| MTR compute | Compute unit + control system integration (e.g., Crestron Flex + Crestron DM) | Unified AV and MTR control |
+| Display | Dual large-format displays (98"+) or laser projector with 120"+ screen | Client preference; projector for heritage boardrooms |
+| Camera | Dual PTZ system or 4K tracking camera | Cover full table length |
+| Microphone | Flush-mounted table mics or ceiling arrays | No visible equipment on exec table preferred |
+| Speaker | In-ceiling distributed speaker array | |
+| DSP | Dedicated DSP (Biamp Tesira, QSC Core) | Full signal routing, AEC, gain management |
+| Control | Dedicated control system with custom UI (Crestron/Extron/AMX) | Lighting, shading, AV routing, HVAC |
+| Lighting control | Automated lighting scenes | Meeting / presentation / off |
+
+**Configuration**: Large room or custom policy; Pro license; control system integration via RS-232 or LAN API.
+
+**Key selling point**: Seamless experience for senior stakeholders; single button to start meeting, displays/lighting/shading respond automatically.
+
+---
+
+## Pattern 5: Focus Room / Phone Booth
+
+**Use case**: 1–2 people; private calls, heads-down work, quick video meetings
+
+**Physical parameters**:
+- Room dimensions: 2–3m × 2–3m (purpose-built pod or converted space)
+- Seated capacity: 1–2
+
+**Design specification**:
+
+| Component | Specification | Notes |
+|---|---|---|
+| MTR device | All-in-one (e.g., Poly Studio P15, or MTR on Surface Hub) | Compact; no separate components |
+| Display | 43"–55" display or monitor-class screen | Small footprint |
+| Compute | Integrated in device | No separate PC |
+
+**Configuration**: Small room policy; Basic license acceptable; no control system.
+
+**Key design decision**: Is Teams Rooms the right solution, or would Teams Panels (room availability indicator) and a personal device suffice?
+
+---
+
+## Applying Patterns to a Multi-Room Proposal
+
+When approaching a multi-room scope, the workflow is:
+
+1. Survey all rooms and record dimensions, headcount, and use case
+2. Map each room to the closest standard pattern
+3. Document any deviations from the standard pattern and why
+4. Generate the BOM by multiplying pattern components by room count
+5. Add site-specific items (conduit, custom cable lengths, mounting hardware) per room
+
+This approach generates a consistent, repeatable bill of materials that is easier to cost, install, and support.
+
+<Callout type="tip">
+**Every deviation from a standard pattern is a cost and risk multiplier.** One custom room in a 30-room project is manageable. Ten custom rooms is a bespoke project. Where possible, sell clients on the consistency and cost-efficiency of the standard pattern, and design away from custom requirements — not toward them.
+</Callout>
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client has a meeting room that seats 10 people and is 8m × 4.5m. The primary use case is video calls with international offices. Which design pattern applies, and what is the key design decision?">
+    <Answer>Pattern 2 (Standard Meeting Room) — single integrated soundbar</Answer>
+    <Answer correct>Pattern 3 (Large Meeting Room) — dual displays and PTZ camera; key decision is integrated vs DSP-based audio based on table length and acoustic properties</Answer>
+    <Answer>Pattern 4 (Executive Boardroom) — full control system required</Answer>
+    <Answer>Pattern 1 (Huddle Space) — keep it simple</Answer>
+    <Explanation>A 10-person, 8m room exceeds the parameters for Pattern 2. Pattern 3 is correct — dual displays for video/content, PTZ for full table coverage. The key design decision at this size is whether the integrated soundbar provides adequate microphone coverage (typically no for >6m tables) or whether a distributed mic/speaker system with DSP is needed.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Enterprise Room Design Pattern Library" filename="mtr-room-design-pattern-library.pdf" />

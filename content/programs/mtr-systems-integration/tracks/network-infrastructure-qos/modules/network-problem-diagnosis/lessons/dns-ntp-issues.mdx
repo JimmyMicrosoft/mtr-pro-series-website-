@@ -1,0 +1,240 @@
+---
+id: "p2-t1-m3-l3"
+slug: "dns-ntp-issues"
+title: "DNS and NTP Issues in Enterprise Environments"
+shortTitle: "DNS and NTP Issues"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 3
+moduleSlug: "network-problem-diagnosis"
+moduleTitle: "Network Problem Diagnosis"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Diagnose DNS resolution failures that prevent MTR devices from reaching Microsoft 365 endpoints"
+  - "Identify NTP synchronization failures and explain how clock drift causes OAuth authentication failures"
+  - "Resolve DNS and NTP issues using device-level and network-level configuration changes"
+
+prerequisites:
+  - "p2-t1-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "troubleshooting"
+  - "dns"
+  - "ntp"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-l3-dns-ntp-diagnosis-guide.pdf"
+    label: "MTR DNS and NTP Diagnosis Guide"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t1-m3-l2"
+  - "p2-t1-m3-l4"
+
+metaDescription: "MTR DNS and NTP diagnosis — DNS resolution failures for M365 endpoints, split-horizon DNS issues, NTP configuration and clock drift, OAuth 5-minute tolerance, and resolution steps for enterprise environments."
+
+keywords:
+  - "Teams Rooms DNS issues"
+  - "MTR NTP configuration"
+  - "Teams Rooms clock drift sign out"
+  - "MTR DNS resolution failure"
+  - "Teams Rooms authentication NTP"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+DNS and NTP failures cause MTR symptoms that look nothing like what they are. A DNS resolution failure for a Microsoft endpoint produces a "can't connect" sign-in error indistinguishable from a firewall block. NTP drift of more than 5 minutes causes periodic automatic sign-outs that appear to be resource account problems or service instability. Both are straightforward to diagnose and fix once identified — the challenge is knowing to look for them.
+
+---
+
+## DNS Issues
+
+### Common DNS Failure Patterns
+
+**Internal DNS resolver not forwarding M365 queries:**
+Enterprise DNS resolvers are typically configured to resolve internal domain names and forward external queries to upstream resolvers (ISP DNS or public DNS like 8.8.8.8). If the forwarding configuration is missing or the upstream resolver is unreachable, external DNS queries fail.
+
+**DNS resolver unreachable from MTR VLAN:**
+The MTR VLAN may not have a route to the internal DNS resolver if inter-VLAN routing is not configured correctly. The MTR device receives a DHCP-assigned DNS server address but cannot reach it.
+
+**Split-horizon DNS issues:**
+Organizations with split-horizon DNS (different records for internal vs. external DNS) sometimes have M365 service FQDNs incorrectly handled. For example, `*.microsoftonline.com` should always resolve to public Microsoft IP addresses — if the internal DNS resolver accidentally intercepts these queries and returns an internal address, authentication fails.
+
+**DNS over HTTPS (DoH) blocking:**
+Some enterprise firewalls block DNS over HTTPS (port 443 to DNS resolvers like 1.1.1.1 or 8.8.8.8). This is typically fine — MTR devices should use the organization's internal DNS resolver, not DoH resolvers. However, if the internal resolver is unreachable and the device tries to fall back to DoH, a DoH block can cause complete DNS failure.
+
+### Diagnosing DNS from MTR Windows
+
+```powershell
+# Test resolution of key M365 endpoints
+$endpoints = @(
+    "login.microsoftonline.com",
+    "teams.microsoft.com",
+    "outlook.office365.com",
+    "graph.microsoft.com"
+)
+
+foreach ($ep in $endpoints) {
+    try {
+        $result = Resolve-DnsName $ep -ErrorAction Stop
+        Write-Output "PASS: $ep -> $($result[0].IPAddress)"
+    } catch {
+        Write-Output "FAIL: $ep -> $_"
+    }
+}
+```
+
+If resolution fails, test whether the DNS resolver itself is reachable:
+```
+Test-NetConnection -ComputerName [DNS-server-IP] -Port 53
+```
+
+If the DNS server is reachable but resolution fails, the issue is with the DNS resolver's forwarding configuration — an escalation to the network team.
+
+If the DNS server is not reachable, the issue is routing from the MTR VLAN to the DNS resolver — confirm inter-VLAN routing and default gateway.
+
+### Resolving DNS Issues
+
+**Immediate workaround:** Configure an additional public DNS server (8.8.8.8 or 1.1.1.1) as a secondary DNS server in the MTR device's network settings. This provides DNS resolution when the internal resolver fails. This is a workaround — the underlying DNS routing issue should be fixed in the network infrastructure.
+
+**Correct fix:** Work with the network team to:
+1. Confirm that the MTR VLAN has a route to the internal DNS resolver
+2. Verify the DNS resolver is forwarding external queries to functional upstream resolvers
+3. Confirm that M365 domains are not being incorrectly handled by split-horizon DNS
+
+---
+
+## NTP Issues
+
+### Why NTP Matters for MTR
+
+MTR devices authenticate to Entra ID using OAuth 2.0 tokens. OAuth tokens include timestamps and are validated with a **5-minute tolerance window** — the authenticating service (Entra ID) accepts tokens with timestamps up to 5 minutes from the current time.
+
+If the MTR device's system clock drifts more than 5 minutes from actual time, OAuth token validation fails. The device is signed in, the token expires, the refresh attempt generates a token with an incorrect timestamp, and the device is signed out. The device may immediately attempt to re-sign-in — if the clock is sufficiently drifted, it cannot complete authentication and remains signed out.
+
+**The pattern:** A device that was working reliably for weeks begins spontaneously signing out at irregular intervals. No resource account changes were made. This is the NTP drift pattern.
+
+### NTP Configuration Requirements
+
+The MTR device must have a reachable and correctly configured NTP server. For enterprise deployments:
+- Use the organization's internal NTP server (Windows domain controllers typically serve NTP; the server is often the PDC emulator)
+- As a fallback, use `time.windows.com` (Microsoft's public NTP service)
+
+**For MTR Windows:** NTP is configured at the Windows level. The device should be joined to the domain (which provides automatic NTP from a domain controller) or have `w32tm` configured to use an NTP server.
+
+Check current NTP configuration:
+```
+w32tm /query /status
+```
+
+Output shows the current time source, last sync time, and sync status. Look for:
+- `Source:` — should show the NTP server FQDN or IP
+- `Last Successful Sync Time:` — should be recent
+- `Stratum:` — should be a valid value (2–5 is normal for enterprise NTP)
+
+**Force an NTP resync (MTR Windows):**
+```
+w32tm /resync /force
+```
+
+If this returns an error, the NTP server is unreachable — check firewall rules for UDP 123 outbound from the MTR VLAN.
+
+**For MTR Android:** NTP is configured in the OEM admin interface (LWI) under time/network settings. Verify the configured NTP server address and that UDP 123 is permitted outbound from the MTR VLAN.
+
+### Diagnosing NTP Issues
+
+**Confirm device time is correct:**
+On MTR Windows: the current device time appears in the system tray. Compare against a reliable time source. More than 5 minutes drift indicates NTP is not synchronizing.
+
+**Confirm NTP server reachability:**
+```
+Test-NetConnection -ComputerName [NTP-server-IP-or-FQDN] -Port 123
+```
+Note: NTP uses UDP 123, not TCP — `Test-NetConnection` tests TCP connectivity. A TCP test failure to port 123 does not necessarily mean NTP is unreachable (UDP may still work). Use `w32tm /stripchart /computer:[NTP-server] /dataonly /samples:5` to test actual NTP connectivity over UDP.
+
+<DownloadButton
+  file="p2-t1-m3-l3-dns-ntp-diagnosis-guide.pdf"
+  label="MTR DNS and NTP Diagnosis Guide"
+  sizeKb={35}
+  description="DNS and NTP diagnosis guide for MTR deployments — PowerShell test commands, resolution failure patterns, NTP clock drift diagnosis, w32tm commands, and remediation steps for enterprise DNS forwarding and NTP server configuration issues."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m3-l3-kc">
+  <Question>
+    An MTR Windows device deployed three months ago begins signing out
+    spontaneously every few days. The IT team confirms the resource account
+    password has not changed and no Conditional Access policies have been
+    modified. The device immediately attempts to sign back in but sometimes
+    fails to reconnect. What is the most likely cause?
+  </Question>
+  <Answer>The Teams Rooms license has been removed from the resource account</Answer>
+  <Answer>A Windows update has reset the Teams app settings, requiring reconfiguration</Answer>
+  <Answer correct>NTP synchronization failure causing clock drift — when the device's clock drifts beyond the 5-minute OAuth token tolerance, authentication tokens fail validation and the device is signed out. The intermittent reconnection failure indicates the clock drift is sometimes large enough to prevent re-authentication</Answer>
+  <Answer>The device's local admin password has expired, locking the Skype user account</Answer>
+  <Explanation>
+    Spontaneous sign-outs on a previously stable device, with intermittent
+    re-authentication failures, is the classic NTP drift pattern. OAuth 2.0
+    tokens are timestamp-validated with a 5-minute tolerance window. NTP
+    drift accumulates over weeks when the NTP server becomes unreachable
+    (firewall change, DNS change, server decommissioning). The device's clock
+    diverges from actual time until it exceeds 5 minutes, at which point
+    token validation fails. Immediate steps: check device time vs. actual
+    time, run `w32tm /query /status`, test NTP server reachability.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **DNS:** Test with `Resolve-DnsName` for M365 endpoints; check DNS server reachability via routing; confirm no split-horizon interference; fix forwarding in infrastructure.
+- **NTP:** OAuth 5-minute clock tolerance; drift causes spontaneous sign-outs; `w32tm /query /status` shows sync state; UDP 123 outbound must be permitted.
+- **Pattern recognition:** Random sign-outs on a previously working device → NTP first; sign-in failure with no firewall evidence → DNS first.
+
+---
+
+## What's Next
+
+[Packet Capture and Network Analysis for MTR →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/packet-capture-analysis/)

@@ -1,0 +1,305 @@
+---
+id: "p3-t2-m1-l5"
+slug: "microsoft-support-escalation"
+title: "Escalation to Microsoft Support"
+shortTitle: "Microsoft Support Escalation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 1
+moduleSlug: "diagnostic-methodology"
+moduleTitle: "Diagnostic Methodology"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Determine whether an MTR incident should be escalated to Microsoft or investigated further internally, using the Microsoft 365 Service Health Dashboard and escalation criteria"
+  - "Assemble a complete Microsoft support case for a Teams Rooms incident, including all required identifiers and evidence"
+  - "Locate the Teams Rooms Call ID from the device settings and explain why it is the single most useful escalation data point"
+  - "Interpret Microsoft 365 Service Health alerts to determine whether an MTR incident is caused by a Microsoft service event"
+  - "Navigate the Microsoft support response process including severity levels and escalation paths"
+
+prerequisites:
+  - "p3-t2-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "troubleshooting"
+  - "support"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m2-l1"
+
+metaDescription: "Escalating Teams Rooms issues to Microsoft Support — when to escalate vs investigate internally, TRPS vs standard support, assembling a complete support case, finding the Teams Rooms Call ID, Service Health Dashboard interpretation, and navigating Microsoft support response and escalation paths."
+
+keywords:
+  - "Teams Rooms Microsoft support escalation"
+  - "MTR support case"
+  - "Teams Rooms TRPS"
+  - "Teams Rooms Call ID"
+  - "Microsoft 365 Service Health Dashboard"
+  - "Teams Rooms support case preparation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Escalation to Microsoft Support is the right action for a specific class of MTR problems — those that are beyond the diagnostic and remediation scope of the on-premises support team, involve Microsoft service infrastructure, or require access to tenant-level data that only Microsoft can provide. Knowing when to escalate, what to provide in the case, and how to navigate the support process efficiently are skills that directly reduce time-to-resolution for the most difficult Teams Rooms issues. This lesson covers the escalation decision criteria, case preparation, the Teams Rooms-specific data points Microsoft support needs, and what to expect from the support engagement.
+
+---
+
+## When to Escalate to Microsoft
+
+Not every unresolved MTR issue warrants a Microsoft support case. The decision to escalate should be made after internal investigation has been exhausted or a Microsoft-scope issue has been identified. Escalation is appropriate for:
+
+**1. Active Microsoft 365 service incidents:**
+Check the Service Health Dashboard first (covered in detail below) before raising any case for a widespread or sudden-onset issue. If a Teams or Exchange service event is active, opening a support case does not accelerate resolution — Microsoft is already aware and working the incident. Monitor the dashboard and wait for the "Service Restored" advisory.
+
+**2. Teams Rooms-specific application bugs:**
+Symptoms that reproduce consistently on a specific Teams Rooms app version, do not reproduce on other Teams client types, and cannot be explained by network or configuration factors. The Teams Rooms app has a distinct release track — bugs may exist in a version that has been deployed to your fleet before the fix is available. Examples: meeting join failures that appear only after a specific app update, consistent crash on a specific device model.
+
+**3. Licensing and resource account provisioning failures:**
+If a resource account is correctly configured (correct license, correct Exchange mailbox, MFA exclusion in place) but still cannot sign in or cannot accept meeting invitations, there may be a tenant-side provisioning issue that requires Microsoft to investigate the account state in their backend systems.
+
+**4. Issues requiring Microsoft to examine tenant data:**
+CQD anomalies that suggest a Microsoft media server or relay issue affecting only your tenant; call quality issues that appear to originate from Microsoft's media infrastructure based on caller/callee stream analysis; cases where Microsoft stream routing or ICE candidate allocation appears abnormal.
+
+**When not to escalate immediately:**
+- The issue is explained by a network configuration problem identified in CQD or a trace (fix the network).
+- The issue is explained by a misconfiguration found in app logs (fix the configuration).
+- The same "fix" has been applied twice without resolution, but the root cause has not yet been identified (diagnose further before escalating).
+- The issue affects only one room and investigation has not yet been completed (Microsoft cannot diagnose more efficiently than a prepared internal engineer for single-device issues).
+
+---
+
+## TRPS: Teams Rooms Premium Support
+
+For organizations with Teams Rooms Pro licenses, the **Teams Rooms Premium Support (TRPS)** entitlement provides an elevated support experience over standard Microsoft support.
+
+**What TRPS provides:**
+
+| Capability | Standard Microsoft Support | TRPS |
+|-----------|---------------------------|------|
+| Access channel | Microsoft 365 Admin Center support | Pro Management portal support ticket |
+| Support team | General Microsoft 365 support agents | Teams Rooms-specialized support engineers |
+| Response time | Severity-based (see below) | Faster initial response for Pro-licensed rooms |
+| Proactive incident detection | No | Yes — Pro Management incident correlation |
+| Log access | Customer must provide | Can pull from Pro Management directly |
+| Escalation to Teams Rooms product team | Customer-initiated | Available through TRPS channel |
+
+**How to access TRPS:**
+TRPS is accessed through the Pro Management portal rather than the standard Microsoft 365 Admin Center. Navigate to **Support** within the Pro Management portal, and new tickets opened there are routed to the Teams Rooms-specialized support team. The Pro Management portal also provides context from the room's incident history and health data directly to the support engineer.
+
+For rooms not enrolled in Pro Management, or if the Pro Management portal is unavailable, escalate through the standard Microsoft 365 Admin Center support path.
+
+---
+
+## Assembling a Microsoft Support Case
+
+A well-prepared support case is the single biggest factor in reducing time-to-first-useful-response from Microsoft. An incomplete case results in a first response asking for the missing information — adding a full business day to the engagement before any actual investigation begins.
+
+**Required information for any MTR support case:**
+
+| Data Point | Where to Find It | Why It Matters |
+|-----------|-----------------|---------------|
+| Device serial number | Pro Management → Room → Device Details; or on the device hardware label | Identifies the specific device in Microsoft's telemetry |
+| Tenant ID | Azure AD → Properties → Tenant ID (GUID) | Routes the case to the correct tenant engineering data |
+| Resource account UPN | Teams Admin Center → Rooms & devices → select device | Required to look up account state, license assignment, and sign-in history |
+| Affected date and time window | Incident timestamps from Pro Management | Scopes Microsoft's log and telemetry search to the relevant period |
+| Symptom description | Your own documentation | Enables Microsoft to reproduce or correlate against known issues |
+| Evidence already collected | Attach Pro Management log package, CQD call data, screenshots | Prevents Microsoft from asking for data you already have |
+| Call ID (if meeting quality issue) | See below | The single most useful data point for call quality escalations |
+| Teams Rooms app version | Pro Management → Device Details → Software | Required to determine if the issue is a known app version bug |
+| Windows OS version | Pro Management → Device Details → Software | Required for OS-level issues |
+
+**Symptom description format:**
+
+Write the symptom description in the format: "When [condition], [symptom] occurs [frequency] on [device/room] running Teams Rooms app version [X] on [hardware model]. The issue began [date]. Expected behavior is [Y]. Evidence attached: [list what is attached]."
+
+This format ensures the Microsoft engineer immediately understands scope, reproducibility, and what investigation has already been completed.
+
+---
+
+## Finding the Teams Rooms Call ID
+
+The Call ID is a unique identifier assigned to every Teams meeting or call. For Microsoft support, the Call ID links the customer's reported symptom directly to the call record in Microsoft's telemetry — including media server logs, signaling records, and relay server data that Microsoft can access but the customer cannot. It is the single most useful piece of data for any call quality or meeting join escalation.
+
+**Locating the Call ID on a Teams Rooms device:**
+
+The Call ID is accessible from the meeting reports on the device:
+
+1. On the Teams Rooms console, tap **More** (the ellipsis icon) during or after a meeting — or navigate to **Settings** from the home screen.
+2. Select **Reports**.
+3. Select the meeting from the list (most recent meetings appear first).
+4. The Call ID is displayed in the meeting detail view.
+
+**Call ID format:**
+```
+xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+This is a standard UUID/GUID format. Copy the full string — partial Call IDs cannot be matched in Microsoft's systems.
+
+**When to collect the Call ID:**
+
+Collect the Call ID immediately after a meeting where a quality issue occurred. Call IDs are accessible in the Reports section for recent meetings, but the availability window is limited — collect the ID before the device is restarted or the meeting history is cleared. For recurring issues, ask room users to note when an issue occurs and collect the Call ID from that specific meeting within a few hours of the incident.
+
+**If the Call ID is not available:**
+
+Provide the resource account UPN, the exact date and time of the meeting (UTC), and the names of other participants in the meeting. Microsoft can often locate the call record from these details, though it takes longer than a direct Call ID match.
+
+---
+
+## Service Health Dashboard Interpretation
+
+The Microsoft 365 Service Health Dashboard is the authoritative source for Microsoft service incidents. It should be the first check for any sudden-onset, multi-room, or fleet-wide issue.
+
+**Accessing the Service Health Dashboard:**
+- Microsoft 365 Admin Center → **Health → Service Health**
+- Requires a role with Service Health Reader permissions (e.g., Teams Administrator, Service Support Administrator, Global Administrator)
+
+**Services relevant to Teams Rooms:**
+
+| Service | Why It Affects MTR |
+|---------|-------------------|
+| Microsoft Teams | Primary service — any Teams incident can affect room joining, meeting experience, and device management |
+| Exchange Online | Resource account sign-in depends on Exchange mailbox; calendar processing for meeting invitations uses Exchange; Exchange incidents cause rooms to not receive/accept meetings |
+| Azure Active Directory | Authentication for resource accounts; Conditional Access policy enforcement; device enrollment |
+| Microsoft Intune | Device management commands, configuration policy delivery, and compliance evaluation |
+
+**Interpreting health alert severity:**
+
+| Status | Meaning | MTR Action |
+|--------|---------|-----------|
+| Investigating | Microsoft is investigating a potential issue | Monitor — do not open a new case for the same symptom |
+| Service degradation | Confirmed degradation affecting some users/tenants | Check if your MTR symptom matches the advisory description; note the incident ID |
+| Service interrupted | Broad outage | Wait for restoration; communicate to stakeholders with the incident ID |
+| Service restored | Issue resolved | Verify MTR devices have recovered; if not, then escalate |
+| Post-incident review | Advisory with root cause analysis | Review for any preventive actions on your end |
+
+**Determining whether an MTR incident is Microsoft-caused:**
+
+When a Service Health alert is active, compare:
+- The service named in the alert (Teams, Exchange, AAD) against the MTR symptom type.
+- The affected user population in the advisory (geography, tenant type) against your affected rooms.
+- The start time of the advisory against the start time of your MTR incidents.
+
+If the alert start time matches your incident onset, the affected service matches the symptom type, and your tenant matches the affected population, the MTR incident is almost certainly caused by the Microsoft service event. In this case, reference the **Incident ID** (format: `EX########` for Exchange, `TM########` for Teams) in any communication to stakeholders — this allows them to track the event independently.
+
+---
+
+## Tracking an Open Microsoft Support Case
+
+Once a case is opened, understanding the support process prevents frustration and enables productive escalation when progress stalls.
+
+**Severity levels and response time commitments:**
+
+| Severity | Criteria | Initial Response |
+|----------|---------|-----------------|
+| Severity A (Critical) | Complete service outage or severe degradation with no workaround; production business impact | 1 hour (24/7) |
+| Severity B (High) | Degraded service with partial impact; workaround available but impractical | 4 hours (24/7) |
+| Severity C (Non-critical) | Limited impact; workaround available; non-urgent | 8 hours (business hours) |
+
+For a single room quality issue, Severity C is appropriate. For a fleet-wide outage affecting business operations, Severity A is justified — and the organization must be prepared to have a technical contact available 24/7 for Severity A engagement.
+
+**Providing additional evidence when requested:**
+
+Microsoft may request additional data during the investigation:
+- Additional log collections for specific time windows (use Pro Management remote collection).
+- Network traces from a specific device during reproduction of the issue.
+- Screen recordings of the symptom.
+- Confirmation of specific configuration settings (QoS policy state, firewall rule details).
+
+Respond to these requests promptly — a case with an unanswered Microsoft request is stalled at the customer side, and the engineering investigation cannot proceed without the requested data.
+
+**Escalation paths if progress stalls:**
+
+If a case is not progressing (no meaningful update for 48+ hours on a Severity B case, or 5+ business days on a Severity C case):
+
+1. **Request escalation within the portal:** In the Microsoft 365 Admin Center support case, use "Request escalation" — this flags the case to the support manager for review.
+2. **Reference your TAM (Technical Account Manager):** Organizations with Microsoft Premier/Unified support have a TAM who can escalate stalled cases through Microsoft's internal channels.
+3. **Use the TRPS escalation path:** If the case was opened through Pro Management TRPS, the TRPS channel has a direct path to the Teams Rooms product engineering team for cases that require product-level investigation.
+4. **Provide a business impact statement:** A clear statement of business impact (number of rooms affected, meetings impacted per day, revenue or operational consequence) changes the priority evaluation within Microsoft's support triage.
+
+---
+
+<KnowledgeCheck id="p3-t2-m1-l5-kc">
+  <Question>
+    On a Monday morning, 45 Teams Rooms devices across three sites simultaneously
+    show "Offline" in Pro Management. The resource accounts are correctly
+    configured, QoS and network are unchanged, and the issue started at 06:45
+    UTC. A support engineer checks the Microsoft 365 Service Health Dashboard
+    and sees a Teams advisory (TM240193) marked "Investigating" with a start
+    time of 06:42 UTC affecting "Teams sign-in services." What is the correct
+    immediate action?
+  </Question>
+  <Answer>Open a Severity A Microsoft support case immediately — 45 rooms offline is a critical business impact that requires the fastest possible escalation</Answer>
+  <Answer correct>The Service Health advisory (TM240193) starting at 06:42 UTC — 3 minutes before the MTR devices went offline — is almost certainly the cause of the fleet-wide sign-in failure. The correct immediate action is to monitor the Service Health advisory for updates, communicate to stakeholders with the advisory ID (TM240193) so they can track the event, and not open a new support case for the same incident. Opening a new case does not accelerate resolution of a known active service incident — Microsoft is already working TM240193. If the advisory is marked "Service Restored" but the rooms have not recovered after 30–60 minutes, then investigate whether the rooms need a manual sign-in trigger (remote restart via Pro Management) and open a case only if they still do not recover after restoration</Answer>
+  <Answer>Perform remote restarts on all 45 devices immediately via Pro Management to force re-authentication</Answer>
+  <Answer>Escalate to the network team — 45 devices going offline simultaneously indicates a network infrastructure change, not a Microsoft service issue</Answer>
+  <Explanation>
+    The 3-minute gap between the Microsoft service advisory start time (06:42)
+    and the fleet-wide offline event (06:45) is strong evidence that TM240193
+    is the cause. Teams sign-in services failing would cause resource accounts
+    to lose their authenticated session and the devices to appear Offline — this
+    is precisely the symptom described. A network infrastructure change would
+    be visible in network monitoring and would not correlate with a Microsoft
+    Teams service health event. Opening a Severity A case during an active
+    Microsoft-acknowledged service incident consumes support resources without
+    accelerating resolution. The professional response is to communicate the
+    advisory ID to stakeholders, monitor for restoration, and prepare to verify
+    recovery once Microsoft resolves TM240193. If rooms do not self-recover
+    after the advisory closes, a targeted restart or sign-in trigger is the
+    next step — followed by a case only if recovery does not occur.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Escalation criteria:** Escalate for active service incidents, Teams Rooms app bugs, licensing/provisioning failures requiring backend investigation, or media infrastructure issues confirmed by CQD caller/callee analysis. Always check the Service Health Dashboard first for fleet-wide sudden-onset issues.
+- **TRPS:** Pro Management-enrolled rooms with Teams Rooms Pro licenses have access to Teams Rooms-specialized support through the TRPS channel — use it rather than the standard Microsoft 365 Admin Center support path for faster and more informed engagement.
+- **Case preparation:** Include device serial number, tenant ID, resource account UPN, affected time window (UTC), app version, OS version, symptom description, and all pre-collected evidence. An incomplete case adds a full business day delay.
+- **Call ID:** The single most useful data point for call quality and meeting join escalations — located at Settings → Reports → select meeting on the Teams Rooms device. Collect immediately after the issue occurs.
+- **Service Health:** Check Teams, Exchange Online, and Azure AD health status. Match advisory start time and affected services against your incident timeline. Reference the incident ID (e.g., TM240193) in stakeholder communications.
+- **Case management:** Severity A = 1-hour response (24/7); Severity B = 4-hour response (24/7); Severity C = 8-hour response (business hours). Escalate stalled cases via the portal escalation button, TAM, or TRPS channel. Provide a business impact statement to change triage priority.
+
+---
+
+## What's Next
+
+[Advanced Monitoring and Alerting Strategy →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/advanced-monitoring/lessons/monitoring-alerting-strategy/)

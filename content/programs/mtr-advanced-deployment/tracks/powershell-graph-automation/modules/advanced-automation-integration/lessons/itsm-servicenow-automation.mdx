@@ -1,0 +1,353 @@
+---
+id: "p3-t3-m3-l1"
+slug: "itsm-servicenow-automation"
+title: "Integrating MTR with ITSM: ServiceNow API Automation"
+shortTitle: "ITSM ServiceNow Automation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 3
+moduleSlug: "advanced-automation-integration"
+moduleTitle: "Advanced Automation and Integration"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Create and update ServiceNow incidents from PowerShell using the Table API with correct field mapping from Pro Management incident data"
+  - "Implement automated state synchronization between ServiceNow incidents and Pro Management incident status"
+  - "Map MTR rooms as Configuration Items in the ServiceNow CMDB and use CI relationships for correct assignment group routing"
+
+prerequisites:
+  - "p3-t3-m2-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "automation"
+  - "integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m3-l2"
+
+metaDescription: "Integrating MTR with ServiceNow via PowerShell — Table API incident creation, CMDB Configuration Item mapping, automated state sync between Pro Management and ServiceNow, and assignment group routing by incident type."
+
+keywords:
+  - "ServiceNow MTR integration PowerShell"
+  - "Teams Rooms ITSM automation"
+  - "ServiceNow Table API PowerShell"
+  - "MTR incident ServiceNow automation"
+  - "Teams Rooms CMDB ServiceNow"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+When a Pro Management alert fires for a room device, someone needs to act on it — but Pro Management is not where field service teams, network engineers, or AV support technicians track their work. Those teams live in ServiceNow. The integration between Pro Management (the alert source) and ServiceNow (the work management system) is the bridge that ensures MTR incidents are visible, routable, and auditable within your organization's existing service management process. This lesson builds that bridge: creating incidents, mapping rooms as CIs, syncing state changes, and routing by incident type.
+
+---
+
+## ServiceNow Table API Fundamentals
+
+The ServiceNow Table API is a REST interface for creating, reading, and updating records in any ServiceNow table. All operations use standard HTTP methods against the table endpoint:
+
+```
+Base URL:  https://[instance].service-now.com/api/now/table/[tableName]
+GET        Read records (with query filters)
+POST       Create a new record
+PUT        Replace an existing record
+PATCH      Update specific fields of an existing record
+```
+
+Authentication options:
+
+```powershell
+# Option 1: Basic Auth (simple, requires user credentials)
+$credential = [Convert]::ToBase64String(
+    [Text.Encoding]::ASCII.GetBytes("$username:$password")
+)
+$snowHeaders = @{
+    Authorization  = "Basic $credential"
+    "Content-Type" = "application/json"
+    Accept         = "application/json"
+}
+
+# Option 2: OAuth (preferred for production — token, not password in headers)
+function Get-SNOWToken {
+    param([string]$Instance, [string]$ClientId, [string]$ClientSecret,
+          [string]$Username, [string]$Password)
+
+    $body = @{
+        grant_type    = "password"
+        client_id     = $ClientId
+        client_secret = $ClientSecret
+        username      = $Username
+        password      = $Password
+    }
+    $response = Invoke-RestMethod `
+        -Uri         "https://$Instance.service-now.com/oauth_token.do" `
+        -Method POST -Body $body
+    return $response.access_token
+}
+```
+
+---
+
+## Creating an MTR Incident in ServiceNow
+
+```powershell
+function New-SNOWIncident {
+    param(
+        [string]$Instance,
+        [hashtable]$Headers,
+        [string]$RoomName,
+        [string]$RoomCI,          # ServiceNow sys_id of the room CI in CMDB
+        [string]$IncidentType,    # From Pro Management payload
+        [string]$Severity,        # "Critical", "NonUrgent", "Informational"
+        [string]$Description,
+        [string]$AssignmentGroup  # Resolved from incident type routing table
+    )
+
+    # Map Pro Management severity to ServiceNow urgency/impact/priority
+    $severityMap = @{
+        "Critical"      = @{ urgency = "1"; impact = "2"; priority = "2" }
+        "NonUrgent"     = @{ urgency = "2"; impact = "3"; priority = "3" }
+        "Informational" = @{ urgency = "3"; impact = "3"; priority = "4" }
+    }
+    $urgencyData = $severityMap[$Severity] ?? @{ urgency = "2"; impact = "3"; priority = "3" }
+
+    $incidentBody = @{
+        short_description     = "MTR Alert: $IncidentType — $RoomName"
+        description           = $Description
+        cmdb_ci               = $RoomCI          # Link to CMDB CI
+        assignment_group      = $AssignmentGroup
+        urgency               = $urgencyData.urgency
+        impact                = $urgencyData.impact
+        priority              = $urgencyData.priority
+        category              = "AV / Collaboration"
+        subcategory           = "Teams Room Device"
+        caller_id             = "mtr-automation"  # Service account in SNOW
+        u_source_system       = "Pro Management"  # Custom field
+        u_room_upn            = $RoomCI           # Custom field for room UPN
+    } | ConvertTo-Json -Depth 5
+
+    $response = Invoke-RestMethod `
+        -Uri         "https://$Instance.service-now.com/api/now/table/incident" `
+        -Method POST `
+        -Headers     $Headers `
+        -Body        $incidentBody
+
+    Write-Host "Created SNOW incident: $($response.result.number) for $RoomName"
+    return $response.result
+}
+
+# Assignment group routing by incident type
+$assignmentRouting = @{
+    "Camera not detected"   = "AV Support"
+    "Display not detected"  = "AV Support"
+    "Speaker not detected"  = "AV Support"
+    "Network connectivity"  = "Network Operations"
+    "Sign-in failed"        = "Identity and Access"
+    "App crash"             = "Collaboration Engineering"
+}
+
+$group = $assignmentRouting[$incidentType] ?? "AV Support"
+```
+
+---
+
+## CMDB Configuration Items for MTR Rooms
+
+For assignment routing and reporting to work correctly, each MTR room should exist in the ServiceNow CMDB as a **Hardware CI**. Create or update room CIs via the Table API:
+
+```powershell
+function Set-SNOWRoomCI {
+    param(
+        [string]$Instance,
+        [hashtable]$Headers,
+        [string]$RoomName,
+        [string]$RoomUPN,
+        [string]$Manufacturer,
+        [string]$Model,
+        [string]$SerialNumber,
+        [string]$Building,
+        [string]$Floor
+    )
+
+    # Check if CI already exists
+    $queryUri = "https://$Instance.service-now.com/api/now/table/cmdb_ci_hardware" +
+                "?sysparm_query=serial_number=$SerialNumber&sysparm_limit=1"
+    $existing = Invoke-RestMethod -Uri $queryUri -Method GET -Headers $Headers
+
+    $ciBody = @{
+        name             = $RoomName
+        serial_number    = $SerialNumber
+        manufacturer     = $Manufacturer
+        model_id         = $Model
+        location         = "$Building, $Floor"
+        u_teams_room_upn = $RoomUPN    # Custom attribute
+        category         = "Computer"
+        subcategory      = "Teams Room Device"
+        operational_status = "1"       # In Service
+        managed_by_group = "AV Support"
+    } | ConvertTo-Json -Depth 5
+
+    if ($existing.result.Count -gt 0) {
+        $sysId = $existing.result[0].sys_id
+        Invoke-RestMethod -Uri "https://$Instance.service-now.com/api/now/table/cmdb_ci_hardware/$sysId" `
+            -Method PATCH -Headers $Headers -Body $ciBody
+        Write-Host "Updated CI for: $RoomName ($sysId)"
+        return $sysId
+    } else {
+        $response = Invoke-RestMethod -Uri "https://$Instance.service-now.com/api/now/table/cmdb_ci_hardware" `
+            -Method POST -Headers $Headers -Body $ciBody
+        Write-Host "Created CI for: $RoomName ($($response.result.sys_id))"
+        return $response.result.sys_id
+    }
+}
+```
+
+<Callout type="tip">
+Run the CMDB population script once during room onboarding, and again whenever room hardware changes (model upgrade, serial number change after hardware replacement). Automate this as part of your room decommission/recommission workflow.
+</Callout>
+
+---
+
+## Automated State Synchronization
+
+Pro Management incidents resolve when the device health returns to normal. Automatically closing the corresponding ServiceNow incident eliminates manual ticket grooming:
+
+```powershell
+function Sync-SNOWSIncidentState {
+    param(
+        [string]$Instance,
+        [hashtable]$Headers,
+        [string]$ProMgmtIncidentId,   # Stored in SNOW custom field u_pro_mgmt_id
+        [string]$ProMgmtState         # "Active", "Resolved", "Closed"
+    )
+
+    # Find SNOW incident by Pro Management ID
+    $queryUri = "https://$Instance.service-now.com/api/now/table/incident" +
+                "?sysparm_query=u_pro_mgmt_id=$ProMgmtIncidentId" +
+                "&sysparm_fields=sys_id,number,state&sysparm_limit=1"
+    $result = Invoke-RestMethod -Uri $queryUri -Method GET -Headers $Headers
+
+    if ($result.result.Count -eq 0) {
+        Write-Warning "No SNOW incident found for Pro Management ID: $ProMgmtIncidentId"
+        return
+    }
+
+    $snowSysId = $result.result[0].sys_id
+    $snowNumber = $result.result[0].number
+
+    # Map Pro Management state to SNOW state codes
+    $stateMap = @{
+        "Active"   = "1"   # New / In Progress
+        "Resolved" = "6"   # Resolved
+        "Closed"   = "7"   # Closed
+    }
+    $snowState = $stateMap[$ProMgmtState] ?? "1"
+
+    $updateBody = @{
+        state              = $snowState
+        close_notes        = if ($ProMgmtState -in @("Resolved","Closed")) {
+            "Automatically closed — Pro Management incident resolved at $(Get-Date -Format 'o')"
+        } else { "" }
+        resolved_by        = "mtr-automation"
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Uri "https://$Instance.service-now.com/api/now/table/incident/$snowSysId" `
+        -Method PATCH -Headers $Headers -Body $updateBody
+
+    Write-Host "SNOW $snowNumber state updated to $ProMgmtState"
+}
+```
+
+---
+
+## Putting It Together: Full Incident Lifecycle
+
+```powershell
+# 1. Pro Management webhook fires → parse payload (see Module 1 Lesson 5)
+# 2. Get or create CMDB CI for the room
+$ciSysId = Set-SNOWRoomCI -Instance $snowInstance -Headers $snowHeaders `
+    -RoomName $roomName -RoomUPN $resourceUPN `
+    -Manufacturer $device.Manufacturer -Model $device.Model `
+    -SerialNumber $device.SerialNumber -Building $building -Floor $floor
+
+# 3. Create incident linked to CI
+$snowIncident = New-SNOWIncident -Instance $snowInstance -Headers $snowHeaders `
+    -RoomName $roomName -RoomCI $ciSysId `
+    -IncidentType $incidentType -Severity $severity `
+    -Description "Pro Management Alert: $incidentType for $roomName. ID: $proMgmtIncidentId" `
+    -AssignmentGroup $group
+
+# 4. Store SNOW incident number and Pro Management ID for later sync
+# (write to Azure Table Storage or SharePoint List)
+
+# --- Later: Pro Management webhook fires with state=Resolved ---
+Sync-SNOWSIncidentState -Instance $snowInstance -Headers $snowHeaders `
+    -ProMgmtIncidentId $proMgmtIncidentId -ProMgmtState "Resolved"
+```
+
+---
+
+<KnowledgeCheck id="p3-t3-m3-l1-kc">
+  <Question>
+    Your ServiceNow integration has been running for two weeks. The ITSM team reports that they are receiving duplicate incidents — for example, Conf-LON-05 has three open SNOW incidents all for "Camera not detected" that were created within 30 minutes of each other. What is the most likely cause and how do you fix it?
+  </Question>
+  <Answer>The ServiceNow Table API POST endpoint is unreliable and sometimes processes the same request multiple times — switch to PATCH instead of POST for incident creation</Answer>
+  <Answer correct>The most likely cause is that the Pro Management webhook is firing multiple times for the same incident — either because the incident state updates (e.g., from New to Active) trigger additional webhook deliveries, or because the Azure Function that receives the webhook is not implementing duplicate prevention correctly (the incident ID cache from Module 1 Lesson 5). The fix is two-fold: implement incident ID deduplication in the webhook receiver so that a new SNOW incident is only created once per Pro Management incident ID, and add a pre-creation check in the New-SNOWIncident function that queries ServiceNow for an existing open incident for the same room and incident type before creating a new one</Answer>
+  <Answer>The Pro Management severity is mapping to the wrong SNOW urgency — fix the severity mapping table and the duplicates will stop</Answer>
+  <Answer>The CMDB CI lookup is failing and creating a new CI each time, which triggers a new incident per CI creation</Answer>
+  <Explanation>
+    Pro Management webhooks can fire for the same underlying incident multiple times — when the incident is first created, when its severity escalates, and when it updates. Without idempotency controls in the webhook receiver, each webhook delivery creates a new SNOW incident. The defense is layered: the Azure Function incident cache prevents the webhook receiver from processing the same incident ID twice, and the pre-creation SNOW query prevents duplicate tickets even if the cache misses. Both checks together make the integration resilient to repeated webhook deliveries.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Table API:** REST endpoint at `/api/now/table/incident` — POST to create, PATCH to update; prefer OAuth over Basic Auth in production.
+- **Field mapping:** Map Pro Management severity to SNOW urgency/impact/priority; store the Pro Management incident ID in a custom SNOW field for bidirectional sync.
+- **CMDB CIs:** Create a Hardware CI per MTR room (serial number as unique key); populate via a PowerShell script run during room onboarding; link incidents to CIs via `cmdb_ci` field.
+- **Assignment routing:** Map incident type to assignment group in a hashtable; default to "AV Support" for unmapped types.
+- **State sync:** Query SNOW by Pro Management incident ID, then PATCH the state when Pro Management resolves the incident — eliminates manual ticket grooming.
+
+---
+
+## What's Next
+
+[Power Automate for MTR Workflows →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/advanced-automation-integration/lessons/power-automate-mtr-workflows/)

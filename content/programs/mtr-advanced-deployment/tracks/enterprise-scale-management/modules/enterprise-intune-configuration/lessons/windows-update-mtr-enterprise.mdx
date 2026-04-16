@@ -1,0 +1,245 @@
+---
+id: "p3-t1-m1-l4"
+slug: "windows-update-mtr-enterprise"
+title: "Windows Update Management for Enterprise MTR"
+shortTitle: "Windows Update at Scale"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 1
+moduleSlug: "enterprise-intune-configuration"
+moduleTitle: "Enterprise Intune and Configuration Management"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design a multi-ring Windows Update strategy for enterprise MTR fleets that balances update velocity with stability"
+  - "Configure Windows Update for Business (WUfB) rings in Intune with appropriate deferral periods and maintenance windows for MTR"
+  - "Monitor update rollout progress across the MTR fleet using Intune reporting and identify devices that are update-blocked"
+
+prerequisites:
+  - "p3-t1-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "intune"
+  - "windows-update"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l3"
+  - "p3-t1-m1-l5"
+
+metaDescription: "Windows Update management for enterprise MTR fleets — WUfB ring strategy, Intune update ring configuration, feature update deferrals, quality update deferrals, maintenance window scheduling, and update rollout monitoring."
+
+keywords:
+  - "Windows Update MTR enterprise"
+  - "Teams Rooms Windows Update ring"
+  - "MTR WUfB configuration"
+  - "Intune Windows Update Teams Rooms"
+  - "MTR update ring strategy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Windows Update management for MTR at enterprise scale requires a structured ring strategy that keeps devices current (security patches within days of release) without disrupting meetings through uncontrolled reboots. An enterprise with 200 MTR devices across 15 sites cannot afford to have devices unexpectedly restart during board meetings because a quality update was pushed without a maintenance window. This lesson covers designing and configuring the Windows Update ring architecture for large MTR fleets.
+
+---
+
+## Windows Update for Business (WUfB) for MTR
+
+Windows Update for Business is the Intune-managed update mechanism for Windows 10/11 devices that receive updates directly from Windows Update (rather than on-premises WSUS). For Azure AD-joined MTR devices (Autopilot-enrolled), WUfB via Intune is the standard approach.
+
+**Update types managed by WUfB:**
+
+| Update Type | Description | MTR Impact |
+|-------------|-------------|-----------|
+| Quality Updates (cumulative) | Monthly security patches + bug fixes | No OS version change; requires restart |
+| Feature Updates | Major Windows version upgrades (22H2 → 23H2 → 24H2) | Larger update; longer install + restart |
+| Driver Updates | Hardware driver updates from Windows Update | Optional for MTR; OEM drivers may supersede |
+
+---
+
+## Ring Strategy for Enterprise MTR
+
+The three-ring model from Program 2 scales to enterprise with additional operational controls:
+
+**Ring 0 — Pilot (5–10 devices, 0-day deferral):**
+A small set of devices at a low-risk location (IT lab, secondary site) that receive updates immediately after release. These devices surface compatibility issues before updates reach the production fleet.
+
+**Ring 1 — Early Adopter (15–20% of fleet, 7-day deferral):**
+Non-critical rooms that receive updates one week after Ring 0. Monitoring confirms no issues across a larger sample before Ring 2 deployment.
+
+**Ring 2 — Standard (60–70% of fleet, 14-day deferral):**
+The majority of the fleet. Receives updates two weeks after release, by which time Ring 0 and Ring 1 have validated stability.
+
+**Ring 3 — Deferred (10–20% of fleet, 21–28-day deferral):**
+High-value rooms (CEO office, main boardroom, customer-facing spaces) that receive updates after the full production fleet has been stable. Maximum deferral within security requirements.
+
+**Security constraint:** Security quality updates should not be deferred beyond 30 days. Most organizations target 0–14 days for quality updates. Feature updates can be deferred 60–90 days without security risk if quality updates are current.
+
+---
+
+## Intune Update Ring Configuration
+
+In Intune → Devices → Windows → Update Rings for Windows 10 and later → Create:
+
+**Ring 2 — Standard configuration example:**
+
+| Setting | Value |
+|---------|-------|
+| Servicing channel | General Availability Channel |
+| Quality update deferral (days) | 14 |
+| Feature update deferral (days) | 60 |
+| Feature update uninstall window | 10 days |
+| Automatic update behavior | Auto install at maintenance time |
+| Active hours start | 07:00 |
+| Active hours end | 22:00 |
+| Restart checks: Remind before restart (minutes) | 480 (8 hours before scheduled restart) |
+| Schedule restart warning | 4 hours before |
+| Snooze restart countdown (hours) | 1 |
+
+**Active hours:**
+Active hours prevent Windows from restarting during room operating hours. Setting active hours to 07:00–22:00 means Windows will only restart between 22:00 and 07:00 — during the maintenance window when rooms are typically empty.
+
+<Callout type="warning">
+Active hours alone do not guarantee that restarts happen during the maintenance window. Windows will defer the restart to the next available window outside of active hours, but if a device is left on through the night, the restart may occur before the first meeting of the morning. Set the restart notification windows appropriately so that if a restart does happen at 06:30, it completes before 07:00 business hours.
+</Callout>
+
+**Maintenance window alignment:**
+For organizations with room control systems or building management systems that power MTR devices on at a fixed time each morning, align the Windows Update maintenance window to the period between power-on and the first scheduled meeting. If devices power on at 06:00 and the first meetings start at 08:00, the 06:00–08:00 window is available for update restarts.
+
+---
+
+## Feature Update Management
+
+Feature updates (major Windows version upgrades) require more careful management than quality updates:
+
+**Risks for MTR:**
+- Teams Rooms app compatibility with new Windows versions — Microsoft publishes compatibility notes at each feature update release
+- Driver compatibility — a new Windows version may include driver changes that affect camera, audio, or other peripherals
+- Post-update configuration drift — some Windows feature updates reset certain settings
+
+**Recommended approach:**
+1. Hold feature updates at a stable, supported version until Microsoft confirms Teams Rooms compatibility with the new version
+2. Test the new Windows version in Ring 0 for 2–4 weeks before broader deployment
+3. Configure Feature Update Policy in Intune (separate from Update Rings) to pin the fleet to a specific Windows version until validation is complete:
+
+In Intune → Devices → Windows Feature Updates:
+- Feature update version: Windows 11, version 23H2 (hold here)
+- Assignments: MTR Standard and Deferred rings
+
+After validation, update the Feature Update Policy to allow the next version.
+
+---
+
+## Monitoring Update Rollout
+
+**Intune Update Reports:**
+In Intune → Reports → Windows Update → select the update ring → Device Status:
+- Shows per-device update status: Installed, Pending, Failed, Error
+- Failed and Error devices show error codes — look up at aka.ms/windowsupdatecodes
+
+**Key monitoring workflow:**
+After a Patch Tuesday (second Tuesday of each month), monitor the MTR fleet update status:
+1. Day 0: Quality update released
+2. Day 0–7 (Ring 0): Monitor Ring 0 devices — all devices should show "Installed" within 5 days of release
+3. Day 7–14 (Ring 1): Monitor Ring 1 for issues
+4. Day 14+ (Ring 2 + Ring 3): Standard fleet receives update; review fleet-wide status
+
+**Identifying update-blocked devices:**
+Common causes of updates not installing:
+- Active hours set too broadly — device never has a maintenance window
+- Low disk space — Windows Update requires free disk space; MTR compute units typically have adequate space but verify for older hardware
+- Windows Update service disabled — enterprise security tools sometimes disable Windows Update; verify the Windows Update service is Running on MTR devices via Intune remediation
+
+---
+
+## Handling Emergency Security Updates (Out-of-Band Patches)
+
+When Microsoft releases an emergency security patch (rare but happens for critical CVEs), the standard ring deferral should be bypassed:
+
+1. Review the CVE severity and applicability to MTR devices
+2. If Critical (CVSS 9.0+) and applicable, reduce deferral on all rings to 0 for the specific update
+3. Push the update with a tighter restart window (24–48 hour notification rather than 7-day standard)
+4. Restore normal deferral settings after the emergency update deploys
+
+Document this process in the organization's incident response playbook so it can be executed quickly when needed.
+
+---
+
+<KnowledgeCheck id="p3-t1-m1-l4-kc">
+  <Question>
+    After configuring Intune Windows Update rings with active hours 07:00–22:00
+    and a 14-day quality update deferral, a site manager reports that two MTR
+    devices restarted at 07:15 AM during a morning meeting, disrupting the
+    call. The update ring configuration appears correct. What is the most
+    likely explanation and preventive measure?
+  </Question>
+  <Answer>The active hours configuration was not deployed correctly — verify the Intune policy shows "Succeeded" on those devices</Answer>
+  <Answer correct>Active hours prevent Windows from initiating a restart during the specified window, but they do not guarantee the restart completes before active hours begin. If Windows scheduled the restart for 22:00 overnight but the device was powered off at that time (room unoccupied, powered off by control system), the pending restart would execute the next time the device powers on — which may be 06:45 or 07:00, before or at the start of active hours. The preventive measure is to either: (a) configure the room control system to power on MTR devices at least 30–45 minutes before active hours begin (e.g., 06:15 power-on with active hours starting at 07:00), giving the device time to complete any pending restart before meetings start; or (b) extend active hours to 06:00 to cover the power-on window</Answer>
+  <Answer>The 14-day deferral expired and the update was pushed immediately, bypassing the active hours setting</Answer>
+  <Answer>The update ring was assigned to the wrong device group — the devices received the Ring 0 (0-day deferral) policy</Answer>
+  <Explanation>
+    This is a common real-world scenario. Active hours prevent Windows from
+    scheduling a restart during operating hours, but a pending restart can
+    accumulate if the device was powered off during the scheduled maintenance
+    window (22:00–07:00). When the device powers on the next morning, Windows
+    may complete the pending restart within the first few minutes — landing
+    inside active hours if the power-on time is close to the active hours
+    start. The solution is to build buffer time between the device power-on
+    and the start of active hours (meetings). Controlling the room power-on
+    time via the building management or room control system, and aligning it
+    with the active hours configuration, prevents this scenario. Monitoring
+    the update installation status in Intune to confirm devices install updates
+    overnight (not accumulating pending restarts) also helps identify devices
+    at risk before the restart happens during a meeting.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Ring strategy:** Pilot (0-day), Early Adopter (7-day), Standard (14-day), Deferred (21–28-day); security patches max 30-day deferral.
+- **Active hours:** 07:00–22:00 prevents daytime restarts; align device power-on time to allow pre-meeting restart buffer.
+- **Feature updates:** Defer until Microsoft confirms Teams Rooms app compatibility; use Feature Update Policy to pin version; test in Ring 0 first.
+- **Monitoring:** Check Intune Update Reports after each Patch Tuesday; investigate devices showing "Failed" or "Pending" beyond expected window.
+
+---
+
+## What's Next
+
+[Intune Reporting and Fleet Health Visibility →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/enterprise-intune-configuration/lessons/intune-reporting-fleet-health/)

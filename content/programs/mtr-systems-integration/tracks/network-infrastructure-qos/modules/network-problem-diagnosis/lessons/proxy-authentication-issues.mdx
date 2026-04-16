@@ -1,0 +1,215 @@
+---
+id: "p2-t1-m3-l1"
+slug: "proxy-authentication-issues"
+title: "Proxy and Authentication Issues for M365 Connectivity"
+shortTitle: "Proxy and Auth Issues"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 3
+moduleSlug: "network-problem-diagnosis"
+moduleTitle: "Network Problem Diagnosis"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the symptoms that indicate a proxy is blocking or degrading MTR connectivity"
+  - "Determine whether a proxy is explicit or transparent and apply the appropriate configuration fix for each type"
+  - "Configure Windows proxy bypass settings on MTR Windows devices for M365 Optimize-category endpoints"
+
+prerequisites:
+  - "p2-t1-m1-l2"
+  - "p2-t1-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "troubleshooting"
+  - "proxy"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-l1-proxy-diagnosis-guide.pdf"
+    label: "MTR Proxy Diagnosis and Bypass Guide"
+    sizeKb: 40
+
+relatedLessons:
+  - "p2-t1-m1-l2"
+  - "p2-t1-m3-l2"
+
+metaDescription: "MTR proxy diagnosis — explicit and transparent proxy identification, symptoms of proxy interference with Teams media, Windows proxy bypass configuration, proxy authentication failures, and PAC file bypass for MTR devices."
+
+keywords:
+  - "Teams Rooms proxy bypass"
+  - "MTR proxy configuration"
+  - "Teams Rooms explicit proxy"
+  - "MTR transparent proxy"
+  - "Teams Rooms WPAD proxy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Proxy servers are installed in enterprise networks to inspect, log, and control outbound web traffic. They are effective for that purpose — and highly disruptive to Teams media when applied to real-time traffic that proxies cannot handle correctly. MTR devices encounter two types of proxy issues: proxies that break Teams media transport (by routing UDP traffic through TCP), and proxy authentication requirements that MTR devices cannot satisfy interactively. Both produce symptoms that appear to be Teams sign-in or quality problems rather than network configuration issues.
+
+---
+
+## Proxy Types and Their Impact
+
+**Explicit proxy:** The device is configured with a proxy server address and port. HTTPS requests are routed through the proxy. The proxy negotiates authentication (NTLM, Kerberos, or basic auth), decrypts the connection for inspection, and forwards the traffic.
+
+**Transparent proxy (inline proxy / WCCP):** No device-level proxy configuration is required — the network device intercepts all outbound HTTP/HTTPS traffic and routes it through the proxy without the endpoint's knowledge. The device appears to connect directly to the internet, but traffic is silently intercepted.
+
+**Impact on Teams:**
+- Both proxy types intercept TCP 443 traffic, adding latency and potentially breaking certificate chains (if SSL inspection is enabled)
+- Neither proxy type can intercept UDP traffic — proxies are TCP-only. When UDP ports 3478–3481 are accessible but the proxy is set to route all internet traffic through TCP, Teams may fall back to TCP tunneling, degrading media quality
+
+---
+
+## Identifying Proxy Interference
+
+**Symptom pattern for proxy interference:**
+
+| Symptom | Likely Proxy Cause |
+|---------|-------------------|
+| Sign-in works intermittently; device signs out randomly | Proxy auth token expiry or session timeout |
+| Audio quality poor despite fast internet | UDP media being routed through proxy (TCP path) |
+| Sign-in fails with "can't connect" immediately after OOBE | Proxy auth requirement that MTR device cannot satisfy |
+| Teams app sign-in fails; other apps work | Proxy blocking specific Teams endpoints |
+| M365 Connectivity Test shows proxy detected | Proxy present; verify bypass configuration |
+
+**Confirming proxy presence on MTR Windows:**
+
+From a local admin command prompt on the MTR device:
+```
+netsh winhttp show proxy
+```
+
+If a proxy is configured, this shows the proxy server address. `Direct access (no proxy server)` confirms no WinHTTP-level proxy.
+
+Also check Internet Explorer/Edge proxy settings (used by some Windows components):
+```
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer
+```
+
+For transparent proxies, check the M365 Network Connectivity Test output — it explicitly detects proxy presence.
+
+---
+
+## The MTR Proxy Authentication Problem
+
+Standard enterprise proxies often require authentication — NTLM or Kerberos. Workstations satisfy this automatically using the logged-in user's credentials. MTR Windows devices run under the Skype user account, which does not have domain credentials to pass to a proxy authentication challenge.
+
+**Result:** The proxy blocks outbound traffic from the MTR device, even if the proxy is configured to permit Teams traffic for authenticated users.
+
+**Resolution options:**
+
+1. **Bypass the proxy for M365 Optimize endpoints:** The correct and recommended approach. Configure the proxy to allow traffic from the MTR VLAN subnet (or from the MTR device IPs via DHCP reservation) to bypass proxy authentication for all M365 Optimize-category URLs and IP ranges.
+
+2. **Machine-based proxy authentication:** Some proxy products support machine accounts (computer certificates) rather than user credentials for authentication. If the MTR device has a valid machine certificate from the organization's PKI, configure the proxy to accept machine-based authentication from MTR devices.
+
+3. **Dedicated VLAN bypass:** If the MTR VLAN is fully dedicated (no general user devices on the subnet), configure the proxy to allow unauthenticated or automatically-authenticated access from the entire MTR subnet to M365 endpoints.
+
+---
+
+## Configuring Proxy Bypass on MTR Windows
+
+If an explicit proxy is required for some traffic but Teams endpoints should bypass, configure the WinHTTP proxy bypass list:
+
+```
+netsh winhttp set proxy proxy-server="http://proxy.corp.com:8080" bypass-list="*.teams.microsoft.com;*.skype.com;*.microsoft.com;*.office.com;13.107.64.0/18;52.112.0.0/14;52.122.0.0/15"
+```
+
+This can be applied via a Group Policy WinHTTP proxy setting or an Intune script targeting the MTR device.
+
+**PAC file bypass:** If the network uses a Proxy Auto-Configuration (PAC) file, add bypass rules for Teams endpoints. The PAC file is typically maintained by the network team — request that they add the M365 Optimize-category endpoints and the Teams media IP ranges to the `DIRECT` return path in the PAC file.
+
+Example PAC file logic for Teams bypass:
+```javascript
+if (shExpMatch(host, "*.teams.microsoft.com") ||
+    shExpMatch(host, "*.skype.com") ||
+    isInNet(host, "13.107.64.0", "255.192.0.0") ||
+    isInNet(host, "52.112.0.0", "255.248.0.0")) {
+    return "DIRECT";
+}
+```
+
+<DownloadButton
+  file="p2-t1-m3-l1-proxy-diagnosis-guide.pdf"
+  label="MTR Proxy Diagnosis and Bypass Guide"
+  sizeKb={40}
+  description="Step-by-step proxy diagnosis guide for MTR deployments — explicit and transparent proxy identification commands, symptom-to-cause mapping, WinHTTP bypass configuration, PAC file bypass rules, and escalation path when client network team must make proxy changes."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m3-l1-kc">
+  <Question>
+    An MTR Windows device fails to sign in during OOBE. The error message
+    references connectivity issues. Running `netsh winhttp show proxy` shows
+    a corporate proxy server configured. The proxy requires NTLM authentication.
+    What is the most likely cause of the sign-in failure?
+  </Question>
+  <Answer>The resource account password is incorrect</Answer>
+  <Answer correct>The proxy requires NTLM authentication, but the MTR Windows device's Skype user account does not have domain credentials to satisfy the proxy auth challenge — the proxy blocks outbound traffic to Entra ID, preventing sign-in</Answer>
+  <Answer>The MTR Windows OOBE cannot use a proxy — a direct internet connection is required for initial setup only</Answer>
+  <Answer>The proxy server is configured incorrectly in Windows; it should use the Skype account credentials</Answer>
+  <Explanation>
+    Enterprise proxies that require NTLM authentication depend on a logged-in
+    domain user to pass credentials transparently. The MTR Windows Skype user
+    account is a local account without domain credentials — it cannot complete
+    NTLM proxy authentication. The proxy blocks all outbound traffic from the
+    Skype account, including the Entra ID authentication calls required for
+    Teams sign-in. The resolution is to configure proxy bypass for M365
+    Optimize-category endpoints from the MTR VLAN subnet, allowing direct
+    access to authentication and Teams endpoints without proxy auth.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Proxy types:** Explicit (device configured) vs. transparent (inline interception) — both disrupt Teams if not bypassed.
+- **Auth problem:** Skype account cannot satisfy NTLM/Kerberos proxy auth — bypass required for M365 endpoints.
+- **Symptoms:** Random sign-outs, poor media quality, sign-in failures → check proxy first.
+- **Fix:** WinHTTP bypass list or PAC file `DIRECT` rule for Optimize-category endpoints and Teams media IPs.
+
+---
+
+## What's Next
+
+[Firewall, Certificate Inspection, and TLS Issues →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/firewall-tls-issues/)

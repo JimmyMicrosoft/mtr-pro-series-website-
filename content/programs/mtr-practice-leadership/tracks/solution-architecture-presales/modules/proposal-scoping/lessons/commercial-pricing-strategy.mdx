@@ -1,0 +1,210 @@
+---
+id: "p4-t2-m3-l3"
+slug: "commercial-pricing-strategy"
+title: "Commercial Pricing Strategy"
+shortTitle: "Pricing Strategy"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 3
+moduleSlug: "proposal-scoping"
+moduleTitle: "Proposal Development and Commercial Scoping"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["solutions-architect", "presales-engineer", "account-manager"]
+
+objectives:
+  - "Apply value-based and cost-plus pricing models to MTR project and managed service engagements"
+  - "Structure pricing options that give clients choice while protecting margin"
+  - "Price a managed service that is commercially sustainable at scale"
+  - "Defend pricing under commercial pressure without unnecessary discounting"
+
+prerequisites:
+  - "p4-t2-m3-l1"
+  - "p4-t2-m2-l3"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["solutions-architect", "account-manager"]
+topicTags: ["pricing", "commercial", "managed-service", "proposal"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t2-m3-l2"
+  - "p4-t2-m3-l4"
+  - "p4-t3-m1-l4"
+
+metaDescription: "Learn to apply value-based and cost-plus pricing to MTR projects and managed services, structure pricing options, and defend pricing under commercial pressure."
+keywords: ["MTR pricing strategy", "managed service pricing", "value-based pricing", "Teams Rooms commercial"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Pricing Philosophy
+
+Pricing is not arithmetic — it is strategy. The question is not just "what does this cost plus margin?" but "what is this worth to this client, and how do we price it to reflect that value while winning the business?"
+
+Two pricing approaches apply to MTR engagements:
+
+**Cost-plus pricing**: Add a target margin to your costs. Simple, consistent, and protects margin — but doesn't capture value when the solution is worth more than cost-plus implies.
+
+**Value-based pricing**: Price based on what the client perceives the solution to be worth. Requires a strong ROI conversation (covered in p4-t2-m2-l3) and a confident sale. Generates higher margin but requires more pre-sales investment.
+
+Effective practice pricing uses cost-plus as a floor (the minimum acceptable price) and value-based reasoning to determine how much above that floor is achievable.
+
+---
+
+## Project Pricing Models
+
+### Fixed Price
+
+A single, agreed price for the full defined scope.
+
+**Advantages**: Simple for client to approve; predictable revenue for practice; eliminates admin overhead of time-tracking.
+
+**Risks**: Any cost overrun comes from margin. Requires accurate BOM and labour estimate.
+
+**Best for**: Well-defined scopes with limited technical uncertainty; standard room patterns across a uniform fleet.
+
+**Pricing**: Include a 10% contingency in the cost model (not visible to client) before applying margin.
+
+### Time and Materials (T&M)
+
+The client pays for actual hours worked plus materials at agreed rates.
+
+**Advantages**: Contractor carries less scope risk; cost adjusts to actual work done.
+
+**Risks**: Client uncertainty about final cost; requires detailed time recording and invoicing.
+
+**Best for**: Projects with high uncertainty (complex boardrooms, novel integrations, significant remediation works); add-on works after project scope is agreed.
+
+### Hybrid
+
+Fixed price for well-defined work packages; T&M for uncertain elements.
+
+**Example**: Fixed price for 20 standard room installations + T&M for the 2 boardrooms that require custom DSP integration.
+
+---
+
+## Managed Service Pricing Models
+
+### Per Room Per Month (PRPM)
+
+The most common model for MTR managed services. The client pays a monthly fee per room, covering agreed support services.
+
+**How to build PRPM pricing**:
+
+```
+Cost to deliver per room per month:
+  Pro Management license share:     £37.50  (£450/yr ÷ 12)
+  Support labour (1 hour/room/yr):  £5.42   (£65/hr × 1 hr ÷ 12)
+  Account management (allocated):   £3.00
+  On-site visit allowance (1/yr):   £8.33   (£100 per room per year ÷ 12)
+  Platform / tooling overhead:      £2.00
+  Total cost per room per month:    £56.25
+
+Target managed service margin: 55%
+PRPM sell price: £56.25 / (1 - 0.55) = £125/room/month
+```
+
+Adjust the cost model based on your actual SLA commitments and support labour.
+
+### Service Tiers
+
+Offer 2–3 tiers to give clients choice and create an upsell path:
+
+| Tier | Name | Included | PRPM |
+|---|---|---|---|
+| Bronze | Monitoring | Pro Management monitoring; email alerting; next-business-day remote support | £75 |
+| Silver | Standard | Bronze + 4-hour remote response; 1 on-site visit per year per site | £125 |
+| Gold | Premium | Silver + 2-hour response; unlimited on-site visits; dedicated account manager; QBRs | £200 |
+
+Start the conversation at Silver. Clients who value their rooms will upgrade to Gold; budget-constrained clients will take Bronze and often upgrade after experiencing a service gap.
+
+### Annual Contract vs Monthly Rolling
+
+- **Annual contract**: Provides revenue predictability; typically priced at a small discount vs monthly
+- **Monthly rolling**: Client flexibility at slightly higher PRPM; creates churn risk
+
+**Recommendation**: Propose annual with a 90-day exit clause. This balances client flexibility with practice revenue predictability.
+
+---
+
+## Structuring Pricing Options in the Proposal
+
+Never present a single number. Pricing options create a choice between levels of engagement rather than a choice between "buy or don't buy."
+
+### Option A: Supply and Installation Only
+
+Hardware + installation + commissioning + documentation. No ongoing managed service.
+
+Total: £X
+
+**Appropriate when**: Client has capable in-house IT and wants to manage the fleet themselves.
+
+### Option B: Supply, Installation, and Monitoring
+
+Hardware + installation + commissioning + documentation + Bronze managed service (12-month commitment).
+
+Total project: £X + £75/room/month (£18,000/year for 20 rooms)
+
+**Appropriate when**: Client wants visibility without fully outsourcing support.
+
+### Option C: Full Service
+
+Hardware + installation + commissioning + documentation + Gold managed service (24-month commitment).
+
+Total project: £X + £200/room/month (£48,000/year for 20 rooms)
+
+**Appropriate when**: Client wants a fully managed service with a clear escalation path and proactive management.
+
+Present all three options. Most clients choose the middle option (Silver or equivalent). The presence of a premium option makes the middle option look more reasonable. The presence of a basic option makes the client feel they have control over cost.
+
+---
+
+## Defending Price Under Pressure
+
+### "Can you do it cheaper?"
+
+**Response**: "That depends on what you're prepared to take out. The price reflects [specific scope]. If you want to reduce the price, we can look at [taking out on-site training / dropping to a monitoring-only service / deferring two rooms to Phase 2]. What's most important to you — the full scope at this price, or a reduced scope at a lower price?"
+
+This technique forces the client to be specific about what they want to remove, which often reveals that the scope is more valuable than they thought. Or it reveals which scope elements they don't actually need — and you can genuinely reduce the price without compressing margin.
+
+### "Your competitor quoted 20% less"
+
+**Response**: "Probably. There are a few ways to get to a lower price — cheaper hardware, fewer installation hours, a lighter project management model, or accepting lower margin. Can I ask — is their proposal identical to ours in scope and specification? In my experience, price differences this large usually reflect scope differences. Would you be willing to share their specification so we can do a like-for-like comparison?"
+
+If the competitor has genuinely undercut on a like-for-like basis, you have three options: match them (margin hit), differentiate on quality/risk, or walk away.
+
+<Callout type="tip">
+**The practice that constantly discounts to win trains its clients to expect discounts.** A discipline of pricing at value, defending with scope, and walking away from deals that are too price-sensitive builds a better client base than winning every deal by being cheapest.
+</Callout>
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client asks for a 15% discount on a fixed-price MTR project. The proposal includes a 10% cost contingency and 20% gross margin on labour. What is the maximum discount you can offer before eroding the contingency?">
+    <Answer>0% — any discount immediately erodes margin</Answer>
+    <Answer correct>The 10% contingency provides some flexibility, but a 15% discount would eat all contingency and compress margin. The correct response is to offer a scope reduction that justifies a price reduction, rather than discounting the existing scope.</Answer>
+    <Answer>15% — the contingency covers it</Answer>
+    <Answer>Agree the discount and recover on the managed service</Answer>
+    <Explanation>A 10% contingency buffer means you could absorb a ~10% discount without guaranteed margin loss — but only if costs come in on budget. A 15% discount eliminates the contingency and compresses labour margin. The professional response is to propose a scope trade, not a margin sacrifice.</Explanation>
+  </Question>
+</KnowledgeCheck>

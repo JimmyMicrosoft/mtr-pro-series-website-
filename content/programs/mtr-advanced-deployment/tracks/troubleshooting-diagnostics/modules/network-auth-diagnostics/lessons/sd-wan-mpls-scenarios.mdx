@@ -1,0 +1,304 @@
+---
+id: "p3-t2-m3-l3"
+slug: "sd-wan-mpls-scenarios"
+title: "SD-WAN and MPLS Advanced Scenarios for MTR"
+shortTitle: "SD-WAN and MPLS Scenarios"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 3
+moduleSlug: "network-auth-diagnostics"
+moduleTitle: "Network and Authentication Diagnostics"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Explain how SD-WAN platforms classify Teams traffic and identify what happens when classification fails"
+  - "Verify SD-WAN traffic classification policy for MTR UDP streams on major SD-WAN platforms"
+  - "Identify MPLS path asymmetry as a latency source using RTT values from CQD"
+  - "Describe the configuration required for Microsoft 365 Optimize category local internet breakout on SD-WAN"
+  - "Configure VPN split tunnel exceptions for Teams media to prevent MTR devices from sending media through a VPN tunnel"
+  - "Use traceroute to identify where latency is introduced on the path from an MTR device to a Teams media relay"
+
+prerequisites:
+  - "p3-t2-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "network"
+  - "sd-wan"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m3-l2"
+  - "p3-t2-m3-l4"
+
+metaDescription: "SD-WAN and MPLS advanced troubleshooting for Microsoft Teams Rooms — SD-WAN traffic classification, MPLS path asymmetry, Teams local internet breakout, VPN split tunneling for MTR, and media path verification using traceroute."
+
+keywords:
+  - "MTR SD-WAN"
+  - "Teams Rooms MPLS"
+  - "Teams Rooms local internet breakout"
+  - "MTR VPN split tunnel"
+  - "SD-WAN Teams media"
+  - "Teams Rooms routing"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Enterprise networks increasingly rely on SD-WAN to intelligently route application traffic, and MPLS circuits to provide private WAN connectivity between sites. Both technologies introduce Teams Rooms-specific scenarios that do not appear in simpler network environments: SD-WAN platforms that mis-classify Teams UDP traffic and route it through a low-quality path, MPLS circuits that add unnecessary latency by routing media through a centralized data center before reaching the Internet, and VPN configurations that capture MTR media traffic inside a tunnel that was designed for data, not real-time communication. These are advanced scenarios that require collaboration with the network team and an understanding of how Teams media flows interact with routing policy. This lesson provides the diagnostic techniques and the architectural knowledge to identify and escalate these issues.
+
+---
+
+## SD-WAN and Teams Traffic Classification
+
+SD-WAN platforms provide value by classifying application traffic and routing each application to the most appropriate WAN path. For Teams, this means sending media traffic (UDP 3478–3481 and UDP 443) directly to the Internet over the highest-quality available path, rather than backhauling it through the corporate MPLS network to a central data center.
+
+**The classification problem:**
+
+SD-WAN platforms identify applications using Deep Packet Inspection (DPI), port-based rules, IP address lists, or FQDN-based matching. Teams traffic classification requires the platform to correctly identify Teams UDP media streams. Mis-classification — treating Teams UDP as "unknown UDP" and routing it through the MPLS default path — is the most common SD-WAN-related Teams problem.
+
+**Supported SD-WAN platforms and their Teams classification methods:**
+
+| Platform | Teams Classification Method | Notes |
+|---|---|---|
+| Cisco Viptela (SD-WAN) | Application-aware routing with NBAR2 classification; Teams is a recognized application | Verify the Teams application group includes UDP 3478–3481 and the Microsoft 365 IP ranges |
+| VMware VeloCloud | Built-in application library includes Microsoft Teams; Business Policy assigns Teams to a "Real-Time" class | Verify the Business Policy is applied to the correct VeloCloud Edge for the affected site |
+| Fortinet SD-WAN | Application control profile; Teams identified by FQDN and IP; SD-WAN rule assigns to best-quality WAN link | Verify the SD-WAN rule priority places Teams above best-effort rules |
+| Citrix SD-WAN | Microsoft 365 "Optimize" URLs and IPs are a built-in category; local internet breakout can be enabled per site | Verify the affected site has local internet breakout enabled in the Citrix SD-WAN configuration |
+
+**Verifying SD-WAN classification for MTR:**
+
+During an active Teams call from the MTR device, log into the SD-WAN management interface and view the active application flows for the device's IP address. Verify that Teams media flows (UDP to Microsoft relay IPs) are classified as "Microsoft Teams" or an equivalent real-time application category, and are assigned to the correct WAN link (direct internet, not MPLS).
+
+If the flows appear as "Unknown UDP" or are routed via MPLS, the classification rule is not matching. Common reasons:
+- The Microsoft relay IP address used by Teams is not in the SD-WAN's IP list for Teams (Microsoft periodically updates relay IPs — update the IP list from the Microsoft 365 endpoint XML feed)
+- The SD-WAN rule's DSCP match is failing because DSCP marking is applied after the SD-WAN policy evaluation point
+
+---
+
+## MPLS Path Asymmetry
+
+MPLS circuits provide reliable private WAN connectivity between sites but route all traffic through the corporate network to the central data center before reaching the Internet. For Teams media, this means every packet must travel: MTR device → branch site → MPLS WAN → data center → Internet → Microsoft Teams relay. This path adds the MPLS transit delay and the data center-to-Internet transit delay on top of the minimum necessary path.
+
+**Identifying MPLS backhaul from RTT in CQD:**
+
+A Teams call from a branch site using direct internet breakout should have an RTT of 30–80 ms to the nearest Microsoft Teams relay. A call from the same site routed through MPLS and a central data center will have an RTT of 80–200+ ms depending on the MPLS path and data center location.
+
+If CQD shows consistently elevated RTT for all rooms at a specific branch site, and rooms at the headquarters (which directly connects to the Internet) show normal RTT, MPLS backhaul is the likely cause.
+
+**Confirming with traceroute:**
+
+From the MTR device (in admin mode), run a traceroute to a known Microsoft Teams media relay IP. Microsoft publishes the Teams relay IP ranges; use the first hop outside the corporate network to identify whether the path goes through an MPLS WAN address or directly to the Internet.
+
+```cmd
+tracert -d 52.114.6.0
+```
+
+Expected output for direct internet breakout (desirable):
+```
+1     1 ms    <branch-site-router>
+2     5 ms    <ISP-gateway>
+3     8 ms    <ISP-transit>
+4    22 ms    <Microsoft-network>
+```
+
+Expected output for MPLS backhaul (undesirable):
+```
+1     1 ms    <branch-site-router>
+2    15 ms    <MPLS-WAN-hop-1>
+3    28 ms    <MPLS-WAN-hop-2>
+4    32 ms    <data-center-edge>
+5    45 ms    <data-center-internet-breakout>
+6    68 ms    <Microsoft-network>
+```
+
+The additional 45+ ms of latency introduced by the MPLS backhaul path directly increases RTT and can push it above the threshold for perceptible audio delay.
+
+---
+
+## Teams Media and SD-WAN Local Internet Breakout
+
+Microsoft's recommendation for Teams Rooms in SD-WAN environments is to configure the SD-WAN platform to break out Microsoft 365 "Optimize" category URLs and IPs directly to the Internet at each site, bypassing centralized MPLS backhaul. The "Optimize" category includes Teams media endpoints — the specific IP ranges and ports that carry media traffic.
+
+**The Microsoft 365 endpoint categories:**
+
+| Category | Description | Teams Recommendation |
+|---|---|---|
+| Optimize | Highest-priority Microsoft 365 endpoints; latency-sensitive; Teams media | Direct internet breakout at every site — no proxy, no SSL inspection, no MPLS backhaul |
+| Allow | Important Microsoft 365 endpoints; less latency-sensitive | Direct internet preferred; minimal inspection |
+| Default | General Microsoft 365 and CDN traffic | Standard corporate routing is acceptable |
+
+The Optimize endpoint list is published at: `https://endpoints.office.com/endpoints/worldwide?clientrequestid=<GUID>&format=CSV`
+
+**Configuring Cisco Viptela for local breakout:**
+
+In Viptela vManage:
+1. Navigate to **Configuration → Policies → Centralized Policy**.
+2. Under **Traffic Engineering**, create an application-aware routing policy matching the Teams application group.
+3. Set the preferred link to the **Direct Internet** (DIA) interface with the lowest latency measurement.
+4. Verify the policy is pushed to the branch site's vEdge/cEdge router.
+
+**Verifying local breakout is active:**
+
+From the MTR device, after the SD-WAN policy is applied, run the traceroute again. The second hop should now be the ISP gateway (direct internet) rather than the MPLS WAN. If it still shows the MPLS path, the policy is not matching or is not yet propagated to the edge router.
+
+---
+
+## Split Tunneling for VPN Users and MTR Rooms
+
+Split tunneling is most commonly discussed for remote users, but MTR devices can also be affected if the organization's policy routes all device traffic through a VPN tunnel for security or compliance reasons.
+
+**Why VPN tunneling degrades Teams media:**
+
+A VPN tunnel introduces additional overhead (encapsulation), increased latency (traffic must reach the VPN concentrator before reaching the Internet), and potential bandwidth constraint (VPN concentrator capacity shared across all tunneled users). For Teams media, which requires low latency and consistent bandwidth, VPN tunneling can increase RTT by 50–150 ms and introduce jitter caused by VPN concentrator queue variation.
+
+**Confirming whether MTR media is traversing the VPN:**
+
+From the MTR device:
+
+```cmd
+tracert -d 52.114.6.0
+```
+
+If the first external hop is a VPN concentrator IP (typically the organization's internal WAN edge IP or an IP from the VPN provider's address space), all traffic is being tunneled.
+
+**Configuring a split tunnel exception for Teams endpoints:**
+
+To exclude Teams media from the VPN tunnel, the organization's VPN configuration must include a split tunnel rule that routes Microsoft 365 Optimize category destinations directly to the Internet rather than through the tunnel.
+
+For Windows built-in VPN (using the Windows VPN client):
+
+```powershell
+# Add a split tunnel route that excludes Microsoft 365 Optimize IPs from the VPN
+# (Example for one Teams relay subnet — apply for all Optimize IP ranges)
+Add-VpnConnectionRoute -ConnectionName "Corporate-VPN" -DestinationPrefix "52.114.0.0/16" -RouteMetric 1 -PassThru
+```
+
+For third-party VPN clients (Cisco AnyConnect, Palo Alto GlobalProtect), split tunnel configuration is managed via the VPN server policy — the network team must add the Microsoft 365 Optimize IP ranges to the split tunnel exclusion list on the VPN server.
+
+**MTR devices on VPN for policy reasons:**
+
+Some organizations require MTR devices to be on the corporate VPN to enforce Intune compliance policies or to apply endpoint security tools. In these cases, configuring split tunneling for Teams Optimize endpoints is the only way to preserve media quality while maintaining the VPN for control plane traffic.
+
+---
+
+## Verifying the Media Path from an MTR Device
+
+For any case where a routing problem is suspected (MPLS backhaul, VPN tunneling, SD-WAN mis-classification), a traceroute from the MTR device to the Teams media relay IP provides direct evidence of the actual path the media is taking.
+
+**Finding Teams relay IP addresses:**
+
+During an active Teams call from the MTR device, use netstat to identify the remote IP address of the active UDP media connection:
+
+```cmd
+netstat -ano | findstr :3478
+```
+
+The remote IP address shown is the Teams transport relay the device is connected to for this call.
+
+**Running a traceroute to the relay:**
+
+```cmd
+tracert -d <Teams-relay-IP>
+```
+
+For UDP traceroute (more accurate for UDP-based applications):
+
+```powershell
+# Using Test-NetConnection for a quick latency check
+Test-NetConnection -ComputerName <Teams-relay-IP> -Port 3478
+```
+
+Note: `Test-NetConnection` uses TCP, which may not exactly reflect UDP path behavior, but provides a latency baseline.
+
+**Interpreting the traceroute output:**
+
+| Hop Pattern | Interpretation |
+|---|---|
+| First external hop is ISP gateway | Direct internet breakout — correct for Teams |
+| First external hop is an MPLS WAN IP | MPLS backhaul — configure SD-WAN local breakout |
+| First external hop is a VPN concentrator IP | VPN tunneling — configure split tunnel exception |
+| Multiple consecutive hops with RTT >10 ms each | Routing path with multiple high-latency WAN hops — escalate to network team for path optimization |
+| `* * *` (request timeout) at intermediate hops | Normal for hops that do not respond to ICMP; continue reading RTT at the final hop |
+
+---
+
+<KnowledgeCheck id="p3-t2-m3-l3-kc">
+  <Question>
+    A branch office has 3 Teams Rooms devices. CQD data for the past 30 days
+    shows an average RoundTripTime of 185 ms for all three rooms, while the
+    headquarters site (same tenant) shows an average RTT of 45 ms. A traceroute
+    from one of the branch MTR devices to a Teams relay IP shows 6 hops with
+    the third hop being an internal MPLS WAN IP and the fifth hop being the
+    organization's headquarters internet breakout router. What is the most
+    accurate description of the problem and the recommended fix?
+  </Question>
+  <Answer>The branch office's WAN circuit has insufficient bandwidth — upgrade the MPLS circuit capacity to reduce the RTT</Answer>
+  <Answer>The Microsoft Teams relay server assignment is routing the branch office to a geographically distant relay — contact Microsoft to change the relay assignment</Answer>
+  <Answer correct>The traceroute confirms MPLS backhaul: all Teams media from the branch office is routing through the MPLS WAN to the headquarters, then breaking out to the Internet from the headquarters router — adding the MPLS transit latency and the headquarters internet egress latency to every Teams call. The 185 ms vs. 45 ms RTT differential matches the MPLS backhaul hypothesis (the additional ~140 ms represents the MPLS round-trip to headquarters and back). The recommended fix is to configure local internet breakout for Microsoft 365 Optimize category traffic at the branch site's SD-WAN edge or router. This allows Teams media to exit directly to the Internet at the branch, eliminating the MPLS transit hops and reducing the RTT to approximately the headquarters level</Answer>
+  <Answer>The branch office MTR devices have VPN tunneling enabled — configure split tunnel exceptions for Teams Optimize IP ranges on each device's VPN client</Answer>
+  <Explanation>
+    The traceroute is the decisive evidence: hop 3 is an internal MPLS WAN
+    IP, and hop 5 is the headquarters internet breakout router. This explicitly
+    shows the packet path: branch → MPLS → headquarters → Internet → Teams relay.
+    This is the MPLS backhaul architecture. Bandwidth upgrade does not address
+    the latency problem — MPLS circuits have high bandwidth but the latency is
+    determined by the physical distance and the number of MPLS hops, not the
+    bandwidth capacity. VPN tunneling would show a VPN concentrator as the
+    first external hop, not an MPLS WAN hop. Relay server geographic assignment
+    is outside the organization's control and does not produce a consistent
+    185 ms RTT that exactly correlates with the MPLS path length.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **SD-WAN classification:** SD-WAN platforms (Cisco Viptela, VMware VeloCloud, Fortinet, Citrix) must correctly classify Teams UDP media streams and route them to the best-quality direct internet path; mis-classification routes media through MPLS (high latency). Verify active flow classification in the SD-WAN management interface during a call.
+- **MPLS path asymmetry:** Identified by elevated RTT in CQD at a branch site compared to headquarters; confirmed by traceroute showing MPLS WAN hops before reaching the Internet. Resolution: configure SD-WAN local internet breakout for Microsoft 365 Optimize category.
+- **Local internet breakout:** Microsoft 365 Optimize category IPs must exit directly to the Internet at every site — no proxy, no SSL inspection, no MPLS backhaul. The endpoint list is published by Microsoft and must be kept current.
+- **VPN split tunneling:** MTR devices on VPN send media through the tunnel, adding latency and jitter. Exclude Microsoft 365 Optimize IPs from the VPN tunnel via split tunnel rules on the VPN server or client.
+- **Media path verification:** `netstat -ano | findstr :3478` identifies the active Teams relay IP; `tracert -d <relay-IP>` reveals the actual media path. First external hop should be the ISP gateway — MPLS or VPN hops indicate a suboptimal path.
+
+---
+
+## What's Next
+
+[Firewall and Proxy Advanced Scenarios →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/network-auth-diagnostics/lessons/firewall-proxy-advanced/)

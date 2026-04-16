@@ -1,0 +1,214 @@
+---
+id: "p2-t3-m1-l1"
+slug: "dsp-fundamentals-signal-chain"
+title: "DSP Fundamentals and the Audio Signal Chain"
+shortTitle: "DSP and Signal Chain"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 1
+moduleSlug: "conference-room-audio"
+moduleTitle: "Conference Room Audio Systems"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Describe the audio signal chain from microphone input to speaker output in a conference room system"
+  - "Explain the role of a DSP in a conference room and identify the processing functions it performs"
+  - "Identify the signal types (analog, digital, AES, Dante, USB) used at each stage of a conference room audio system"
+
+prerequisites:
+  - "p2-t2-m3-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "audio"
+  - "dsp"
+  - "signal-chain"
+
+vendorTags:
+  - "biamp"
+  - "qsc"
+  - "shure"
+
+relatedLessons:
+  - "p2-t3-m1-l2"
+  - "p2-t3-m1-l3"
+
+metaDescription: "Conference room audio signal chain — microphone input, DSP processing (AEC, NR, AGC, gating, EQ, limiting), signal transport (analog, AES3, Dante, USB), and speaker output. Foundation for MTR audio system design."
+
+keywords:
+  - "conference room DSP fundamentals"
+  - "MTR audio signal chain"
+  - "Teams Rooms audio DSP"
+  - "conference room audio processing"
+  - "AEC noise reduction conference room"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Every conference room audio system — whether a simple all-in-one soundbar or a fully engineered system with ceiling microphone arrays and distributed speakers — follows the same fundamental signal chain. Understanding this chain, and the role of the DSP within it, is the foundation for diagnosing problems, specifying systems, and validating that a room sounds the way it should.
+
+---
+
+## The Conference Room Audio Signal Chain
+
+Audio in a conference room moves through five distinct stages:
+
+```
+[Microphones] → [Preamp / ADC] → [DSP] → [DAC / Amplifier] → [Speakers]
+                                    ↕
+                           [Codec / MTR Device]
+                           (send + receive path)
+```
+
+**Stage 1 — Microphone capture:**
+The microphone converts acoustic sound pressure into an electrical signal. The type of microphone determines the pickup pattern, sensitivity, and frequency response. For conference rooms, this stage may be a single element (tabletop boundary mic), an array of elements (ceiling array, beamforming bar), or a mix of types.
+
+**Stage 2 — Preamplification and analog-to-digital conversion (ADC):**
+The microphone signal (typically very low level, measured in millivolts) is amplified to line level and converted from analog to digital. In integrated DSP systems, this happens inside the DSP unit. In some systems, this stage is in a separate stagebox or audio interface.
+
+**Stage 3 — DSP processing:**
+The digital signal passes through the processing functions that make the audio usable in a conference context. This is where the work happens — without DSP processing, a raw microphone signal from a conference room would be unusable (echo, background noise, level variation).
+
+**Stage 4 — Digital-to-analog conversion (DAC) and amplification:**
+The processed signal is converted back to analog (if driving passive speakers) and amplified to a level sufficient to drive the speakers at the required volume. In networked audio systems (Dante, AES67), the signal may stay digital until it reaches a remote amplifier.
+
+**Stage 5 — Speaker output:**
+The amplified signal drives the speakers, reproducing the far-end audio in the room for local participants.
+
+The MTR device sits at Stage 3 — the DSP sends processed microphone audio to the MTR codec for transmission to the far end, and receives the far-end audio from the MTR codec for playback through the room's speakers.
+
+---
+
+## DSP Processing Functions
+
+A conference room DSP performs several processing functions in series:
+
+**Acoustic Echo Cancellation (AEC):**
+AEC is the most critical function in a conference room DSP. When the room's speakers play the far-end audio, that sound travels through the air and reaches the microphones — creating an echo that the far end hears. AEC uses a reference signal (the audio being sent to the speakers) to subtract the echo from the microphone signal before it is transmitted.
+
+*AEC requirement:* The reference signal must be taken from the audio signal path before the speakers — a DSP that doesn't have access to the speaker reference signal cannot perform AEC. This is why ad-hoc audio setups (laptop webcam microphone + room speakers) often produce severe echo.
+
+**Noise Reduction (NR):**
+Background noise — HVAC, projector fans, keyboard clicks, traffic — is attenuated using spectral subtraction. NR profiles common background noise and reduces its level in the signal. Aggressive NR can introduce artifacts (metallic sound, speech clipping) if misconfigured.
+
+**Automatic Gain Control (AGC):**
+AGC maintains consistent output level regardless of how close or far speakers are from the microphone, and accounts for differences in speaker volume. A participant who speaks quietly gets the same transmitted level as one who speaks loudly.
+
+**Noise Gate / Automixer:**
+A noise gate closes the signal path when the level falls below a threshold, preventing background noise from being transmitted during silences. An automixer manages multiple open microphone channels, attenuating inactive channels to reduce overall noise floor — critical in rooms with many microphones.
+
+**Equalization (EQ):**
+EQ adjusts the frequency response of microphone channels and speaker outputs. For microphones, EQ is used to compensate for room resonances and mic proximity effects. For speakers, EQ shapes the frequency response to match the room's acoustic characteristics.
+
+**Limiting:**
+A limiter prevents the signal from exceeding a maximum level, protecting against clipping (harsh distortion) from sudden loud sounds. Applied on both the microphone send path and the speaker output.
+
+---
+
+## Signal Transport: Analog, Digital, and Networked Audio
+
+Different stages of the signal chain use different signal formats:
+
+| Format | Description | Use Case |
+|--------|-------------|----------|
+| **Analog balanced (XLR)** | Low-impedance balanced analog signal | Microphone to DSP; DSP to amplifier |
+| **AES3 (AES/EBU)** | 2-channel digital audio over XLR | Short-distance digital interconnect between DSP and amplifier |
+| **Dante** | IP-based networked audio (Layer 3) | Multi-channel audio distribution across a network; connects DSPs, amplifiers, and ceiling microphone arrays |
+| **USB Audio** | USB device class audio | Direct connection from DSP or audio interface to MTR Windows device |
+| **HDMI/DP Audio** | Embedded audio in video signal | Receives far-end audio from MTR device display output (less common in engineered systems) |
+
+**Dante in practice:**
+Dante is the dominant networked audio protocol for installed conference room systems (Biamp Tesira, QSC Q-SYS, Shure ceiling microphones all support Dante). Dante carries multiple audio channels over a standard Ethernet network — a ceiling microphone array with 8 element outputs can send all 8 channels to a DSP over a single Cat6 cable.
+
+Dante devices require a dedicated Dante controller (Dante Controller software, free from Audinate) to route audio channels between devices. Dante audio runs on a separate VLAN from IT traffic in enterprise installations.
+
+**USB Audio to MTR:**
+When connecting a DSP to a Teams Rooms Windows device, the most common integration method is USB Audio — the DSP presents as a USB audio device (microphone + speaker). The MTR device selects the DSP as its audio device in the Teams Rooms app settings. This is a straightforward integration that works with all MTR Windows devices.
+
+---
+
+## Where MTR-Specific Devices Fit
+
+Most all-in-one MTR certified devices (Poly Studio, Logitech Rally, Jabra PanaVision, Neat Board) integrate the signal chain internally — the DSP, codec, and USB audio interface are all inside the device. The practitioner manages the room's acoustic properties and the device's placement rather than a separate DSP.
+
+Engineered systems — where a separate DSP (Biamp Tesira, QSC Q-SYS, Shure ANIUSB) is installed — are used for:
+- Large rooms (boardrooms, training rooms, huddle rooms with difficult acoustics)
+- Rooms with distributed speaker systems (multiple ceiling speakers)
+- Multi-zone rooms (multiple rooms combined)
+- Rooms requiring custom DSP processing beyond what the MTR device provides
+- Installations where the audio system serves multiple use cases (AV presentation, videoconference, town hall)
+
+---
+
+<KnowledgeCheck id="p2-t3-m1-l1-kc">
+  <Question>
+    A far-end participant reports hearing a clear echo of their own voice during
+    a meeting in a newly commissioned boardroom. The room uses a separate DSP
+    (Biamp Tesira) connected to ceiling speakers and a ceiling microphone array.
+    What is the most likely cause of the echo?
+  </Question>
+  <Answer>The microphone gain is set too high, causing the microphone to pick up the speakers</Answer>
+  <Answer correct>AEC is not functioning correctly — either the AEC reference signal is not configured (the DSP is not receiving the speaker output as its reference), the AEC is disabled, or AEC is enabled on the wrong channel. Without a valid AEC reference signal, the DSP cannot subtract the speaker output from the microphone signal, and the far end hears their own audio returned to them</Answer>
+  <Answer>The Dante network latency is too high, causing a delay in the AEC reference signal</Answer>
+  <Answer>The ceiling microphones are too far from the speakers and cannot detect the speaker output for cancellation</Answer>
+  <Explanation>
+    Echo heard by the far end is the classic symptom of AEC failure. AEC requires
+    the DSP to receive the exact signal being sent to the speakers as its
+    reference input — this is called the AEC reference or loopback feed. If
+    this reference is not correctly routed in the DSP configuration, AEC cannot
+    work and the room speakers' output reaches the microphones and is transmitted
+    back to the far end. The fix is to verify the AEC reference routing in the
+    DSP program (Biamp Tesira Software, QSC Designer, etc.) and confirm that
+    AEC is active on the microphone input channels. Microphone gain and Dante
+    latency do not cause echo; AEC works acoustically, not by proximity of
+    the microphone to the speaker.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Signal chain:** Microphones → Preamp/ADC → DSP → DAC/Amplifier → Speakers; MTR device connects at the DSP.
+- **DSP functions:** AEC (most critical — requires speaker reference signal), Noise Reduction, AGC, Noise Gate/Automixer, EQ, Limiting.
+- **Signal formats:** Analog XLR (common), Dante (networked, multi-channel), USB Audio (DSP-to-MTR integration).
+- **Engineered vs. integrated:** All-in-one MTR devices have the signal chain built in; large or complex rooms use separate DSPs for more control.
+
+---
+
+## What's Next
+
+[Microphone Systems for Conference Rooms →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/conference-room-audio/lessons/microphone-systems/)

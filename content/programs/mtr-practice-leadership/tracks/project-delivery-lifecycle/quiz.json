@@ -1,0 +1,128 @@
+{
+  "trackSlug": "project-delivery-lifecycle",
+  "trackTitle": "Project Delivery Lifecycle",
+  "programSlug": "mtr-practice-leadership",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "During a site survey for a new MTR deployment, which combination of physical measurements is most critical to capture before designing the AV system?",
+      "answers": [
+        "Room paint colour, carpet type, and furniture style.",
+        "Ceiling height, room dimensions (length and width), window placement and natural light levels, power outlet locations, and existing network port locations and categories.",
+        "The number of chairs in the room and the preferred brand of conferencing equipment.",
+        "The floor material and the building's construction year."
+      ],
+      "correct": 1,
+      "explanation": "Ceiling height determines microphone and camera mounting options. Room dimensions drive camera field of view, display sizing, and acoustic treatment needs. Window placement affects display brightness and glare. Power and network port locations determine rack placement and cable run distances — all essential inputs to system design."
+    },
+    {
+      "id": 2,
+      "text": "A Statement of Work (SOW) is being drafted for a 20-room MTR deployment. Which section is specifically designed to prevent scope creep by listing what the contractor will NOT deliver?",
+      "answers": [
+        "Deliverables",
+        "Assumptions",
+        "Exclusions",
+        "Acceptance Criteria"
+      ],
+      "correct": 2,
+      "explanation": "The Exclusions section of an SOW explicitly lists what is out of scope — for example, 'cabling works beyond the comms room patch panel', 'end-user training beyond 1 hour per site', or 'procurement of display screens'. This protects the contractor from scope creep and sets clear customer expectations."
+    },
+    {
+      "id": 3,
+      "text": "A risk register entry identifies: 'Network infrastructure not upgraded before MTR installation' with probability rated 3/5 and impact rated 4/5. Using a probability × impact matrix, what is the risk score, and how should it be treated?",
+      "answers": [
+        "Score 7 — low risk, monitor only.",
+        "Score 12 — high risk, requiring a mitigation plan with an assigned owner and target date.",
+        "Score 1 — negligible risk, no action required.",
+        "Score 20 — critical risk, project must be halted immediately."
+      ],
+      "correct": 1,
+      "explanation": "Probability × Impact = 3 × 4 = 12. On a 5×5 matrix (max score 25), a score of 12 sits in the high-risk zone. This requires a mitigation plan with an assigned owner, defined actions (e.g., confirm network upgrade timeline, include network readiness as a project go/no-go gate), and regular monitoring."
+    },
+    {
+      "id": 4,
+      "text": "In project scheduling for an MTR rollout, which methodology helps identify the minimum project duration and the tasks that, if delayed, will delay the overall project completion?",
+      "answers": [
+        "RACI matrix",
+        "Critical Path Method (CPM)",
+        "Earned Value Management (EVM)",
+        "Moscow prioritisation"
+      ],
+      "correct": 1,
+      "explanation": "The Critical Path Method identifies the longest sequence of dependent tasks — the critical path — which determines the earliest possible project completion date. Any delay to a task on the critical path directly delays the overall project, making CPM essential for timeline management."
+    },
+    {
+      "id": 5,
+      "text": "What is the purpose of an Inspection and Test Plan (ITP) in the context of an MTR installation project?",
+      "answers": [
+        "It is a document that records the number of hours each technician worked each day.",
+        "It is a formal quality management document that defines what must be inspected and tested, by whom, at which project stage, using which acceptance criteria — ensuring installation quality is verified systematically.",
+        "It is a document submitted to the building owner for planning permission before installation.",
+        "It is a checklist of IT equipment ordered for the project."
+      ],
+      "correct": 1,
+      "explanation": "An ITP is a quality management tool that pre-defines inspection and test activities, the responsible party, the method, and the pass/fail criteria for each phase of the installation. It ensures quality is built in throughout the process, not just checked at the end."
+    },
+    {
+      "id": 6,
+      "text": "A resource account provisioning plan is a key deliverable during the pre-installation phase of an MTR project. What information must it contain to enable smooth deployment?",
+      "answers": [
+        "The brand and model of each MTR device to be deployed.",
+        "For each room: the resource account UPN, display name, room mailbox capacity, assigned licences, meeting policy name, and the target device it will be signed into.",
+        "The name of the Microsoft partner who sold the Teams Rooms licences.",
+        "The location of the nearest Microsoft data centre to each room."
+      ],
+      "correct": 1,
+      "explanation": "A resource account provisioning plan maps each room to its specific resource account details: UPN, display name, capacity, assigned licences (Teams Rooms Basic/Pro + Exchange), the meeting policy to be granted, and which physical device it will be used with. This enables accurate pre-provisioning and avoids delays on installation day."
+    },
+    {
+      "id": 7,
+      "text": "A network readiness assessment is conducted before deploying MTR devices across 10 sites. Which specific test results would cause a site to fail readiness and require remediation before MTR deployment?",
+      "answers": [
+        "Ping round-trip time to Microsoft 365 endpoints greater than 5ms.",
+        "Packet loss greater than 1% to Teams media endpoints, jitter greater than 30ms, or round-trip latency greater than 150ms — indicating the network cannot support real-time media quality.",
+        "A switch that does not support 10 Gigabit uplinks to the core.",
+        "Absence of a Wi-Fi network in the conference room (MTR uses wired Ethernet)."
+      ],
+      "correct": 1,
+      "explanation": "Microsoft's network quality thresholds for Teams media are: packet loss <1%, jitter <30ms, and round-trip latency <150ms (ideally <100ms). Sites exceeding these thresholds will produce poor audio and video quality and must have network issues remediated before MTR deployment proceeds."
+    },
+    {
+      "id": 8,
+      "text": "What is the recommended adoption metric target for room utilisation at 90 days post-deployment, and why is this metric significant?",
+      "answers": [
+        ">10% — any utilisation above zero indicates the rooms are being used.",
+        ">25% — meeting rooms are expected to be booked for a quarter of working hours.",
+        ">40% — this threshold indicates that the technology has been meaningfully adopted and users are actively using the rooms for hybrid meetings, justifying the investment.",
+        ">90% — rooms should be fully booked to maximise ROI."
+      ],
+      "correct": 2,
+      "explanation": "A >40% utilisation rate at 90 days is a common industry benchmark for successful MTR adoption. It indicates that users have changed their behaviour to use the technology regularly. Rates below 40% at 90 days suggest adoption barriers that need addressing through training, change management, or room design adjustments."
+    },
+    {
+      "id": 9,
+      "text": "Project closeout documentation for an MTR deployment should include which combination of documents?",
+      "answers": [
+        "The original quotation and the customer's purchase order only.",
+        "As-built drawings and cable schedules, commissioning test results, resource account inventory, user training records, warranty information, and a signed customer acceptance certificate.",
+        "A summary email from the project manager confirming the rooms are live.",
+        "The device serial numbers and the invoice for the equipment."
+      ],
+      "correct": 1,
+      "explanation": "Professional project closeout requires a complete documentation package: as-built drawings, labelled cable schedules, commissioning test records, resource account details, training records (who was trained and when), warranty and support contact information, and a formal customer acceptance certificate confirming practical completion."
+    },
+    {
+      "id": 10,
+      "text": "An end-user training programme for a 15-room MTR deployment across 3 departments should be structured in which way to maximise effectiveness and efficiency?",
+      "answers": [
+        "Send an email with a link to the Microsoft Teams Rooms product page and rely on self-learning.",
+        "Conduct a single all-day training session for all 300 users simultaneously in the largest meeting room.",
+        "Conduct short (30–45 minute) role-specific sessions per department, include hands-on practice with the actual room system, provide quick-reference cards, identify departmental champions, and schedule follow-up check-ins at 2 and 4 weeks post-go-live.",
+        "Training is not required; the MTR interface is intuitive and users will learn it naturally."
+      ],
+      "correct": 2,
+      "explanation": "Effective MTR training should be targeted to specific user groups, conducted in sessions short enough to retain attention, include hands-on practice with the actual equipment, and be reinforced through champions and follow-up. This approach drives adoption and reduces IT support calls significantly compared to self-serve or one-size-fits-all approaches."
+    }
+  ]
+}

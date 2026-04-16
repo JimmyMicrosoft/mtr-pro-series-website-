@@ -1,0 +1,236 @@
+---
+id: "p4-t1-m2-l2"
+slug: "resource-account-provisioning-plan"
+title: "Resource Account Provisioning and Onboarding Plan"
+shortTitle: "Resource Account Provisioning"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 2
+moduleSlug: "deployment-project-management"
+moduleTitle: "Deployment Project Management"
+
+lessonIndex: 2
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["project-manager", "solutions-architect", "it-administrator"]
+
+objectives:
+  - "Define the resource account requirements for an MTR deployment and communicate them to the client IT team"
+  - "Build a resource account provisioning plan that tracks account creation status across the fleet"
+  - "Identify the account configuration steps that affect device commissioning"
+  - "Create a client-facing provisioning guide that enables autonomous account management"
+
+prerequisites:
+  - "p4-t1-m2-l1"
+  - "p1-t2-m2 (Resource Accounts and Licensing)"
+
+technologyTags: ["MTR", "Teams Rooms", "M365", "Entra ID", "Exchange"]
+roleTags: ["project-manager", "it-administrator", "solutions-architect"]
+topicTags: ["resource-accounts", "provisioning", "M365-admin", "project-management"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Resource Account Provisioning Guide"
+    filename: "mtr-resource-account-provisioning-guide.docx"
+  - label: "Resource Account Tracker"
+    filename: "mtr-resource-account-tracker.xlsx"
+
+relatedLessons:
+  - "p4-t1-m2-l1"
+  - "p4-t1-m2-l3"
+
+metaDescription: "Learn to plan, communicate, and track resource account provisioning for MTR deployments, including creating a client-facing provisioning guide and account tracker."
+keywords: ["MTR resource accounts", "Teams Rooms provisioning", "M365 resource accounts", "MTR deployment planning"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Resource Accounts as a Critical Path Item
+
+Resource accounts are the M365 identity that links a Teams Rooms device to its calendar and enables meeting join. Without a provisioned, licensed resource account, a Teams Rooms device cannot be commissioned — it will loop on the initial setup screen indefinitely.
+
+Resource account provisioning is almost always a client IT team responsibility. The project manager's job is to ensure the client IT team has everything they need to provision correctly and on time.
+
+The most common commissioning day failure mode is arriving at a room with a device ready to configure and discovering the resource account does not exist, is incorrectly configured, or is not licensed.
+
+---
+
+## Resource Account Requirements
+
+### What Each Room Needs
+
+Every MTR device requires:
+
+1. **A room mailbox** (Exchange Online or hybrid Exchange)
+   - Created as a Room type resource account
+   - Calendar processing settings configured (AutoAccept enabled)
+   - Not a shared mailbox; not a user mailbox
+
+2. **An Entra ID user account** linked to the room mailbox
+   - Sign-in enabled
+   - Password set to never expire
+   - No MFA enforced (MTR devices are non-interactive; MFA breaks sign-in)
+
+3. **A Teams Rooms license assigned**
+   - Teams Rooms Basic (free, limited features) or
+   - Teams Rooms Pro (paid, full features including Pro Management)
+
+4. **A Teams Meeting Room policy assigned**
+   - Typically a meeting policy that permits recording, transcription, and content sharing per client governance requirements
+
+5. **Optional: Teams Phone license** (if PSTN calling required)
+
+### Naming Convention
+
+Establish and agree a naming convention before provisioning begins. Consistent naming makes fleet management significantly easier.
+
+Recommended pattern: `[SitePrefixCode]-[FloorCode]-[RoomName]@[tenant].com`
+
+Examples:
+- `LON-F2-Boardroom@contoso.com`
+- `MAN-F1-MR001@contoso.com`
+- `NYC-F3-HuddleA@contoso.com`
+
+Document the agreed naming convention in the Resource Account Provisioning Guide so the client IT team applies it consistently.
+
+---
+
+## The Provisioning Guide
+
+Provide the client IT team with a written provisioning guide tailored to their environment (cloud-only vs hybrid Exchange). The guide should be specific — not a generic Microsoft tutorial, but a step-by-step walkthrough for their tenant.
+
+### Cloud-Only Provisioning Steps
+
+```powershell
+# Step 1: Create the Room Mailbox
+New-Mailbox -Name "LON-F2-Boardroom" `
+            -Alias "LON-F2-Boardroom" `
+            -Room `
+            -EnableRoomMailboxAccount $true `
+            -MicrosoftOnlineServicesID "LON-F2-Boardroom@contoso.com" `
+            -RoomMailboxPassword (ConvertTo-SecureString -String "P@ssw0rd123!" -AsPlainText -Force)
+
+# Step 2: Configure Calendar Processing
+Set-CalendarProcessing -Identity "LON-F2-Boardroom" `
+                       -AutomateProcessing AutoAccept `
+                       -AddOrganizerToSubject $false `
+                       -DeleteComments $false `
+                       -DeleteSubject $false `
+                       -RemovePrivateProperty $false `
+                       -AddAdditionalResponse $true `
+                       -AdditionalResponse "This room is equipped with Microsoft Teams Rooms."
+
+# Step 3: Disable password expiry
+Set-MsolUser -UserPrincipalName "LON-F2-Boardroom@contoso.com" -PasswordNeverExpires $true
+
+# Step 4: Assign license (Teams Rooms Pro)
+# Do this in M365 Admin Centre or via Graph API
+```
+
+<Callout type="warning">
+**Password expiry on resource accounts breaks device sign-in silently.** If a resource account password expires, the MTR device will show "Signing in..." indefinitely with no clear error message. Always configure PasswordNeverExpires and document this requirement clearly.
+</Callout>
+
+### Hybrid Exchange Considerations
+
+If the client uses hybrid Exchange (on-premises Exchange + Exchange Online):
+
+- Room mailboxes may need to be created in on-premises Exchange and synced to Entra via Entra Connect
+- The Entra ID account must be enabled for cloud sign-in (not just on-premises)
+- Licensing must be applied in M365 Admin Centre after the account appears in Entra ID
+- The provisioning process is typically 24–48 hours end-to-end due to sync cycles
+
+Document the client's hybrid configuration and adapt the provisioning guide accordingly.
+
+---
+
+## The Resource Account Tracker
+
+The tracker is the provisioning status document for the deployment. Update it daily during the provisioning window.
+
+```
+Room ID | Display Name          | UPN                              | Mailbox Created | License Assigned | Calendar Config | Password Never Expires | Status
+--------|----------------------|----------------------------------|-----------------|------------------|-----------------|------------------------|--------
+R-001   | LON-F2-Boardroom      | LON-F2-Boardroom@contoso.com     | ✓               | ✓ Pro            | ✓               | ✓                      | Ready
+R-002   | LON-F2-MR-2A          | LON-F2-MR2A@contoso.com         | ✓               | ✓ Pro            | ✗               | ✓                      | Pending - calendar config
+R-003   | LON-F2-MR-2B          | LON-F2-MR2B@contoso.com         | ✗               | —                | —               | —                      | Not started
+```
+
+Share this tracker with the client IT team and the commissioning engineer. Review status 5 business days before the commissioning date — any room not in "Ready" status by this date needs an escalation path.
+
+---
+
+## Validation Before Commissioning
+
+Before the commissioning engineer arrives at a room, verify:
+
+```powershell
+# Check mailbox exists and is a Room type
+Get-Mailbox -Identity "LON-F2-Boardroom@contoso.com" | Select DisplayName, RecipientTypeDetails
+
+# Check calendar processing
+Get-CalendarProcessing -Identity "LON-F2-Boardroom@contoso.com" | Select AutomateProcessing, AddOrganizerToSubject
+
+# Check license in Teams
+Get-CsOnlineUser -Identity "LON-F2-Boardroom@contoso.com" | Select DisplayName, TeamsUpgradeEffectiveMode, AssignedPlan
+
+# Test sign-in (use the Teams Rooms app sign-in test or a browser test)
+# Navigate to https://login.microsoftonline.com and sign in as the resource account
+# Confirm sign-in succeeds without MFA prompt
+```
+
+Run this validation script for every room in the fleet before commissioning week. Address any failures before the commissioning engineer is on site.
+
+---
+
+## Communicating with the Client IT Team
+
+The provisioning plan communication sequence:
+
+| Milestone | Action | Timing |
+|---|---|---|
+| SOW signed | Send provisioning guide and tracker template to IT lead | Day 1 |
+| Provisioning guide received | Agree provisioning start date and IT resource availability | Week 1 |
+| 3 weeks before commissioning | Confirm IT team has started provisioning; review tracker | Week 3 |
+| 1 week before commissioning | Run validation script; flag any incomplete accounts | Week 7 |
+| 5 days before commissioning | Final tracker review; escalate any remaining gaps to IT sponsor | Week 7 |
+| Commissioning day | Commissioning engineer confirms account sign-in before physical install | Day of |
+
+---
+
+<KnowledgeCheck>
+  <Question text="A commissioning engineer arrives at a room and discovers the resource account password has expired. The device is looping on 'Signing in...'. What is the immediate resolution?">
+    <Answer>Factory reset the device and start again</Answer>
+    <Answer>Call Microsoft support</Answer>
+    <Answer correct>Have the client IT team reset the password in Entra ID and set PasswordNeverExpires; then re-enter the credentials on the device</Answer>
+    <Answer>Create a new resource account</Answer>
+    <Explanation>An expired password causes a silent sign-in failure on MTR devices. The fix is straightforward: reset the password and configure PasswordNeverExpires. No device reset is needed — re-entering valid credentials resolves the issue.</Explanation>
+  </Question>
+  <Question text="Which resource account type should be used for Teams Rooms?">
+    <Answer>Shared mailbox with Teams license</Answer>
+    <Answer>User mailbox with Teams Rooms license</Answer>
+    <Answer correct>Room mailbox with Teams Rooms license and calendar processing configured to AutoAccept</Answer>
+    <Answer>Distribution group with Teams license</Answer>
+    <Explanation>Room mailboxes are the correct account type for MTR devices. They support calendar processing (AutoAccept), are the right recipient type for room finder functionality, and integrate correctly with the Teams Rooms sign-in flow.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Resource Account Provisioning Guide" filename="mtr-resource-account-provisioning-guide.docx" />
+<DownloadButton label="Resource Account Tracker" filename="mtr-resource-account-tracker.xlsx" />

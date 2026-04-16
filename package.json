@@ -1,0 +1,49 @@
+{
+  "name": "mtr-pro-series-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export:word": "node scripts/export-to-word.mjs",
+    "import:word": "node scripts/import-from-word.mjs",
+    "export:roles": "node scripts/export-learning-paths.mjs",
+    "import:roles": "node scripts/import-learning-paths.mjs"
+  },
+  "dependencies": {
+    "@mdx-js/loader": "^3.0.1",
+    "@mdx-js/react": "^3.0.1",
+    "@next/mdx": "^14.2.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "clsx": "^2.1.1",
+    "fuse.js": "^7.0.0",
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.378.0",
+    "next": "^14.2.29",
+    "next-auth": "^5.0.0-beta.19",
+    "next-mdx-remote": "^5.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-highlight": "^7.0.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.0",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^20.12.0",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "docx": "^9.6.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.29",
+    "mammoth": "^1.12.0",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5"
+  }
+}

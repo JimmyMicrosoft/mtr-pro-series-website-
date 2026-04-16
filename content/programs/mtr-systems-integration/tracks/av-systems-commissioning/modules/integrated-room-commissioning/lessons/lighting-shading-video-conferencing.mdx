@@ -1,0 +1,231 @@
+---
+id: "p2-t3-m3-l2"
+slug: "lighting-shading-video-conferencing"
+title: "Lighting and Shading for Video Conferencing"
+shortTitle: "Lighting and Shading"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 3
+moduleSlug: "integrated-room-commissioning"
+moduleTitle: "Integrated Room Systems and Commissioning Sign-Off"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Specify lighting levels and color temperature appropriate for video conferencing quality"
+  - "Identify lighting and window placement problems that degrade camera image quality"
+  - "Recommend lighting and shading solutions for common conference room configurations"
+
+prerequisites:
+  - "p2-t3-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "lighting"
+  - "room-design"
+
+relatedLessons:
+  - "p2-t3-m3-l1"
+  - "p2-t3-m3-l3"
+
+metaDescription: "Lighting and shading design for Teams Rooms MTR video conferencing — face illumination levels, color temperature, window backlight management, light source direction, motorized shading, and lighting scene design for meeting and presentation modes."
+
+keywords:
+  - "conference room lighting video conferencing"
+  - "Teams Rooms lighting design"
+  - "MTR room lighting requirements"
+  - "video conferencing room lighting"
+  - "backlight window conference room"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Lighting affects camera image quality more than any other environmental factor. A well-lit conference room produces clear, natural-looking video that makes remote participants feel engaged; a poorly lit room makes participants appear as silhouettes or blown-out overexposed images. Lighting design for video conferencing follows specific principles that differ from general office lighting design — understanding these principles allows integrators to identify problems and specify solutions.
+
+---
+
+## Face Illumination Requirements
+
+**Target illuminance on faces:**
+The camera needs adequate light on participants' faces to produce a clear, well-exposed image. Too little light requires the camera to increase gain, which introduces noise; too much causes overexposure.
+
+- **Minimum:** 300 lux at face level (seated, 1.2m from floor)
+- **Recommended:** 400–600 lux at face level
+- **Maximum:** 800 lux — above this, participant discomfort increases and overexposure risk rises
+
+*Face level* means at the plane of participants' faces — not ceiling plane illumination. A room that measures 500 lux on the ceiling or floor may deliver only 150–200 lux at face level depending on fixture type and placement.
+
+**Measurement:** Use a lux meter at face level (1.1–1.2m), aimed toward the camera (as if measuring the light that the camera sees on participants' faces). Check at multiple seat positions.
+
+---
+
+## Color Temperature
+
+**Target: 3000K–4000K (neutral white) consistently across the room.**
+
+Color temperature affects how participants' skin tones appear on camera:
+- **Below 2700K (warm white):** Orange-yellow cast on skin tones; warm incandescent appearance
+- **3000K–4000K (neutral):** Natural skin tone reproduction; appropriate for conference rooms
+- **Above 5000K (cool/daylight):** Blue-white appearance; can make participants look pale or clinical
+
+**Consistency:** All light sources in the room should be the same color temperature. Mixing 3000K recessed lights with 5600K daylight from windows creates mixed-color lighting that the camera's auto-white balance struggles to compensate for — some participants appear warm, others cool.
+
+**LED and fluorescent flicker:**
+Some LED fixtures flicker at the AC power frequency (50 Hz or 60 Hz) or at higher frequencies. Camera sensors can detect this flicker as a "rolling band" artifact or pulsing image. Specify LED fixtures with flicker-free ratings (frequency > 1000 Hz or DC-driven) for rooms with cameras.
+
+---
+
+## Light Direction and Shadow
+
+**Ideal light direction:** Front lighting — light sources positioned to illuminate participants' faces from the front and above (from the camera's perspective).
+
+**Problems with light direction:**
+
+| Light Direction | Camera Result |
+|----------------|--------------|
+| Behind participants (window or backlight) | Silhouette — faces dark against bright background |
+| Directly overhead (downlights above head) | Raccoon eyes — deep shadows under brow and nose |
+| From below | Unnatural, unflattering — rarely seen in conference rooms |
+| From the side only | Half-face shadow — one side of face dark |
+
+**Downlight placement:**
+Recessed downlights centered in a grid pattern over the table often create downward shadows on participants' faces. Better placement: supplementary adjustable fixtures (track lights, wall wash fixtures) or pendant lighting positioned slightly in front of participants (between the participants and the camera wall) to provide front lighting rather than pure overhead.
+
+---
+
+## Window Management
+
+Windows are the most common source of video conferencing lighting problems in conference rooms. Daylight changes throughout the day — a room that looks fine at 9 AM may be unusable at 2 PM when the sun shines directly through windows behind the conference table.
+
+**Window positions and their impact:**
+
+| Window Position (relative to camera) | Effect |
+|--------------------------------------|--------|
+| Behind participants (camera faces window) | Severe backlight — primary problem scenario |
+| Behind camera (light falls on participants) | Beneficial — front illumination |
+| To the side | Asymmetric illumination; manageable with supplementary lighting |
+
+**Shading solutions:**
+
+- **Solar shades (light-filtering):** Allow diffuse daylight through while blocking direct sun; reduce backlight while maintaining room daylight; recommended for most conference rooms with windows
+- **Blackout shades:** Complete light block; used for projection rooms and high-ambient situations; require artificial lighting to compensate
+- **Venetian blinds:** Adjustable; functional but less effective than purpose-specified shading for video; tend to create uneven lighting patterns
+
+**Motorized shading:**
+For rooms with automated control systems, motorized shades respond to meeting start events or occupancy — automatically lowering when a meeting begins to provide consistent lighting regardless of time of day. An important specification detail: solar shades are adequate for most cases and maintain ambient daylight; blackout shades require the control system to also trigger supplementary artificial lighting.
+
+---
+
+## Lighting Scenes for Conference Rooms
+
+For rooms with dimming-capable lighting and a control system, define lighting scenes for different use modes:
+
+**Meeting scene:**
+- 400–600 lux at face level
+- Full illumination — all fixtures on
+- Used during active videoconference meetings
+
+**Presentation scene:**
+- 150–250 lux (reduced level to improve display/projection contrast)
+- Ceiling lights dimmed; display wall area dimmed further to reduce reflection on display
+- Shades lowered (if daylight would wash out display)
+
+**Standby scene:**
+- 50–100 lux
+- Minimal lighting for an unoccupied room; sufficient for someone entering
+- Triggered after room vacancy timeout
+
+**Camera framing scene:**
+- For commissioning use: 400+ lux, full illumination for camera calibration and framing verification
+
+---
+
+## Practical Assessment Checklist
+
+When assessing an existing or planned conference room for video conferencing lighting:
+
+- [ ] Face illuminance: measure at 4 representative seat positions — all ≥ 300 lux?
+- [ ] Window position: are any windows behind participants from the camera's perspective?
+- [ ] Shading: is shading present for all windows that could cause backlight?
+- [ ] Color temperature: consistent across all light sources including windows?
+- [ ] LED flicker: are fixtures rated flicker-free?
+- [ ] Downlight shadow: do overhead fixtures create raccoon-eye shadows at face level? (Test: hold hand above head at face height — does it cast a dark shadow on the face?)
+
+---
+
+<KnowledgeCheck id="p2-t3-m3-l2-kc">
+  <Question>
+    A conference room has a floor-to-ceiling glass wall along the long side of
+    the room behind the conference table. The camera is mounted on the opposite
+    wall facing across the table toward the glass wall. At 2 PM on a sunny day,
+    remote participants report that they can barely see the participants in the
+    room. What is the cause and the recommended solution?
+  </Question>
+  <Answer>The camera exposure setting is incorrect — adjust the camera's automatic exposure compensation</Answer>
+  <Answer>Add artificial lighting at 600 lux directly above the conference table</Answer>
+  <Answer correct>The floor-to-ceiling glass wall directly behind participants (from the camera's perspective) is creating severe backlight — the camera is exposing for the bright window, leaving participants as dark silhouettes. The primary solution is to install solar shades or blackout shades on the glass wall, ideally motorized to automatically lower during meeting hours. Adding front fill lighting (from fixtures between participants and the camera, or at the camera wall) will help, but shading is required first — without reducing the backlight, no amount of face lighting will fully overcome the exposure imbalance. Camera auto-exposure adjustment can partially compensate but will not resolve severe backlight</Answer>
+  <Answer>Relocate the camera to the glass wall side, facing into the room</Answer>
+  <Explanation>
+    This is a textbook backlight scenario — the brightest element in the frame
+    (floor-to-ceiling glass in afternoon sunlight) is directly behind the
+    subjects from the camera's perspective. The camera's auto-exposure meters
+    the overall scene and reduces exposure to avoid blowing out the window,
+    which underexposes the faces. While camera exposure compensation and
+    increased face-level lighting are useful supplementary measures, the
+    fundamental problem is the backlight — and the fundamental solution is
+    shading. Solar shades allow diffuse daylight through while blocking direct
+    sun, reducing the brightness differential to a manageable range. Relocating
+    the camera would help optically but is typically not practical and doesn't
+    address the underlying lighting issue.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Face illumination:** 400–600 lux at face level (1.1–1.2m), measured toward the camera; minimum 300 lux.
+- **Color temperature:** 3000K–4000K neutral; consistent across all sources; avoid mixing color temperatures.
+- **Direction:** Front lighting preferred; avoid downlights as the sole source (raccoon eyes); manage backlight from windows.
+- **Shading:** Solar shades block direct sun while maintaining ambient daylight — required for windows behind participants.
+- **Scenes:** Meeting (400–600 lux), Presentation (150–250 lux dimmed), Standby (50–100 lux).
+
+---
+
+## What's Next
+
+[Integrated System Testing and Scenario Validation →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/integrated-room-commissioning/lessons/integrated-system-testing/)

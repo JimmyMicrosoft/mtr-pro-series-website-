@@ -1,0 +1,243 @@
+---
+id: "p3-t1-m1-l3"
+slug: "compliance-policies-mtr"
+title: "Compliance Policies and Conditional Access Integration"
+shortTitle: "Compliance Policies"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 1
+moduleSlug: "enterprise-intune-configuration"
+moduleTitle: "Enterprise Intune and Configuration Management"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Create an Intune compliance policy for MTR devices that checks device health signals without triggering Conditional Access MFA requirements"
+  - "Configure the Compliance Grace Period to prevent rooms from being blocked due to transient compliance failures"
+  - "Interpret compliance policy status data to identify MTR devices that are genuinely non-compliant vs. transiently non-compliant"
+
+prerequisites:
+  - "p3-t1-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "intune"
+  - "compliance"
+  - "conditional-access"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l2"
+  - "p3-t1-m1-l4"
+
+metaDescription: "Intune compliance policies for MTR — compliance settings appropriate for room devices, Conditional Access integration without MFA triggering, grace period configuration, compliance reporting, and non-compliant device investigation."
+
+keywords:
+  - "Intune compliance policy Teams Rooms"
+  - "MTR Intune compliance"
+  - "Teams Rooms Conditional Access compliance"
+  - "MTR compliance policy"
+  - "Intune device compliance MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Compliance policies in Intune define what a "compliant" device looks like — and non-compliant devices can be blocked from accessing resources via Conditional Access. For MTR devices, compliance policies must be designed carefully: they should enforce meaningful security requirements (BitLocker enabled, Defender active, OS version current) without triggering requirements that break room functionality (like MFA). This lesson covers designing MTR compliance policies and integrating them with Conditional Access correctly.
+
+---
+
+## MTR Compliance Policy Design
+
+**What to include in an MTR compliance policy:**
+
+| Setting | Recommended Value | Reason |
+|---------|------------------|--------|
+| Minimum OS version | Current - 2 (e.g., 22H2 if current is 24H2) | Allows time for controlled OS update rollout; not too strict |
+| BitLocker | Required | MTR devices should have BitLocker enabled (drives contain meeting data) |
+| Secure Boot | Required | All current MTR hardware supports Secure Boot |
+| Windows Defender — Real-time protection | Required | Defender should be active on MTR devices |
+| Firewall | Required | Windows Defender Firewall should be active |
+| Antivirus | Required | Defender or equivalent |
+| Antispyware | Required | Defender |
+| Code Integrity | Optional for rooms | TPM-backed code integrity; useful for high-security environments |
+
+**What to exclude from an MTR compliance policy:**
+
+| Setting | Reason to Exclude |
+|---------|------------------|
+| Password required / PIN | MTR devices use auto-sign-in via resource account; requiring a device PIN breaks this |
+| Device Health Attestation — require healthy device | Transient compliance failures can block rooms; use grace period instead |
+| Maximum minutes of inactivity before password | Room device; no user PIN to lock |
+
+---
+
+## Conditional Access and MTR Compliance
+
+Conditional Access policies can require device compliance for resource access. For MTR devices:
+
+**The problem:**
+If a Conditional Access policy requires "device compliance" for access to Teams/Exchange resources, and an MTR device becomes non-compliant (e.g., Defender definition update check-in failure), the device may be blocked from signing in to Teams — taking the room offline.
+
+**The solution — Conditional Access scoping for MTR:**
+Create Conditional Access policies that apply to MTR room resource accounts with appropriate requirements:
+
+```
+Policy: MTR Device Access
+Users/Groups: [MTR Resource Accounts group]
+Cloud apps: Microsoft Teams, Exchange Online
+Conditions:
+  Device platforms: Windows
+  Device state: Require compliant device: ON
+
+Grant: Require device to be marked as compliant
+Session: None
+```
+
+This policy requires device compliance for the MTR room accounts. The compliance policy must be attainable without MFA — which it is, because device compliance is evaluated at the device level, not the user level. MFA would require user interaction, which breaks MTR.
+
+**Critical: Verify no MFA policy applies to room accounts:**
+As established in Program 2, room resource accounts must be excluded from MFA policies. This remains true when adding device compliance requirements — requiring both MFA and device compliance would make the room accounts completely non-functional. The Conditional Access architecture for MTR is:
+
+- MFA policy: Excludes MTR resource accounts group
+- Device compliance policy: Applies to MTR resource accounts group (requires compliant device)
+
+This enforces device compliance without requiring MFA.
+
+---
+
+## Compliance Grace Period
+
+The compliance grace period allows devices to be non-compliant for a specified period before being marked non-compliant in Conditional Access. This prevents transient issues (a Defender definition update that temporarily shows outdated status, a momentary check-in failure) from blocking rooms.
+
+**Configure grace period:**
+In the compliance policy → Properties → Non-compliance actions:
+- Action: Mark device non-compliant
+- Schedule (days after non-compliance): **7 days**
+
+With a 7-day grace period:
+- A device that becomes non-compliant is not blocked by Conditional Access for 7 days
+- The compliance report shows the device as "In Grace Period" — visible to IT for investigation
+- If the device is still non-compliant after 7 days, it is marked non-compliant and Conditional Access blocks resource access
+
+*For rooms in high-security environments, reduce the grace period. For standard commercial environments, 7 days is appropriate — it provides time for the IT team to identify and remediate genuine compliance issues before rooms go offline.*
+
+---
+
+## Compliance Status Interpretation
+
+In Intune → Devices → Compliance → select the compliance policy → Device status:
+
+| Status | Meaning | Action |
+|--------|---------|--------|
+| Compliant | Device meets all policy requirements | None |
+| Not compliant | Device fails one or more requirements after grace period | Investigate and remediate |
+| In grace period | Device fails one or more requirements, within grace period | Monitor; remediate before grace period expires |
+| Not evaluated | Device has not checked in within the compliance check interval | Verify device is online in Pro Management; check Intune sync |
+| Error | Compliance policy evaluation failed on device | Check Intune device sync status |
+
+**Investigating non-compliant devices:**
+- In Intune → Devices → select non-compliant device → Device Compliance → see which specific compliance setting is failing
+- Common causes:
+  - **OS version below minimum:** Device missed a Windows Update; check update policy assignment and rings
+  - **Defender outdated:** Defender definitions not updating; verify network access to Windows Update endpoints
+  - **BitLocker not enabled:** Device did not receive BitLocker configuration; check BitLocker Intune policy assignment
+
+---
+
+## Remediating Non-Compliant MTR Devices Remotely
+
+Most compliance failures can be remediated without a site visit:
+
+**Defender signature update:**
+From Intune → Devices → select device → select "Sync" to force a policy sync and Defender update check. Or via PowerShell via Intune remediation:
+```powershell
+Update-MpSignature
+```
+
+**BitLocker not enabled:**
+Deploy a BitLocker Intune configuration policy targeted to the MTR device group. BitLocker encrypts the OS drive with TPM-backed key protection — no user interaction required when configured for silent encryption via Intune.
+
+**OS version below minimum:**
+Review and update the Windows Update ring policy for the MTR device group (next lesson). Force a sync from Intune to push the update check.
+
+---
+
+<KnowledgeCheck id="p3-t1-m1-l3-kc">
+  <Question>
+    An organization has a Conditional Access policy that requires all devices
+    to be Intune-compliant to access Microsoft 365 resources. The organization
+    is deploying 50 new MTR rooms and has created an Intune compliance policy
+    for them. During testing, the first MTR device is consistently blocked
+    from signing in to the Teams resource account, even though the Intune
+    compliance policy shows "Compliant." The existing MFA Conditional Access
+    policy excludes the MTR resource accounts group. What is the most likely
+    cause?
+  </Question>
+  <Answer>The compliance policy has not yet synchronized to the device — wait 24 hours</Answer>
+  <Answer>The MTR resource account is not correctly excluded from the MFA policy</Answer>
+  <Answer correct>The organization's existing "all devices must be compliant" Conditional Access policy likely has a different scope from the MTR compliance policy. The device is showing "Compliant" against the MTR-specific compliance policy, but the existing Conditional Access policy may be evaluating compliance against a different (or the default) compliance policy — which may have different requirements that the new MTR device has not yet met, or the device was recently enrolled and is in a "Not evaluated" compliance state which some Conditional Access policies treat as non-compliant. Verify which compliance policy the Conditional Access policy is evaluating, confirm the device is associated with the MTR compliance policy (not the default), and check whether the CA policy allows a grace period for newly enrolled devices</Answer>
+  <Answer>The MTR compute unit does not support Conditional Access device compliance checking</Answer>
+  <Explanation>
+    When a device is newly enrolled in Intune, it may be in a "Not evaluated"
+    compliance state until it has checked in against its assigned compliance
+    policy. Some Conditional Access policies treat "Not evaluated" as non-
+    compliant, blocking resource access. The other scenario is that the
+    existing "all devices" CA policy evaluates against the default Intune
+    compliance policy (which may not be the MTR-specific policy just created)
+    — and the MTR device isn't meeting the default policy's requirements.
+    The investigation should verify: (1) which compliance policy(ies) are
+    assigned to the MTR device group; (2) which compliance policy the CA
+    policy evaluates; (3) the device's compliance state for each assigned
+    policy. In Intune, the "Compliant" status in the compliance report shows
+    compliance against the specific policy — but CA evaluates the device's
+    overall compliance status, which is the aggregate of all assigned policies.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Compliance policy:** Include BitLocker, Defender, Secure Boot, OS version minimum. Exclude PIN, password, and device health attestation requirements that break room sign-in.
+- **CA integration:** Require device compliance for MTR resource accounts; do NOT also require MFA (already excluded); these are independent requirements.
+- **Grace period:** 7 days — prevents transient failures from blocking rooms; "In Grace Period" status is visible for monitoring.
+- **Investigation:** Non-compliant devices show the specific failing setting in Intune; most common causes are Defender definitions, BitLocker not configured, or OS version lag.
+
+---
+
+## What's Next
+
+[Windows Update Management for Enterprise MTR →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/enterprise-intune-configuration/lessons/windows-update-mtr-enterprise/)

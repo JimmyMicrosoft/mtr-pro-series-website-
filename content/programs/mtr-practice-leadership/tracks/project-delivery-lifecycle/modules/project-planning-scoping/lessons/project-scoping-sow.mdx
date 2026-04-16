@@ -1,0 +1,271 @@
+---
+id: "p4-t1-m1-l2"
+slug: "project-scoping-sow"
+title: "Project Scoping and Statement of Work"
+shortTitle: "Scoping and SOW"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 1
+moduleSlug: "project-planning-scoping"
+moduleTitle: "Project Planning and Scoping"
+
+lessonIndex: 2
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "project-manager"]
+
+objectives:
+  - "Translate site survey findings into a precise, unambiguous scope definition"
+  - "Structure a Statement of Work that protects both parties from scope creep"
+  - "Write inclusion and exclusion statements that eliminate interpretation ambiguity"
+  - "Apply a change control framework that preserves project profitability"
+
+prerequisites:
+  - "p4-t1-m1-l1"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["solutions-architect", "project-manager"]
+topicTags: ["project-planning", "scoping", "statement-of-work", "commercial"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "SOW Template"
+    filename: "mtr-statement-of-work-template.docx"
+  - label: "Change Request Form"
+    filename: "mtr-change-request-form.docx"
+
+relatedLessons:
+  - "p4-t1-m1-l1"
+  - "p4-t1-m1-l4"
+  - "p4-t2-m3-l1"
+
+metaDescription: "Learn to write a watertight MTR Statement of Work that translates survey findings into precise scope, protects profitability, and provides a framework for managing change."
+keywords: ["MTR statement of work", "project scoping", "SOW", "scope management", "change control"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## From Survey to Scope
+
+A site survey generates raw data — measurements, photographs, IT discovery notes, issues logs. Scoping converts that data into a contractual commitment about what you will deliver, when, and at what cost.
+
+The quality of the scope definition is directly proportional to project profitability. Vague scopes generate disputes. Precise scopes generate clean deliveries.
+
+---
+
+## Scope Definition Principles
+
+### The Inclusion/Exclusion Framework
+
+Every scope statement must define what is **included** and what is **explicitly excluded**. Exclusions are as legally and commercially important as inclusions — they are the defence against scope creep.
+
+**Example: Display installation**
+
+| Version | Problem |
+|---|---|
+| "Supply and install displays in meeting rooms" | Is wall reinforcement included? What about cable containment? Commissioning? The mounts? |
+| "Supply and install one (1) 75\" commercial display per room, mounted on existing drywall, including VESA mount hardware, HDMI cable to MTR compute, and power connection to existing outlet within 1m of mounting position" | Clear. Contractor knows exactly what they are doing. Client knows exactly what they are getting. |
+
+The more specific the better. Where limits apply, state them explicitly.
+
+### Quantified Deliverables
+
+Every deliverable should be quantified:
+
+- **Not**: "Install Teams Rooms in the meeting rooms"
+- **Better**: "Deploy and commission 12 Microsoft Teams Rooms devices (model: Logitech Rally Bar) in 12 meeting rooms across floors 2–4, as detailed in Schedule A"
+
+### Dependency Statements
+
+Identify every item the client is responsible for providing or completing before your work can proceed:
+
+- "Client to provide active network drops in all rooms prior to installation week"
+- "Client IT team to provision resource accounts per the Resource Account Guide (Appendix B) no less than 5 business days before device commissioning"
+- "Client to complete all planned plastering/painting in affected rooms before AV installation commences"
+
+These are not aggressive — they are professional. They protect both parties.
+
+---
+
+## Statement of Work Structure
+
+A complete MTR SOW contains the following sections:
+
+### 1. Project Overview
+
+A 2–3 paragraph summary of the engagement:
+- Client name, site(s), and project objective
+- High-level scope summary
+- Intended outcome (not a feature list — a business outcome)
+
+### 2. Scope of Works
+
+The detailed deliverable list, structured by work package:
+
+```
+2.1  Supply and Delivery
+     - [Quantity] [Item] [Specification]
+
+2.2  Installation Works
+     - Physical mounting and cable management
+     - Power connections (within [X] metres of outlet)
+     - Network connections (to client-provided infrastructure)
+     - Conduit/containment (included/excluded — specify)
+
+2.3  Configuration and Commissioning
+     - Device enrolment to client M365 tenant
+     - Resource account linking
+     - MTR App configuration settings
+     - Teams Admin Centre policy assignment
+     - Test call and acceptance testing
+
+2.4  Documentation
+     - As-built drawings
+     - Equipment schedule
+     - Configuration reference guide
+     - Acceptance test report
+
+2.5  Training
+     - IT administrator handover session ([X] hours)
+     - End-user familiarisation (per schedule in Appendix C)
+```
+
+### 3. Exclusions
+
+Explicitly list what is not included. Common exclusions for MTR projects:
+
+- Structural works (wall reinforcement, ceiling modifications)
+- Electrical works beyond connection to existing outlet
+- Network infrastructure (switches, patch panels, cabling backbone)
+- M365 licensing procurement and management
+- Resource account provisioning (client responsibility — see Appendix B)
+- Acoustic treatment
+- Furniture modification or replacement
+- Works in rooms not listed in Schedule A
+- Any works arising from pre-existing defects discovered during installation
+
+<Callout type="warning">
+**Include a catch-all exclusion**: "Any works not explicitly described in Section 2 of this Statement of Work are excluded from the project scope. Changes to scope will be managed under the Change Control Process described in Section 7."
+</Callout>
+
+### 4. Client Responsibilities
+
+A numbered list of everything the client must provide or complete:
+
+1. Provision active, VLAN-tagged network connections at each room location prior to installation week
+2. Provision M365 resource accounts for all rooms per the Resource Account Guide (Appendix B) no less than 5 business days before commissioning
+3. Ensure rooms are available and clear of furniture/equipment during installation windows
+4. Provide a named IT contact with admin access to the M365 tenant for the commissioning phase
+5. Complete any planned building works (electrical, plastering, painting, flooring) before installation commences
+6. Provide written acceptance of completed rooms within 5 business days of commissioning
+
+### 5. Assumptions
+
+State every assumption the scope is based on. If an assumption proves false, a change request is raised:
+
+- "All meeting rooms are located on a single site. Multi-site travel is not included."
+- "Existing cable containment is sufficient to route display and device cables. Additional containment works are excluded."
+- "Rooms will be unoccupied during installation periods. Out-of-hours working is not included."
+- "All rooms have ceiling void access for cable routing."
+
+### 6. Deliverables and Acceptance
+
+Define what constitutes project completion and how the client accepts each deliverable:
+
+| Deliverable | Acceptance Criteria | Accepted By |
+|---|---|---|
+| Installed and commissioned room | Successful test call; all peripherals functional | IT Manager + nominated room owner |
+| Documentation package | All documents listed in 2.4 received by client | IT Manager |
+| End-user training | Attendance confirmed for scheduled sessions | Facilities Manager |
+
+### 7. Change Control Process
+
+Describe the process for managing changes after scope agreement:
+
+1. Client or contractor identifies change requirement
+2. Change Request form completed (see Appendix D)
+3. Contractor assesses impact on schedule, cost, and risk within 5 business days
+4. Written approval from client before any out-of-scope work commences
+5. Approved Change Requests become amendments to this SOW
+
+<Callout type="tip">
+**State explicitly that work will not commence on changes without written approval.** Verbal change approvals are not enforceable. A short email chain is the minimum — a signed Change Request form is better.
+</Callout>
+
+---
+
+## Writing Effective Scope Language
+
+### Phrases That Protect Scope
+
+| Phrase | Function |
+|---|---|
+| "...as detailed in Schedule A" | Ties deliverable to an attached list — add rooms to the list, you pay more |
+| "...subject to site conditions" | Reserves the right to raise a change if the site differs from survey findings |
+| "...within [X] metres of existing outlet" | Caps the cable run included in scope |
+| "Client-provided infrastructure" | Makes explicit that switches, patch panels, backbone cabling are client-owned |
+| "...to the specification described in Appendix [X]" | Anchors the technical standard — substitutions require a change request |
+
+### Phrases That Create Risk
+
+| Phrase | Problem |
+|---|---|
+| "Full installation" | "Full" means whatever the client thinks it means |
+| "Complete commissioning" | "Complete" is subjective |
+| "All meeting rooms" | What if they add rooms? |
+| "Professional cable management" | Professional is subjective — quantify and describe instead |
+| "Configure the system" | What settings? To whose standard? |
+
+---
+
+## Schedule A: Room Schedule
+
+Schedule A is the definitive list of rooms in scope. Every room in scope appears here; rooms not in Schedule A are not in scope.
+
+```
+Room ID | Floor | Room Name          | MTR Config    | Display Size | Camera Model     | Notes
+--------|-------|-------------------|---------------|--------------|------------------|------
+R-001   | 2     | Boardroom          | Large Room    | 86"          | PTZ Pro 2        |
+R-002   | 2     | Meeting Room 2A   | Standard Room | 65"          | Rally Bar Huddle |
+R-003   | 2     | Meeting Room 2B   | Standard Room | 65"          | Rally Bar Huddle |
+...
+```
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client asks you verbally during installation to add two rooms that weren't in the original scope 'because they're similar to the others'. What is the correct response?">
+    <Answer>Add the rooms — maintaining the client relationship is more important than paperwork</Answer>
+    <Answer>Refuse to add the rooms under any circumstances</Answer>
+    <Answer correct>Acknowledge the request, raise a Change Request form with the additional cost and schedule impact, and wait for written approval before commencing the additional work</Answer>
+    <Answer>Add the rooms now and invoice retrospectively</Answer>
+    <Explanation>Verbal approvals are not enforceable and retrospective invoicing creates disputes. The Change Control process protects both parties — the client gets a clear view of additional cost before committing, and the contractor has written approval to invoice.</Explanation>
+  </Question>
+  <Question text="Which of the following is an example of well-scoped language for display installation?">
+    <Answer>"Install all displays professionally"</Answer>
+    <Answer>"Complete display installation in all meeting rooms"</Answer>
+    <Answer correct>"Supply and install one 75\" commercial display per room listed in Schedule A, mounted on existing drywall using VESA mount included in supply, with HDMI cable to MTR compute and power to existing outlet within 1m"</Answer>
+    <Answer>"Full display installation including all necessary works"</Answer>
+    <Explanation>The correct answer specifies quantity, size, type, mounting surface, mount type, cable type and destination, and power connection limit. Every other option is ambiguous and creates dispute risk.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="SOW Template" filename="mtr-statement-of-work-template.docx" />
+<DownloadButton label="Change Request Form" filename="mtr-change-request-form.docx" />

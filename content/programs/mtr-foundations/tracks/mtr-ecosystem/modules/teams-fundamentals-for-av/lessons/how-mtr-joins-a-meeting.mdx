@@ -1,0 +1,256 @@
+---
+id: "p1-t1-m2-l2"
+slug: "how-mtr-joins-a-meeting"
+title: "How MTR Joins a Meeting — One-Touch, Proximity, Manual, and BYOD"
+shortTitle: "Meeting Join Methods"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 2
+moduleSlug: "teams-fundamentals-for-av"
+moduleTitle: "Microsoft Teams Fundamentals for AV Professionals"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Describe the four primary meeting join methods on MTR and the technical requirements for each"
+  - "Explain the Bluetooth proximity join architecture and identify the configuration requirements for reliable operation"
+  - "Advise clients on which join method is appropriate for different room use cases"
+
+prerequisites:
+  - "p1-t1-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+
+topicTags:
+  - "join-methods"
+  - "proximity-join"
+  - "byod"
+
+vendorTags:
+  - "microsoft"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m2-l2-join-method-decision-tree.pdf"
+    label: "Join Method Decision Tree"
+    sizeKb: 85
+
+relatedLessons:
+  - "p1-t1-m2-l1"
+  - "p1-t1-m2-l3"
+
+metaDescription: "Learn the four MTR meeting join methods — calendar one-touch join, Bluetooth proximity join, manual meeting ID, and BYOD — and the technical requirements for each."
+
+keywords:
+  - "MTR one-touch join"
+  - "proximity join Teams Rooms"
+  - "BYOD Teams Rooms"
+  - "MTR meeting join"
+  - "Teams Rooms Bluetooth"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+An MTR room can join a meeting in four distinct ways, and each method has its own set of prerequisites, use cases, and failure modes. Understanding them is not just academic — it shapes how you configure rooms during commissioning, how you answer client questions about room behavior, and how you troubleshoot join failures that get reported after handoff.
+
+The four methods are: calendar-based one-touch join (the primary method for pre-scheduled meetings), Bluetooth proximity join (for ad hoc and last-minute meetings), manual join via meeting ID (the fallback for any scenario), and BYOD pass-through mode (where the room's AV hardware serves a laptop's meeting client). Each works differently, requires different things to be configured, and serves a different user scenario.
+
+---
+
+## Calendar-Based One-Touch Join
+
+Calendar-based one-touch join is the signature MTR experience — the reason clients choose Teams Rooms over a generic video conferencing setup. When a Teams meeting has been scheduled with the room resource account included as an attendee (either directly invited or via channel membership), the meeting appears on the touch console as a scheduled event. Up to 15 minutes before the scheduled start time, a prominent "Join" button appears on the console. A single tap joins the meeting — no meeting ID entry, no manual navigation, no login required. For pre-scheduled meetings in an enterprise environment, this is the experience clients expect.
+
+The prerequisites for one-touch join are the same as those covered in the licensing lesson: the resource account must have an Exchange Online mailbox, the mailbox AutomateProcessing must be set to AutoAccept, the correct Teams Rooms license must be assigned, and the account must be in good standing (not locked, not expired). One-touch join is also available for scheduled Zoom and Cisco Webex meetings via Direct Guest Join — MTR can display those meetings on the console and join them using a WebView-based mechanism, though feature support within the third-party meeting is limited.
+
+<Callout type="note">
+  The "Join" button appears up to 15 minutes before the scheduled start. If a client walks
+  in 20 minutes early and sees no join button, that is expected behavior — not a malfunction.
+  This is worth communicating during room handoff training so it does not generate a support
+  call on day one.
+</Callout>
+
+---
+
+## Proximity Join
+
+Proximity join enables an MTR room to join a meeting that is not on the room's calendar — ideal for ad hoc meetings, last-minute schedule changes, and scenarios where the meeting organizer forgot to invite the room. When a Teams user enters the room with their personal device (laptop, phone, or tablet) and has Bluetooth enabled, the MTR device detects their presence via Bluetooth Low Energy (BLE) beaconing. The user's personal Teams app receives a notification asking if they want to "add this room" to their active or upcoming meeting. Tapping the notification causes the room to join the meeting — including the room's camera, microphone, and speakers — while the user's personal device can be used to manage the meeting or switch to a hands-free experience.
+
+The technical prerequisites for proximity join are specific. On the MTR device side, Bluetooth must be enabled on the compute unit (it is enabled by default but can be disabled through BIOS or Windows settings). On the Teams Admin Center side, the proximity join feature must be enabled in the meeting room policy assigned to the resource account (it is on by default in most configurations but can be disabled at the policy level). On the user's personal device side, Bluetooth must be enabled and the Teams application must have Bluetooth permissions granted by the OS. If any one of these conditions is not met, proximity join will not work for that user or that device.
+
+In practice, proximity join is reliable when all prerequisites are met and the user's device is within a few meters of the room's compute unit or touch console (which contains the Bluetooth radio). Issues arise most often when enterprise device management policies disable Bluetooth on corporate laptops, or when users have not granted the Teams app Bluetooth permissions on their phones.
+
+{/* MEDIA: Proximity join architecture diagram. Shows MTR device emitting BLE beacon (indicated by radiating waves). User's personal Teams client detects beacon and displays "Add Room" notification. User taps notification. Cloud signaling path through Microsoft infrastructure causes room to join the meeting. All steps numbered in sequence. Filename: p1-t1-m2-l2-proximity-join-diagram.png */}
+
+---
+
+## Manual Join via Meeting ID
+
+Manual join is the universal fallback. Every Teams meeting has a numeric meeting ID and optional passcode, accessible through the "Meeting Info" details in the Teams calendar invite. On the MTR touch console, a "Join with an ID" option is accessible from the main screen, allowing any user to type in a meeting ID and join — regardless of whether the meeting is on the room's calendar, whether proximity join is configured, or whether the meeting is even a Teams meeting (manual join also supports joining Zoom and Webex meetings via their numeric IDs on platforms that support Direct Guest Join).
+
+Manual join requires no configuration beyond a functional network connection and a properly signed-in device. It is the most reliable method and the most appropriate recommendation for scenarios where calendar integration has not been completed, where a room is being used for training or demonstration purposes, or where a user needs to join a meeting from a room they are visiting outside their normal building or campus.
+
+The user experience of manual join is deliberately slightly less convenient than one-touch — it requires knowing and entering the meeting ID. This is intentional: it provides a reliable fallback without making it so easy that users bypass calendar booking and one-touch join in favor of ad hoc manual entry for every meeting.
+
+---
+
+## BYOD Mode
+
+BYOD (Bring Your Own Device) mode is different in kind from the other three join methods. In BYOD mode, the MTR device itself is not joining a meeting at all. Instead, the room's camera, microphone, and speaker system are made available to a user's personal laptop via a USB connection. The laptop's Teams client (or any other conferencing application — Zoom, Webex, Google Meet) sees the room's camera as a webcam, the room's microphone array as a USB audio input, and the room's speakers as a USB audio output. The meeting is hosted from the laptop; the room provides the AV hardware.
+
+This use case serves several legitimate scenarios: clients who want to use a room for non-Teams meetings (because their external partners use a different platform), users who want to use the room as a high-quality personal workspace with a large display, or rooms where the MTR device has not yet been commissioned but the AV hardware is already installed and the client wants access. BYOD requires a physical cable run from the compute unit (or a BYOD-capable USB hub) to the conference table — typically a USB-C cable, an HDMI cable, or both, depending on whether the client wants display pass-through in addition to USB device access. Not all MTR configurations expose their peripherals for BYOD use; this is an integrator design decision made during room planning.
+
+{/* MEDIA: BYOD connection diagram. Physical diagram showing a USB-C or HDMI+USB cable routed from the compute unit through a table grommet to the conference table surface. User's laptop connected at table. Camera and audio device connected to compute unit. USB enumeration path labeled showing camera and audio appearing as USB devices on the laptop. Filename: p1-t1-m2-l2-byod-connection-diagram.png */}
+
+<Callout type="tip">
+  If a client asks about BYOD capability during pre-sales, make sure to scope the cable
+  infrastructure explicitly in the SOW. BYOD requires a cable run to the table — typically
+  routed through a table grommet or cable channel — and this is an installation task that
+  must be planned and priced. Clients often assume it "just works" without additional work.
+</Callout>
+
+---
+
+## Direct Guest Join
+
+A fifth join method worth mentioning is Direct Guest Join — the ability for an MTR room to join a Zoom or Cisco Webex meeting as a guest, without needing a Zoom Rooms or Webex Room device. Direct Guest Join uses a WebView-based join mechanism built into the Teams Rooms application. When a meeting invite contains a Zoom or Webex join link and the meeting appears on the room's calendar, a join button for the third-party platform appears on the touch console alongside the standard Teams join option.
+
+Direct Guest Join is enabled by default on current Teams Rooms releases but depends on the specific Zoom or Webex join URL format being recognized correctly. Feature support within the third-party meeting is limited compared to native Zoom Rooms or Webex hardware — typically audio, video, and basic controls are available, but advanced features (breakout rooms, whiteboard collaboration) may not work. For clients in mixed-platform environments — enterprises that use Teams as their primary platform but regularly meet with external partners on Zoom — Direct Guest Join is a meaningful capability to communicate during pre-sales.
+
+---
+
+## Hands-On Exercise
+
+The Join Method Decision Tree worksheet guides you through a series of room and user scenarios and asks you to select the correct join method and identify its prerequisites. Scenarios include: a user with an ad hoc meeting and no room calendar invite, a user needing to join a Zoom call from an MTR room, a room with Bluetooth disabled by an IT policy, and a standard pre-scheduled Teams meeting. For each, you select the appropriate method and note what must be in place for it to work.
+
+<DownloadButton
+  file="p1-t1-m2-l2-join-method-decision-tree.pdf"
+  label="Join Method Decision Tree"
+  sizeKb={85}
+  description="Decision tree worksheet for eight join method scenarios with answer key and prerequisite checklist."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m2-l2-kc">
+  <Question>
+    A user walks into a conference room 10 minutes before an ad hoc meeting they just
+    started on their laptop. The meeting is not on the room's calendar. They want to use
+    the room's camera and speakers. Which join method is most appropriate?
+  </Question>
+  <Answer>Calendar-based one-touch join — the meeting will appear shortly</Answer>
+  <Answer correct>Proximity join — the room detects the user's device via Bluetooth and offers to add the room to the active meeting</Answer>
+  <Answer>Manual join — enter the meeting ID on the touch console</Answer>
+  <Answer>BYOD — connect the laptop via USB cable to use the room's AV hardware</Answer>
+  <Explanation>
+    Proximity join is designed exactly for this scenario: an ad hoc meeting that is not on
+    the room's calendar. When the user's Teams client detects the room via Bluetooth, it
+    offers to add the room to the active meeting. Manual join also works but requires the
+    user to retrieve the meeting ID. BYOD would work but bypasses the MTR device entirely,
+    which is less ideal when the MTR device is signed in and functional.
+  </Explanation>
+
+  <Question>
+    Proximity join stops working for all users in a room after the client's IT team pushes
+    a new device management policy. The most likely cause is:
+  </Question>
+  <Answer>The Teams Rooms Pro license was not renewed</Answer>
+  <Answer>The MTR device was updated and the Bluetooth driver changed</Answer>
+  <Answer correct>The device management policy disabled Bluetooth on corporate laptops or revoked Bluetooth permissions from the Teams app</Answer>
+  <Answer>The proximity join feature was removed in a recent Teams Rooms update</Answer>
+  <Explanation>
+    Proximity join requires Bluetooth to be enabled on both the MTR device and the user's
+    personal device, and the Teams app must have Bluetooth permissions. An IT policy that
+    disables Bluetooth or restricts app permissions will break proximity join for affected
+    devices. This is the first thing to investigate when proximity join stops working across
+    all users simultaneously.
+  </Explanation>
+
+  <Question>
+    A client wants to use a conference room for weekly meetings with external partners who
+    only use Zoom. Which capability allows the MTR room to join Zoom meetings without
+    installing Zoom Rooms?
+  </Question>
+  <Answer>BYOD mode — connect a laptop running Zoom to the room's USB cable</Answer>
+  <Answer>Manual join — Zoom meeting IDs can be entered on the MTR touch console</Answer>
+  <Answer correct>Direct Guest Join — the MTR room can join Zoom meetings as a guest via a WebView-based mechanism</Answer>
+  <Answer>MTR does not support joining Zoom meetings in any configuration</Answer>
+  <Explanation>
+    Direct Guest Join allows an MTR room to join Zoom (and Cisco Webex) meetings using a
+    WebView browser built into the Teams Rooms application. When a Zoom invite appears on
+    the room's calendar, a Zoom join button appears on the touch console. Feature support
+    within the Zoom meeting is limited, but audio and video typically work. BYOD is also
+    a valid option but bypasses the MTR device entirely.
+  </Explanation>
+
+  <Question>
+    Which of the following is required for BYOD mode to work in a conference room?
+  </Question>
+  <Answer>The MTR device must be signed out before BYOD mode activates</Answer>
+  <Answer>The user's laptop must have the Teams app installed</Answer>
+  <Answer correct>A physical USB cable must be routed from the compute unit to the conference table for the user to connect their laptop</Answer>
+  <Answer>BYOD mode requires a Teams Rooms Pro license</Answer>
+  <Explanation>
+    BYOD requires a physical USB cable connection from the MTR compute unit (or a connected
+    USB hub) to the conference table. Without this cable run, the user's laptop has no way
+    to access the room's camera and audio as USB devices. This cable infrastructure must be
+    planned and installed during the room build — it is not automatic. The MTR device does not
+    need to be signed out; it can remain active while a BYOD cable is available.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Describe all four join methods:** Calendar one-touch (pre-scheduled, requires Exchange + AutoAccept), proximity join (ad hoc, requires Bluetooth on both device and user laptop plus TAC policy), manual ID entry (universal fallback, no special prerequisites), and BYOD (laptop drives the meeting, room provides AV hardware via USB cable).
+- **Explain Direct Guest Join:** MTR can join Zoom and Webex meetings via a built-in WebView mechanism when the invite appears on the room's calendar.
+- **Match method to scenario:** Pre-scheduled meetings → one-touch. Ad hoc with Teams user in room → proximity. Any meeting without calendar integration → manual ID. Non-Teams platforms or unsupported scenarios → BYOD or Direct Guest Join.
+
+---
+
+## What's Next
+
+You now understand how meetings are structured and how rooms join them. The next lesson puts you inside the Teams Admin Center — the management console where you verify that rooms are healthy, peripherals are connected, and policies are correctly assigned after installation.
+
+[Teams Admin Center — The AV Integrator's View →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/teams-fundamentals-for-av/lessons/teams-admin-center-av-view/)

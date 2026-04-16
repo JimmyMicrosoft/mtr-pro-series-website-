@@ -1,0 +1,215 @@
+---
+id: "p2-t1-m1-l3"
+slug: "qos-fundamentals"
+title: "QoS Fundamentals — DSCP Marking and Traffic Classification"
+shortTitle: "QoS Fundamentals"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 1
+moduleSlug: "mtr-network-architecture"
+moduleTitle: "MTR Network Architecture and Design"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Explain how DSCP-based QoS works and why it improves real-time media performance on congested networks"
+  - "Identify the correct DSCP values for Teams audio, video, and content sharing traffic"
+  - "Describe the two-layer QoS approach — endpoint marking and network enforcement — and why both are required"
+
+prerequisites:
+  - "p2-t1-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "qos"
+  - "dscp"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-l3-dscp-quick-reference.pdf"
+    label: "Teams QoS DSCP Quick Reference"
+    sizeKb: 30
+
+relatedLessons:
+  - "p2-t1-m1-l4"
+
+metaDescription: "QoS fundamentals for Teams Rooms — DSCP marking concept, Teams audio/video/content DSCP values, Per-Hop Behavior, endpoint vs. network marking, and why QoS is essential for real-time media on enterprise networks."
+
+keywords:
+  - "Teams Rooms QoS DSCP"
+  - "MTR QoS fundamentals"
+  - "Teams audio DSCP 46"
+  - "Teams video DSCP 34"
+  - "QoS real-time media"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Quality of Service (QoS) is the mechanism that tells the network to prioritize real-time media traffic — Teams audio, video, and content sharing — over less time-sensitive traffic like file downloads, software updates, and general browsing. Without QoS, all traffic competes equally for bandwidth. When the network is congested (which happens in real enterprise environments throughout the business day), Teams media packets wait in the same queue as backup jobs and system updates — producing the choppy audio and frozen video that users report as "Teams issues." QoS solves this at the network layer, independent of Teams application behavior.
+
+---
+
+## How DSCP QoS Works
+
+QoS operates by marking each IP packet with a priority value in the DSCP (Differentiated Services Code Point) field of the IP header. Network devices (switches, routers) read this field and apply different forwarding behavior based on the value — a concept called Per-Hop Behavior (PHB).
+
+**The DSCP field** is 6 bits in the IP header's Type of Service (ToS) byte. This gives 64 possible values (0–63), though in practice only a small number of standardized values are used.
+
+**Per-Hop Behavior:** Each network device along the path reads the DSCP value and places the packet in the appropriate queue. Packets in the Expedited Forwarding (EF) queue are transmitted first — before packets in lower-priority queues. Packets in lower-priority queues are served when the higher-priority queue is empty or during their allotted time slice (weighted fair queuing).
+
+The key operational point: **DSCP marking only improves quality on congested links.** On an uncongested link, all packets are transmitted immediately regardless of DSCP value. QoS is the insurance policy for when the network gets busy — not a constant performance enhancer.
+
+---
+
+## Microsoft Teams DSCP Values
+
+Microsoft specifies the following DSCP values for Teams traffic, aligned with industry-standard QoS recommendations:
+
+| Traffic Type | DSCP Value | DSCP Name | Per-Hop Behavior |
+|-------------|------------|-----------|-----------------|
+| Audio | **46** | Expedited Forwarding (EF) | Highest priority — always served first |
+| Video | **34** | Assured Forwarding 41 (AF41) | High priority, occasional dropping allowed |
+| App sharing / Content | **18** | Assured Forwarding 21 (AF21) | Medium priority |
+| Signaling | **24** | Class Selector 3 (CS3) | Medium priority |
+
+**Audio at DSCP 46 (EF)** is the most important. Voice and meeting audio is the most sensitive to latency and jitter — even 50–100ms of additional delay makes audio unintelligible. EF is the highest-priority DSCP PHB and should be reserved exclusively for real-time audio.
+
+**Video at DSCP 34 (AF41)** tolerates slightly more variation than audio but requires consistent bandwidth. AF41 provides assured forwarding with low drop probability.
+
+**Content sharing at DSCP 18 (AF21)** is the least time-sensitive of the three media types — a brief pause in a screenshare is noticeable but not as disruptive as choppy audio.
+
+---
+
+## Two-Layer QoS: Endpoint Marking and Network Enforcement
+
+QoS requires both layers to function correctly:
+
+**Layer 1 — Endpoint marking:** The MTR device (Windows or Android) marks outgoing packets with the correct DSCP value. On MTR Windows, this is configured through a Group Policy Object (GPO) or Intune policy that applies Windows QoS policies — marking outgoing UDP traffic on specific port ranges with the correct DSCP value. Teams uses specific source port ranges per traffic type, which allows the OS to mark correctly even without application-level awareness.
+
+**Layer 2 — Network enforcement:** Switches and routers read the DSCP marking and place packets in the correct queue. If the network is not configured to honor DSCP markings — which is not always the default on managed switches — the markings are present but have no effect.
+
+**What happens without each layer:**
+
+- Endpoint marks, network doesn't honor: Packets carry DSCP values but all traffic is treated equally — QoS has no effect on quality.
+- Network honors markings, endpoint doesn't mark: All Teams traffic arrives unmarked (DSCP 0 = Best Effort) and is treated as lowest priority — worst case scenario during congestion.
+- Neither layer configured: All traffic competes equally — QoS provides no protection.
+- Both layers configured: Teams media gets priority treatment at every hop — QoS works as designed.
+
+---
+
+## Port Ranges for Teams Traffic Types
+
+Microsoft recommends specific source port ranges for each Teams traffic type. These port ranges are the basis for both endpoint QoS marking (mark traffic from these source ports with this DSCP value) and network re-marking (if the network does not trust endpoint markings, remark based on source IP and port range).
+
+| Traffic Type | Recommended Source Port Range |
+|-------------|-------------------------------|
+| Audio | 50000–50019 |
+| Video | 50020–50039 |
+| App sharing | 50040–50059 |
+
+These port ranges are configured in Teams Admin Center under Meeting settings → Quality of service → Insert Quality of Service (QoS) markers for real-time media traffic. Enabling this in TAC instructs Teams clients and MTR devices to use these specific source port ranges, enabling correct endpoint marking.
+
+<DownloadButton
+  file="p2-t1-m1-l3-dscp-quick-reference.pdf"
+  label="Teams QoS DSCP Quick Reference"
+  sizeKb={30}
+  description="Quick-reference card for Teams QoS DSCP values — audio (46/EF), video (34/AF41), content sharing (18/AF21), signaling (24/CS3) — with port ranges, PHB descriptions, and implementation checklist for both endpoint and network layers."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m1-l3-kc">
+  <Question>
+    A network engineer confirms that all switches in the building honor DSCP
+    QoS markings. An MTR integrator confirms that Teams QoS port ranges are
+    configured in Teams Admin Center. Meeting quality is still poor during
+    peak hours. What is the most likely missing component?
+  </Question>
+  <Answer>The DSCP values need to be increased — 46 is not high enough for enterprise environments</Answer>
+  <Answer>The switches need to be rebooted to apply the new QoS configuration</Answer>
+  <Answer correct>The endpoint marking policy (Group Policy or Intune) that marks outgoing MTR Windows packets with the correct DSCP values has not been applied to the MTR devices — the network is ready to honor markings, but the packets are being sent unmarked (DSCP 0)</Answer>
+  <Answer>QoS only works during off-peak hours and cannot improve quality during peak congestion</Answer>
+  <Explanation>
+    QoS requires both endpoint marking AND network enforcement. If the switches
+    honor DSCP markings and TAC has QoS port ranges configured, but the endpoint
+    QoS marking policy (Windows QoS GPO or Intune policy) has not been deployed
+    to the MTR devices, the packets arrive at the switch with DSCP 0 (best
+    effort). The switch has nothing to prioritize. Configuring port ranges in
+    TAC enables Teams to use those specific ports, but the Windows OS-level QoS
+    policy is what actually marks the outgoing packets with DSCP 46, 34, or 18.
+  </Explanation>
+
+  <Question>
+    Why is Teams audio traffic assigned DSCP 46 (Expedited Forwarding) rather
+    than a lower value like DSCP 34?
+  </Question>
+  <Answer>DSCP 46 is the only value that switches support for voice traffic</Answer>
+  <Answer correct>Audio is the most sensitive Teams traffic type to latency and jitter — even small increases in delay make speech unintelligible. EF (DSCP 46) is the highest-priority PHB, ensuring audio packets are always forwarded before lower-priority traffic during congestion</Answer>
+  <Answer>Microsoft chose DSCP 46 arbitrarily — any value above 32 provides equivalent treatment</Answer>
+  <Answer>DSCP 34 is reserved for Microsoft Teams and cannot be used for audio</Answer>
+  <Explanation>
+    Real-time audio is the most latency-sensitive media type in Teams meetings.
+    Human speech becomes unintelligible with as little as 100–150ms of additional
+    one-way delay, and jitter above 30ms causes choppy audio. Expedited
+    Forwarding (DSCP 46) provides the highest Per-Hop Behavior — packets in
+    the EF queue are always transmitted before any lower-priority queue. This
+    ensures audio packets experience minimum queuing delay during network
+    congestion. Video (DSCP 34) can tolerate more variation; content sharing
+    (DSCP 18) is the least sensitive.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Explain DSCP QoS:** DSCP field in IP header carries priority value; network devices apply Per-Hop Behavior per value; QoS only has effect during congestion.
+- **Apply the DSCP values:** Audio 46 (EF), Video 34 (AF41), Content sharing 18 (AF21), Signaling 24 (CS3).
+- **Understand the two layers:** Endpoint marking (Windows QoS policy marks packets) + network enforcement (switches honor DSCP) — both required.
+- **Know the port ranges:** Audio 50000–50019, Video 50020–50039, App sharing 50040–50059 — configured in TAC and used as basis for endpoint marking.
+
+---
+
+## What's Next
+
+The next lesson moves from QoS theory to implementation — the specific switch configuration steps and Windows/Intune policy that put QoS into effect on MTR devices and the network.
+
+[QoS Implementation — Switch Configuration and Policy Application →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/qos-implementation/)

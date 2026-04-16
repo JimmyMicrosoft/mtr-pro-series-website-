@@ -1,0 +1,232 @@
+---
+id: "p2-t2-m2-l1"
+slug: "tac-device-management"
+title: "TAC Device Management Workflows — Tagging, Filtering, and Bulk Actions"
+shortTitle: "TAC Device Workflows"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 2
+moduleSlug: "tac-policies-and-management"
+moduleTitle: "TAC Policies and Fleet Management"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Apply device tags in TAC to organize the MTR fleet by building, room type, or service tier"
+  - "Use TAC filters to generate targeted device lists for management actions"
+  - "Execute bulk actions — remote restart, configuration profile assignment, update trigger — across multiple devices simultaneously"
+
+prerequisites:
+  - "p2-t2-m1-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "tac-management"
+  - "monitoring"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m2-l1-tac-workflow-guide.pdf"
+    label: "TAC Device Management Workflow Guide"
+    sizeKb: 40
+
+relatedLessons:
+  - "p2-t2-m2-l2"
+  - "p2-t2-m2-l5"
+
+metaDescription: "Teams Admin Center device management for MTR fleets — device tags, search and filter, bulk configuration profile assignment, bulk remote restart, device export, and TAC navigation for large room deployments."
+
+keywords:
+  - "Teams Admin Center device tags"
+  - "TAC bulk actions MTR"
+  - "Teams Rooms TAC management workflow"
+  - "MTR TAC device filtering"
+  - "Teams Admin Center room management"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams Admin Center's device management capabilities scale from a handful of rooms to hundreds — but only if the fleet is organized with tags and filters that make targeted actions possible. Without organization, a 200-device TAC view is a flat list that requires manually identifying individual devices before any action can be taken. With effective tagging, the same 200 devices can be filtered to a building, a room type, or a service tier in seconds, and bulk actions applied to that filtered set.
+
+---
+
+## Navigating to Devices
+
+In Teams Admin Center (`admin.teams.microsoft.com`):
+- **Teams Devices → Rooms on Windows** — all MTR Windows devices in the tenant
+- **Teams Devices → Rooms on Android** — all MTR Android (bars, boards) devices
+- **Teams Devices → Teams panels** — scheduling display panels
+- **Teams Devices → Overview** — aggregate health summary across all device types
+
+Each device list shows: device name (resource account display name), device health status, peripheral health, manufacturer, model, app version, and last activity.
+
+---
+
+## Device Tags
+
+Tags are free-text labels applied to devices to support filtering and organization. A device can have multiple tags.
+
+**Applying tags:**
+1. Select one or more devices using the checkbox column
+2. Click **Actions → Add a tag**
+3. Enter a tag name and confirm
+
+**Recommended tag taxonomy:**
+
+| Tag Pattern | Examples | Purpose |
+|------------|---------|---------|
+| Building code | `bldg:hq`, `bldg:nyc`, `bldg:sfo` | Filter by location |
+| Room type | `type:boardroom`, `type:conference`, `type:huddle` | Filter by room category |
+| Floor | `floor:01`, `floor:12` | Location precision |
+| Service tier | `service:managed`, `service:self-managed` | Managed service scope |
+| OEM | `oem:yealink`, `oem:poly`, `oem:logitech` | Platform-specific actions |
+| Update ring | `ring:early`, `ring:standard`, `ring:deferred` | Staged update management |
+
+**Adding tags at scale:** TAC does not currently support bulk tag import from a CSV. For large deployments, use the TAC Graph API or PowerShell module (`MicrosoftTeams`) to assign tags programmatically:
+
+```powershell
+# Requires MicrosoftTeams module and Teams admin role
+Connect-MicrosoftTeams
+
+# Get device IDs for a building and apply a tag
+# Note: Device management via Graph API requires specific permissions
+# Use TAC UI for most tag management; Graph for automation at scale
+```
+
+---
+
+## Filtering Devices
+
+Use the TAC search and filter capabilities to narrow the device list:
+
+**Search bar:** Searches device name (resource account display name). Type "hq" to find all devices with "hq" in the room name.
+
+**Filter panel (click Filter icon):**
+- Health status: Healthy / Non-urgent / Critical / Offline
+- Manufacturer: Poly, Yealink, Logitech, Microsoft, etc.
+- Model: Filter to specific hardware models
+- Tags: Filter by any applied tag
+- App version: Filter to find devices on specific app versions
+
+**Combined filters:** Filters are additive — selecting `Health: Non-urgent` AND `Tags: bldg:hq` shows only non-urgent health devices in the HQ building. This is the core workflow for targeted maintenance actions.
+
+---
+
+## Bulk Actions
+
+After filtering to a target device set, select all devices (checkbox at top of list) and choose from **Actions**:
+
+| Action | Description |
+|--------|-------------|
+| **Restart** | Sends a remote restart command to all selected devices. Devices restart in order — stagger if restarting during business hours |
+| **Assign configuration** | Assigns a configuration profile to all selected devices (Pro license required) |
+| **Remove configuration** | Removes the assigned configuration profile from all selected devices |
+| **Download device logs** | Queues a log collection request from all selected devices |
+| **Sign out** | Signs all selected devices out of their resource accounts |
+| **Add a tag** | Applies a tag to all selected devices |
+
+**Remote restart workflow:**
+1. Filter to target devices (e.g., `bldg:hq` AND `Health: Non-urgent`)
+2. Confirm the restart is appropriate (no active meetings in progress)
+3. Select all filtered devices
+4. Actions → Restart
+5. Monitor health status in TAC — devices should return to Healthy within 5–10 minutes
+
+---
+
+## Exporting Device Data
+
+The TAC device list can be exported to CSV for offline analysis or documentation:
+
+1. Filter to the desired device set (or leave unfiltered for full export)
+2. Click **Export** (download icon at top right of list)
+3. The CSV includes: device name, health status, manufacturer, model, app version, IP address, last activity, tags
+
+The exported CSV is useful for:
+- Maintaining an asset register of all deployed rooms
+- Identifying devices requiring firmware or app updates (compare app version against current release)
+- Feeding into support ticketing or change management workflows
+
+<DownloadButton
+  file="p2-t2-m2-l1-tac-workflow-guide.pdf"
+  label="TAC Device Management Workflow Guide"
+  sizeKb={40}
+  description="Teams Admin Center device management guide — tag taxonomy recommendations, filter combinations for common management scenarios, bulk action procedures, and device export workflow for fleet documentation."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m2-l1-kc">
+  <Question>
+    A managed services team needs to remotely restart all Yealink Android
+    devices in the New York City office that are showing Non-urgent health
+    status, without affecting devices in other offices or those that are
+    Healthy. What TAC filter combination achieves this?
+  </Question>
+  <Answer>Search for "NYC" and manually select only the Yealink devices showing Non-urgent status</Answer>
+  <Answer correct>Apply filters: Manufacturer = Yealink, Tags = bldg:nyc (or the equivalent NYC building tag), Health = Non-urgent — this narrows the list to exactly the target devices before applying the bulk restart action</Answer>
+  <Answer>Export all devices to CSV, identify the target devices offline, and restart them one by one</Answer>
+  <Answer>Restart all NYC devices and filter out the non-Yealink devices after the action is queued</Answer>
+  <Explanation>
+    TAC filters are applied before bulk actions — filter first, then act.
+    Applying Manufacturer = Yealink eliminates all non-Yealink devices.
+    Adding the NYC building tag filter eliminates devices in other locations.
+    Adding Health = Non-urgent eliminates Healthy devices. The resulting
+    filtered list contains only the target devices. Selecting all and
+    applying Restart acts only on that filtered set. This is the correct
+    workflow — the "filter then act" pattern is the operational foundation
+    of TAC fleet management.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Navigate:** Teams Devices → Rooms on Windows / Rooms on Android.
+- **Tags:** Multi-dimensional organization (building, type, floor, service tier, OEM, update ring) — apply at deployment time.
+- **Filter:** Combine health, manufacturer, model, and tag filters to isolate target device sets.
+- **Bulk actions:** Restart, assign/remove configuration, download logs, sign out — applied to filtered selections.
+- **Export:** CSV export for asset register, version auditing, and change management.
+
+---
+
+## What's Next
+
+[Configuration Profiles at Scale →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/lessons/configuration-profiles/)

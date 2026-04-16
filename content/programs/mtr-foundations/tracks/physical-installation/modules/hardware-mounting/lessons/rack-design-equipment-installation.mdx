@@ -1,0 +1,221 @@
+---
+id: "p1-t2-m3-l4"
+slug: "rack-design-equipment-installation"
+title: "Rack Design and Equipment Installation for MTR Systems"
+shortTitle: "Rack Design"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 3
+moduleSlug: "hardware-mounting"
+moduleTitle: "Hardware Mounting and Connections"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Produce a rack elevation drawing that meets AVIXA E502.01 rack design principles for equipment sequence, thermal management, and cable management"
+  - "Install rack-mounted AV equipment following correct physical installation procedures"
+  - "Identify common rack design violations and describe the correct professional practice for each"
+
+prerequisites:
+  - "p1-t2-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "rack-design"
+  - "thermal-management"
+  - "cable-dressing"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m3-l4-rack-elevation-template.pdf"
+    label: "Rack Elevation Drawing Templates"
+    sizeKb: 55
+
+relatedLessons:
+  - "p1-t2-m2-l4"
+  - "p1-t2-m2-l5"
+
+metaDescription: "AV rack design and equipment installation for MTR systems — rack elevation planning, thermal management, cable dressing, PDU placement, and AVIXA E502.01 standards."
+
+keywords:
+  - "AV rack design MTR"
+  - "AVIXA E502.01 rack standards"
+  - "rack thermal management AV"
+  - "rack cable dressing"
+  - "equipment rack elevation drawing"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A professional AV rack is planned before anything is installed. The rack elevation drawing — the to-scale top-to-bottom layout of every piece of equipment, every blank panel, and every cable management accessory — is produced at the design stage and used as the installation guide. Racks built without elevation planning become disorganized, overheat, and are difficult to service. Racks built from a considered elevation drawing look professional, manage heat correctly, and can be serviced by any technician who understands the drawing.
+
+---
+
+## Rack Unit Planning and Elevation Drawing
+
+A standard EIA 310-D equipment rack uses 1.75-inch rack units (1U) on 19-inch wide equipment rails. Before any equipment is installed, produce a rack elevation drawing showing the full rack, top to bottom, with every item in its assigned position. Elevation drawings are typically produced in specialized AV design software (CAD, Visio, D-Tools) or on paper for simple racks.
+
+**Layout sequence principles:**
+
+- **Heavier equipment in the lower half of the rack:** A rack's center of gravity must stay low. Amplifiers, heavy power equipment, and multi-unit devices go below the midpoint. Lightweight DSPs, compute units, and wall controllers go in the upper half.
+
+- **Cable management panels adjacent to connection-dense equipment:** A 1U horizontal cable management panel above and below the patch panel keeps patch cables organized. A panel adjacent to the switch keeps network cables dressed into the vertical management path.
+
+- **Blank panels in all unused rack spaces:** Open rack spaces create short-circuit airflow — cool air that should be drawn through equipment instead passes unobstructed through the open space, reducing the airflow through equipment intakes. Fill every unused U with a blank panel. This is a thermal requirement, not cosmetic.
+
+{/* MEDIA: Annotated rack elevation drawing — full 24U rack from top to bottom with all equipment, blank panels, and cable management panels labeled. Callouts identify: correct equipment sequence (heavy at bottom), blank panels in open spaces, cable management panel placement, PDU location in vertical channel. Filename: p1-t2-m3-l4-rack-elevation.png */}
+
+---
+
+## Thermal Management
+
+Heat rises. Rack thermal management uses this physics deliberately:
+
+- **Heat-generating equipment (amplifiers, compute units with high processing loads) near the top** of the equipment zone so hot exhaust exits upward and does not recirculate through equipment below.
+- **Fan trays or ventilated panels at the top** of the rack to exhaust accumulated hot air.
+- **Blank panels in open spaces** (as noted above) to force airflow through equipment.
+
+For enclosed racks (with solid doors, front and rear) in IDF or rack rooms, passive ventilation is insufficient for fully loaded systems. Active rack cooling — rack fan trays, rear-door heat exchangers, or supplemental room HVAC — is required. Calculate the total rack heat dissipation in BTU/hr (1W = 3.41 BTU/hr; sum all equipment wattages) and verify that the room cooling capacity can handle the load plus the heat contribution of other equipment in the room.
+
+For credenza-mounted systems (small, shallow racks or open-shelf installations in furniture), ensure the credenza has ventilation openings. A small credenza fan pulling air out of the enclosure is often the difference between a compute unit that operates at 35°C and one that operates at 55°C.
+
+---
+
+## Power Distribution Units
+
+Every rack should have a rack-mounted PDU (Power Distribution Unit) providing power to all rack equipment. For MTR systems, use a switched and metered PDU with per-outlet control — this enables remote power cycling of individual devices without sending a technician on-site. The network-accessible PDU becomes the first response tool for power-related remote support calls.
+
+Position the PDU in the vertical channel of the rack (zero-U mounting on the side rail) or in a dedicated horizontal 1U PDU position at the bottom of the rack. Route PDU power cords to each device separately — no device should share a PDU outlet with another device (power cycling one device should not affect others). Separate power cables from signal cables: PDU and power cords on one side of the rack, signal cables (network, audio, video, control) on the other.
+
+---
+
+## Cable Dressing in Racks
+
+Rack cable dressing follows from the principles established in Module 2.2:
+
+- **Dress cables before terminating at rear panel connections.** Route from the rack entry point to the termination point, leaving planned slack coiled at horizontal management panels, before making the final connection.
+- **Hook-and-loop straps, not cable ties.** Every bundle should be manageable after installation — additions and replacements happen throughout the rack's service life.
+- **Grommets and bushings at all cable entry points.** Every location where cables enter the rack frame (top, bottom, sides) must have a bushing or grommet to prevent cable jacket abrasion from the sharp metal rack edges.
+- **Power on one side, signal on the other.** Maintain this separation at every vertical management accessory and horizontal management panel.
+
+---
+
+## Equipment Installation Procedure
+
+Physical installation of rack-mounted equipment follows a specific sequence:
+
+1. **Install rear rail support or equipment shelves first** for any equipment that requires it (devices heavier than approximately 10 lbs or deeper than 1U should not be supported only by front rack ears).
+2. **Install equipment in bottom-to-top order** so the rack remains balanced during installation (heaviest items go in first, at the bottom).
+3. **Torque all rack screws appropriately** — under-torqued screws back out over time; over-torqued screws strip the rack nut threads. Use a calibrated torque screwdriver for rack screw applications in critical installations.
+4. **Dress cables immediately after each equipment connection** — do not wait until all equipment is installed to begin dressing. Cable management is much harder retroactively.
+5. **Apply all labels before commissioning** — label all rack equipment, all cables at both ends, and all patch panel ports before the first power-on.
+
+---
+
+<KnowledgeCheck id="p1-t2-m3-l4-kc">
+  <Question>
+    A rack inspection reveals several 1U gaps between equipment items, with no blank
+    panels installed. What is the thermal consequence of this condition?
+  </Question>
+  <Answer>No consequence — open rack spaces improve airflow by providing more pathway for air movement</Answer>
+  <Answer correct>Short-circuit airflow — cool air bypasses equipment by flowing through the open gaps instead of being drawn through equipment intakes, reducing cooling efficiency for all rack equipment</Answer>
+  <Answer>Open rack spaces cause static electricity buildup that can damage equipment</Answer>
+  <Answer>Open spaces are only problematic in sealed racks — open-frame racks with open spaces are acceptable</Answer>
+  <Explanation>
+    Open rack spaces create paths of least resistance for airflow. Cool air entering the
+    rack bottom takes the path of least resistance — through the open gaps — rather than
+    being drawn through the restricted airflow path of equipment with intake and exhaust
+    fans. This reduces the effective cooling airflow through all equipment in the rack.
+    Blank panels must fill all unused rack spaces to force airflow through equipment,
+    not around it.
+  </Explanation>
+
+  <Question>
+    Where should the heaviest equipment (amplifiers, multi-unit power equipment) be
+    positioned in a standard equipment rack, and why?
+  </Question>
+  <Answer>At the top, so the heat they generate can rise and exit the rack more efficiently</Answer>
+  <Answer correct>In the lower half of the rack, to keep the rack's center of gravity low and prevent tip-over risk</Answer>
+  <Answer>In the middle of the rack, to distribute the weight evenly across the rail structure</Answer>
+  <Answer>Position doesn't matter — rack rails are equally rated at all positions</Answer>
+  <Explanation>
+    Heavy equipment at the bottom keeps the rack's center of gravity low, which is critical
+    for stability — particularly for freestanding floor racks that are not bolted to the
+    floor. A rack with heavy equipment at the top has a high center of gravity and is
+    susceptible to tip-over if someone opens a heavy front door or leans against the rack.
+    This is a physical safety requirement, not just a convention.
+  </Explanation>
+
+  <Question>
+    During a rack installation review, you notice network patch cables bundled tightly
+    with plastic cable ties and routed alongside the PDU power cords on the same side
+    of the rack. Identify both problems.
+  </Question>
+  <Answer>There is only one problem — the cable ties are too tight on the network cables</Answer>
+  <Answer>There is only one problem — power and signal cables should be separated</Answer>
+  <Answer correct>Two problems: (1) Cable ties on Cat6A cause pair deformation — use hook-and-loop straps; (2) Signal cables (network) must be routed on the opposite side of the rack from power cables (PDU and power cords) to maintain separation</Answer>
+  <Answer>Neither is a problem — cable ties and combined routing are standard rack practice</Answer>
+  <Explanation>
+    Tight cable ties deform Cat6A pair geometry (increasing crosstalk) — hook-and-loop
+    straps are required for network cable bundles in racks. Routing signal and power cables
+    together on the same side violates the separation requirement needed to prevent
+    electromagnetic interference from power conductors into signal cables. Both violations
+    should be corrected: replace cable ties with hook-and-loop straps and separate the
+    power and signal cable runs to opposite sides of the rack.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Design a rack elevation:** Heavy equipment bottom half; blank panels in all empty spaces; cable management panels adjacent to connection-dense equipment; PDU in vertical channel.
+- **Manage rack thermals:** Hot-producing equipment positioned so exhaust exits upward; blank panels force airflow through equipment; active cooling required for enclosed racks under full load.
+- **Dress and label the rack:** Hook-and-loop straps; power and signal on opposite sides; grommets at all cable entry points; labels before first power-on.
+- **Install in sequence:** Rear support before front ears; bottom to top; dress immediately after each connection.
+
+---
+
+## Track Complete
+
+You have completed Track 2: Physical Installation. You now have the complete physical installation skill set for MTR deployments — site survey, infrastructure assessment, bill of materials, safety compliance, cable selection, termination and testing, cable management, display mounting, hardware placement, camera and microphone positioning, and rack design.
+
+Track 3 moves from the physical work to the digital configuration: setting up the Teams Rooms application, signing in the resource account, configuring room settings, and commissioning the room for client handoff.
+
+[Continue to Track 3: Device Configuration Essentials →](/programs/mtr-foundations/tracks/device-configuration/)

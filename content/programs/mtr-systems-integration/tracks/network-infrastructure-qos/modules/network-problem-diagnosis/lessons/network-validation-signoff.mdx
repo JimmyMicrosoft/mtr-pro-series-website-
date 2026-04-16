@@ -1,0 +1,235 @@
+---
+id: "p2-t1-m3-l5"
+slug: "network-validation-signoff"
+title: "Network Validation Checklist and Sign-Off Procedures"
+shortTitle: "Network Validation Sign-Off"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 3
+moduleSlug: "network-problem-diagnosis"
+moduleTitle: "Network Problem Diagnosis"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Complete the MTR network validation checklist covering VLAN, firewall, QoS, DNS, NTP, and bandwidth"
+  - "Produce a network sign-off document that establishes the baseline for post-deployment support"
+  - "Communicate network validation findings to the client IT team and handover the network configuration documentation"
+
+prerequisites:
+  - "p2-t1-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "validation"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-l5-network-validation-checklist.pdf"
+    label: "MTR Network Validation Checklist"
+    sizeKb: 50
+
+relatedLessons:
+  - "p2-t1-m2-l4"
+
+metaDescription: "MTR network validation sign-off — complete pre-deployment checklist covering VLAN, firewall, QoS, DNS, NTP, bandwidth, and wireless. Network readiness document structure and client IT handover procedure."
+
+keywords:
+  - "MTR network validation checklist"
+  - "Teams Rooms network sign-off"
+  - "MTR pre-deployment network checklist"
+  - "Teams Rooms network documentation"
+  - "MTR network handover"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The network validation sign-off is the formal confirmation that the network layer is ready for MTR deployment. It consolidates all the testing and configuration verification from Modules 1.1, 1.2, and 1.3 into a single structured document that both the integrator and the client IT team sign. Producing this document before devices are installed protects both parties — it creates a clear record of the network state at deployment time, establishing the baseline for any future quality investigations.
+
+---
+
+## The Complete MTR Network Validation Checklist
+
+The following checklist covers every network requirement for an MTR deployment. Each item should be tested and verified, not assumed based on design intent. Document the test result (pass/fail) and the tester for each item.
+
+### Section 1 — Network Segmentation
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| Dedicated MTR VLAN created | Switch configuration review | VLAN exists with correct VLAN ID |
+| MTR VLAN assigned to correct switch ports | Switch port configuration review | All MTR ports in correct access VLAN |
+| DHCP server serving the MTR VLAN | Connect device, confirm IP assignment | Device receives IP in MTR subnet |
+| DHCP includes correct DNS server | Check DHCP scope options | DNS server reachable from MTR subnet |
+| DHCP includes NTP (Option 42) or NTP configured at device level | DHCP scope review + device NTP test | NTP server reachable and device clock accurate |
+| Default gateway functional | `ping [gateway-IP]` from device | Ping succeeds |
+
+### Section 2 — Firewall and Connectivity
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| TCP 443 to login.microsoftonline.com | `Test-NetConnection` | TcpTestSucceeded: True |
+| TCP 443 to *.teams.microsoft.com | `Test-NetConnection` | TcpTestSucceeded: True |
+| TCP 443 to *.office.com | `Test-NetConnection` | TcpTestSucceeded: True |
+| UDP 3478–3481 to Teams media IPs | TNAT tool — UDP transport test | TNAT reports UDP packets delivered |
+| Proxy bypass configured for M365 Optimize | M365 Network Connectivity Test | "Direct route" shown for Teams endpoints |
+| SSL inspection bypassed for M365 endpoints | TLS certificate inspection | Microsoft/public CA shown, not internal CA |
+| OEM management portal accessible | `Test-NetConnection` to OEM portal FQDN | TcpTestSucceeded: True |
+| NTP UDP 123 accessible | `w32tm /stripchart` or DHCP Option 42 | NTP sync successful; device time accurate |
+
+### Section 3 — QoS
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| TAC QoS port ranges enabled | Teams Admin Center → Meetings → Meeting settings | QoS toggle enabled; port ranges configured |
+| Windows QoS GPO or Intune policy deployed to MTR devices | Group Policy console or Intune device configuration | Policy shows as applied on target devices |
+| Audio packets marked DSCP 46 | Packet capture filter `ip.dsfield.dscp == 46` during active meeting | DSCP 46 packets visible for audio streams |
+| DSCP trust enabled on switch ports | Switch port configuration review | `mls qos trust dscp` or equivalent configured |
+
+### Section 4 — DNS
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| DNS resolves login.microsoftonline.com | `Resolve-DnsName login.microsoftonline.com` | Returns valid Microsoft IP address |
+| DNS resolves teams.microsoft.com | `Resolve-DnsName teams.microsoft.com` | Returns valid Microsoft IP address |
+| DNS resolves graph.microsoft.com | `Resolve-DnsName graph.microsoft.com` | Returns valid Microsoft IP address |
+| DNS response time acceptable | `Measure-Command { Resolve-DnsName login.microsoftonline.com }` | < 100ms |
+
+### Section 5 — Bandwidth
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| Bandwidth capacity model completed | Model documented in project file | Required bandwidth calculated and documented |
+| Measured throughput meets requirement | iPerf test from MTR VLAN | Measured throughput ≥ required bandwidth |
+| Internet connection capacity confirmed | Speed test or ISP documentation | Confirmed sufficient for MTR + workstation load |
+
+### Section 6 — Wi-Fi (if applicable)
+
+| Check | Method | Pass Criteria |
+|-------|--------|--------------|
+| MTR devices on 5 GHz band | Device Wi-Fi settings | 5 GHz SSID connected |
+| RSSI ≥ -67 dBm at device location | Wi-Fi analyzer | RSSI at or above threshold |
+| WMM enabled on SSID | AP/Controller configuration | WMM enabled confirmed |
+| No connection drops during roaming test | 5-minute connected test | Zero disconnects |
+
+---
+
+## Media Quality Test Results Section
+
+Include the Teams Network Assessment Tool output as an attachment or summary table:
+
+| Metric | Result | Pass Threshold | Status |
+|--------|--------|---------------|--------|
+| Packet Loss (UDP) | ___ % | < 1% | PASS / FAIL |
+| Jitter | ___ ms | < 30 ms | PASS / FAIL |
+| Round-Trip Time | ___ ms | < 100 ms | PASS / FAIL |
+
+---
+
+## Open Items Log
+
+Any checklist item that fails validation should be documented in an open items log with:
+- Issue description
+- Recommended remediation
+- Responsible party (integrator or client network team)
+- Target completion date
+- Resolution confirmation (signed off when resolved)
+
+**No device deployment should proceed until all Firewall and Connectivity section items pass.** QoS and Wi-Fi items may be resolved post-deployment if they do not prevent basic device operation, but should be tracked as open items with a resolution timeline.
+
+---
+
+## Sign-Off Structure
+
+The completed checklist plus TNAT results plus open items log constitutes the network readiness sign-off document. It should be signed by:
+1. The integrator's network/commissioning engineer (confirming tests were performed and results are accurate)
+2. The client's network/IT representative (acknowledging the network state and accepting responsibility for any open items owned by the client team)
+
+<DownloadButton
+  file="p2-t1-m3-l5-network-validation-checklist.pdf"
+  label="MTR Network Validation Checklist"
+  sizeKb={50}
+  description="Complete MTR network validation checklist — six sections covering network segmentation, firewall/connectivity, QoS, DNS, bandwidth, and Wi-Fi. Includes media quality test results table, open items log, and dual sign-off format for integrator and client IT."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m3-l5-kc">
+  <Question>
+    After completing the network validation checklist, you discover that UDP
+    3478–3481 is blocked (TNAT reports 100% UDP packet loss) but the client's
+    IT team cannot add the firewall rule before the scheduled deployment date.
+    What is the correct course of action?
+  </Question>
+  <Answer>Proceed with deployment — Teams will fall back to TCP 443 and meeting quality will be acceptable</Answer>
+  <Answer>Deploy the devices anyway and document the issue — it can be resolved after users report problems</Answer>
+  <Answer correct>Document the UDP block as a failing open item, communicate to the client that Teams media quality will be degraded (TCP fallback only) until the firewall rule is added, and proceed with deployment only if the client accepts this limitation in writing. Do not represent the deployment as complete until the firewall rule is resolved</Answer>
+  <Answer>Cancel the deployment — no MTR devices can be deployed without UDP 3478–3481</Answer>
+  <Explanation>
+    A blocked UDP media path is a significant quality issue but not necessarily
+    a deployment blocker if the client is informed and accepts the limitation.
+    The correct approach is: document the failing item in the open items log,
+    clearly communicate the quality impact (choppy audio, low-resolution video
+    under load), obtain written acknowledgment from the client that they
+    understand the limitation and accept it pending the firewall change, and
+    track the item to resolution. Never misrepresent a deployment as complete
+    when known quality-impacting issues are unresolved. This protects both
+    the integrator and sets accurate expectations with the client.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Six checklist sections:** Segmentation, Firewall/Connectivity, QoS, DNS, Bandwidth, Wi-Fi — each item tested and documented.
+- **Media quality results:** TNAT packet loss, jitter, RTT against pass thresholds.
+- **Open items log:** All failures documented with owner, remediation, and target date.
+- **Deployment gate:** All Firewall and Connectivity items must pass before device deployment proceeds.
+- **Dual sign-off:** Integrator engineer + client IT representative.
+
+---
+
+## Track Complete
+
+You have completed Track 1: Network Infrastructure and QoS. You now have the complete toolkit for designing, implementing, validating, and diagnosing the network layer for enterprise MTR deployments.
+
+Track 2 covers the Microsoft 365 administration layer — scaling resource account operations, managing devices through Teams Admin Center, and leveraging the Teams Rooms Pro Management platform.
+
+[Continue to Track 2: Microsoft 365 Administration →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/)

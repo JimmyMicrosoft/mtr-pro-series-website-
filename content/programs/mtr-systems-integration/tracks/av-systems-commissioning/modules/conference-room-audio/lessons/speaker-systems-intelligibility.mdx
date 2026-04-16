@@ -1,0 +1,238 @@
+---
+id: "p2-t3-m1-l3"
+slug: "speaker-systems-intelligibility"
+title: "Speaker Systems and Speech Intelligibility"
+shortTitle: "Speaker Systems"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 1
+moduleSlug: "conference-room-audio"
+moduleTitle: "Conference Room Audio Systems"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Select an appropriate speaker system type for a given room size and geometry"
+  - "Explain what STI (Speech Transmission Index) measures and the target range for conference room intelligibility"
+  - "Identify speaker placement requirements that maximize intelligibility and minimize AEC challenges"
+
+prerequisites:
+  - "p2-t3-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "audio"
+  - "speakers"
+
+vendorTags:
+  - "biamp"
+  - "qsc"
+  - "atlas-ied"
+
+relatedLessons:
+  - "p2-t3-m1-l2"
+  - "p2-t3-m1-l4"
+
+metaDescription: "Conference room speaker systems for MTR — speaker types (ceiling, surface mount, soundbar), coverage angles, placement rules for intelligibility and AEC compatibility, STI measurement targets, and amplification requirements."
+
+keywords:
+  - "conference room speaker selection"
+  - "MTR audio speaker system"
+  - "Teams Rooms speaker intelligibility"
+  - "ceiling speaker conference room"
+  - "STI conference room audio"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Speaker system design for conference rooms prioritizes speech intelligibility — the ability of participants to understand spoken words clearly — over the fidelity and volume that other audio applications demand. A conference room speaker system that plays back far-end audio at adequate level, with even coverage across all seating positions, and without creating reflections that defeat AEC, is a well-designed system.
+
+---
+
+## Speech Intelligibility: The Design Target
+
+Intelligibility is measured using the **Speech Transmission Index (STI)**, a value from 0 (unintelligible) to 1.0 (perfect). For conference rooms:
+
+| STI Value | Intelligibility Rating | Application |
+|-----------|----------------------|-------------|
+| > 0.75 | Excellent | Target for conference rooms |
+| 0.60–0.75 | Good | Acceptable minimum |
+| 0.45–0.60 | Fair | Marginal — some words missed |
+| < 0.45 | Poor | Not acceptable for conference |
+
+**Factors that reduce intelligibility:**
+- High reverberation time (RT60) — sound bounces around the room, smearing speech
+- High background noise level — noise masks speech
+- Uneven coverage — some seats receive adequate level, others don't
+- Comb filtering — multiple sound paths to the same listener position cause phase cancellation at certain frequencies
+
+Intelligibility cannot be measured by ear alone — use an STI meter (Svan 979 or equivalent) or software-based STI measurement during acceptance testing.
+
+---
+
+## Speaker System Types
+
+**Ceiling Speakers (flush-mount):**
+
+Round or square flush-mount ceiling speakers, typically 6" or 8" drivers, installed in a grid pattern across the ceiling.
+
+*Best for:*
+- Medium to large rooms requiring distributed coverage
+- Rooms where wall-mounted speakers would create uneven coverage
+- Rooms with standard 2.4–3.5m ceiling height
+
+*Coverage:* Each ceiling speaker has a rated coverage angle (typically 90°–120° cone). Use the coverage angle and mounting height to calculate the floor coverage diameter. For a 90° speaker at 2.7m ceiling height, coverage diameter ≈ 2 × (2.7 × tan(45°)) = 5.4m — but usable coverage for uniform level is typically 60–70% of this.
+
+*Placement rule:* Space ceiling speakers so their coverage areas overlap by 20–30%. Avoid placing speakers directly over seated participants at conversation level — this increases the direct sound path to the microphones and challenges AEC.
+
+**Surface-Mount / Wall-Mount Speakers:**
+
+Compact speakers mounted on walls or columns, aimed across the room.
+
+*Best for:*
+- Rooms where ceiling installation is not possible (concrete slab, historic buildings)
+- Rooms with very high ceilings where ceiling speaker coverage would require too many units
+- Side-fill applications supplementing a front-of-room main speaker
+
+*Placement consideration:* Wall-mount speakers create directional sound paths that can increase reflections from the opposite wall. Position with care to avoid strong reflections back toward microphones.
+
+**Soundbar / Collaboration Bar Speakers:**
+
+Front-of-room speaker in the collaboration bar (Logitech Rally Bar, Poly Studio, Neat Bar). Single speaker system covering the room from the display wall.
+
+*Best for:*
+- Small rooms (up to ~6m room depth)
+- Huddle rooms and focus spaces
+- Deployments where simplicity and aesthetics take priority
+
+*Limitation:* Single front-of-room speaker creates uneven coverage in rectangular rooms — participants near the speaker receive significantly higher levels than those at the far end. In rooms longer than 6m, far-end participants may find the audio level insufficient.
+
+**Column Array Speakers:**
+
+Vertical array of speaker elements that produces a narrow vertical dispersion and wide horizontal dispersion. Used in rooms with high ceilings or strong ceiling reflections.
+
+*Best for:*
+- Rooms with ceiling heights above 4m
+- Rooms with highly reverberant ceilings (concrete, glass)
+- Training rooms with tiered seating
+
+*Advantage:* Narrow vertical dispersion reduces ceiling reflections, improving STI significantly in hard-ceiling rooms.
+
+---
+
+## Speaker Placement and AEC Compatibility
+
+Speaker placement must balance two requirements: even coverage for intelligibility, and sufficient physical separation from microphones to support AEC.
+
+**AEC and speaker-microphone distance:**
+AEC systems have a working range for the reference signal delay. If a speaker is too close to a microphone, the direct path has very little delay and AEC has minimal time to process the reference. Manufacturers specify a minimum speaker-to-microphone distance (typically 1–2m for ceiling array microphones).
+
+**Placement guidelines:**
+
+| Room Type | Speaker Placement | Key Consideration |
+|-----------|------------------|-------------------|
+| Small boardroom | Single front-of-room speaker or soundbar | Keep ≥1.5m from ceiling mics |
+| Standard conference (6–10 person) | 2 ceiling speakers (distributed) | Center speakers over table aisles, not directly over participants |
+| Large conference (10–20 person) | 3–4 ceiling speakers in grid | Uniform spacing; keep ≥1m from ceiling mic arrays |
+| Training room | Front-of-room + fill speakers | Delay-compensate fill speakers; reduce front speaker level where fills overlap |
+
+**Speaker aiming (surface-mount):**
+Aim surface-mount speakers at the listening area, not at the opposite wall. A 30–45° downward aim on a wall-mount speaker reduces wall reflections and improves intelligibility in reverberant rooms.
+
+---
+
+## Amplification
+
+**Passive speakers require external amplification.** Amplifier power must match speaker impedance and power handling:
+
+- Match amplifier channel power to speaker program power rating (continuous, not peak)
+- Typical conference room ceiling speaker: 6–15W program power; amplifier channel 15–30W per speaker
+- 70V/100V distributed audio: used in large installations with many speakers; each speaker taps power via a transformer; single amplifier drives many speakers; volume control at each speaker
+
+**Active/powered speakers:**
+Powered speakers include the amplifier in the speaker cabinet. Common in soundbars and collaboration bars. For engineered systems, QSC AMP series and other active ceiling speakers simplify installation by eliminating separate amplifier racks.
+
+---
+
+## Setting Volume Levels
+
+Far-end audio should be reproduced at a comfortable conversational level — not at a level that makes far-end participants sound louder than local participants. Calibration target:
+
+- **Listening level at seat:** 65–72 dB SPL (A-weighted) for speech — adequate for understanding without the room feeling like a phone on speakerphone
+- **Maximum level:** 80 dB SPL for brief peaks; beyond this, room echo increases and AEC is stressed
+- Set levels with a calibrated SPL meter (or measurement microphone + software) — human perception of level varies significantly
+
+---
+
+<KnowledgeCheck id="p2-t3-m1-l3-kc">
+  <Question>
+    A 10-person conference room (6m × 4m, 2.7m ceiling height) is being fitted
+    with a ceiling microphone array and a distributed ceiling speaker system.
+    The installer places two ceiling speakers directly above the conference table
+    at opposite ends. During commissioning, the far end reports persistent echo.
+    What is the most likely cause?
+  </Question>
+  <Answer>The ceiling speakers are too close to each other, creating comb filtering</Answer>
+  <Answer>The ceiling microphone array gain is set too high</Answer>
+  <Answer correct>The ceiling speakers are placed directly above the table where the ceiling microphone array is also mounted. The speakers are likely too close to the microphone array, which means the AEC reference path delay is very short and AEC is not performing effectively — the microphone is picking up direct speaker output that AEC cannot fully cancel. The speakers should be repositioned further from the microphone array (minimum 1–2m, per manufacturer specification) and coverage re-verified</Answer>
+  <Answer>The room has a high reverberation time that the AEC cannot handle</Answer>
+  <Explanation>
+    AEC requires spatial and time separation between the speakers and the
+    microphones to work. When speakers are placed directly above or adjacent
+    to ceiling microphone arrays, the direct sound path from speaker to
+    microphone is very short — the reference signal delay may be less than
+    the AEC processing window. The result is incomplete echo cancellation and
+    the far end hears residual echo. The fix is to separate speakers from
+    microphones — position speakers over the aisle areas between table and
+    wall, keeping minimum distances per the manufacturer's installation guide.
+    High reverberation would cause audio quality issues (muffled, reverberant
+    sound) but not acute echo, which is specifically an AEC failure symptom.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **STI target:** > 0.75 (Excellent) for conference rooms; measure during acceptance testing.
+- **Speaker types:** Ceiling distributed (most common), soundbar (small rooms), surface-mount (no ceiling access), column array (high ceilings).
+- **Placement:** Distribute for even coverage; maintain ≥1–2m from microphones for AEC compatibility; avoid aiming directly at reflective surfaces.
+- **Level:** 65–72 dB SPL at seat; calibrate with a meter, not by ear.
+
+---
+
+## What's Next
+
+[Acoustic Treatment and Room Tuning →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/conference-room-audio/lessons/acoustic-treatment-room-tuning/)

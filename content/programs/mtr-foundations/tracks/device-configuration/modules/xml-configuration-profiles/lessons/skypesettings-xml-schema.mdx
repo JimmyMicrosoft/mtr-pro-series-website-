@@ -1,0 +1,343 @@
+---
+id: "p1-t3-m3-l1"
+slug: "skypesettings-xml-schema"
+title: "SkypeSettings.xml Schema — Structure, Elements, and Validation"
+shortTitle: "XML Schema and Elements"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 3
+moduleSlug: "xml-configuration-profiles"
+moduleTitle: "XML Configuration Profiles"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the root element and structural requirements of a valid SkypeSettings.xml file"
+  - "Categorize the major element groups and describe what each controls"
+  - "Explain the silent-fail behavior for invalid XML and apply XSD validation to catch errors before deployment"
+
+prerequisites:
+  - "p1-t3-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "installer"
+  - "architect"
+  - "support"
+
+topicTags:
+  - "xml-configuration"
+  - "skypesettings"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m3-l1-xml-element-reference.pdf"
+    label: "SkypeSettings.xml Element Reference"
+    sizeKb: 75
+
+relatedLessons:
+  - "p1-t3-m1-l3"
+  - "p1-t3-m3-l2"
+
+metaDescription: "SkypeSettings.xml schema for MTR Windows — root element structure, display, meeting, audio, camera, and theming element categories, case sensitivity rules, silent-fail behavior, and XSD validation workflow."
+
+keywords:
+  - "SkypeSettings.xml schema"
+  - "MTR XML configuration elements"
+  - "Teams Rooms configuration file"
+  - "SkypeSettings XML validation"
+  - "MTR Windows XML schema"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+SkypeSettings.xml is the configuration file that MTR Windows reads at startup to apply settings beyond what is available through the Teams app admin interface. Understanding the schema — the allowed elements, their correct names, and their expected values — is the prerequisite for writing configurations that actually work. The most common failure mode with XML configuration is writing syntactically valid XML that the Teams app silently ignores because an element name is misspelled, the wrong data type is used, or the file is in the wrong location. This lesson provides the schema knowledge to avoid those failures.
+
+---
+
+## File Location and Basic Structure
+
+SkypeSettings.xml must be placed at a specific path on the MTR Windows device to be read by the Teams application:
+
+```
+C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\SkypeSettings.xml
+```
+
+The file must be a well-formed XML document with a single root element named `<SkypeSettings>`. All configuration elements are children of this root element.
+
+**Minimal valid file structure:**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <!-- Configuration elements go here -->
+</SkypeSettings>
+```
+
+The XML declaration line (`<?xml version="1.0" encoding="UTF-8"?>`) is optional but recommended for clarity and to ensure correct encoding interpretation.
+
+---
+
+## Case Sensitivity
+
+**Element names in SkypeSettings.xml are case-sensitive.** `<DualMonitorMode>` is not the same as `<dualmonitormode>` or `<Dualmonitormode>`. The Teams application will silently ignore elements whose names do not exactly match the expected schema — there is no error message.
+
+The correct casing follows PascalCase for all element names. When in doubt, verify the exact element name against Microsoft's official documentation or the XSD schema file.
+
+**Values are also case-sensitive for string parameters.** Boolean values use `true` and `false` (lowercase). String values such as device names must match exactly.
+
+---
+
+## Element Categories
+
+The SkypeSettings.xml schema is organized into logical categories. Understanding these categories helps with both writing configurations and troubleshooting.
+
+### Display Settings
+
+Display elements control how the room's monitors are used.
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<DualMonitorMode>` | `true` / `false` | Enables dual-display mode — extends Teams UI across two monitors |
+| `<ContentDuplicationAllowed>` | `true` / `false` | Allows content sharing to appear on both displays in dual-display mode |
+| `<SingleFoRTeamsRoomsMode>` | `true` / `false` | Forces single front-of-room display behavior regardless of connected monitors |
+
+**Example:**
+```xml
+<DualMonitorMode>true</DualMonitorMode>
+<ContentDuplicationAllowed>false</ContentDuplicationAllowed>
+```
+
+### Meeting Behavior Settings
+
+Meeting elements control how the Teams application behaves during meetings.
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<AutoScreenShare>` | `true` / `false` | Automatically shares the HDMI ingest content when a cable is connected |
+| `<HideMeetingName>` | `true` / `false` | Hides the meeting subject from the room display for privacy |
+| `<UserAccountEmail>` | String | The resource account UPN — used in some deployment configurations |
+| `<DefaultVolume>` | Integer (0–99) | Default speaker volume level when a meeting begins |
+| `<SendLogs>` | `true` / `false` | Enables automatic log submission to Microsoft |
+
+**Example:**
+```xml
+<AutoScreenShare>true</AutoScreenShare>
+<HideMeetingName>false</HideMeetingName>
+<DefaultVolume>60</DefaultVolume>
+```
+
+### Audio Settings
+
+Audio elements control microphone and speaker device selection and behavior.
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<MicrophoneName>` | String | Exact Windows audio device name for the default microphone |
+| `<SpeakerName>` | String | Exact Windows audio device name for the default speaker |
+| `<DefaultSpeakerVolume>` | Integer (0–100) | Default volume for the speaker device |
+| `<MicrophoneForCommunication>` | String | Device to use for Teams communication audio (if different from `<MicrophoneName>`) |
+| `<SpeakerForCommunication>` | String | Device to use for Teams communication audio output |
+
+The device name values must exactly match the Windows audio device display name — including capitalization and spacing. The correct device name can be found in Windows Sound settings (Control Panel → Sound) or via PowerShell: `Get-AudioDevice -List` (requires AudioDeviceCmdlets module).
+
+**Example:**
+```xml
+<MicrophoneName>Echo Cancelling Speakerphone (USB Audio Device)</MicrophoneName>
+<SpeakerName>Echo Cancelling Speakerphone (USB Audio Device)</SpeakerName>
+```
+
+### Camera Settings
+
+Camera elements control which camera device is used and how.
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<CameraName>` | String | Exact Windows device name for the default room camera |
+| `<ContentCameraId>` | String | Exact Windows device name for the content camera (document/whiteboard camera) |
+| `<ContentCameraInverted>` | `true` / `false` | Flips the content camera image 180° for ceiling-mounted or inverted installations |
+| `<ContentCameraEnhancement>` | `true` / `false` | Enables AI whiteboard enhancement for the content camera |
+
+**Example:**
+```xml
+<ContentCameraId>USB Video Device</ContentCameraId>
+<ContentCameraInverted>false</ContentCameraInverted>
+<ContentCameraEnhancement>true</ContentCameraEnhancement>
+```
+
+### Theming and Branding
+
+Theming elements control custom backgrounds and room name display.
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<CustomThemeImageUrl>` | File path or URL | Path to a custom background image (JPEG, 3840×1080px for dual display, 1920×1080px for single display) |
+| `<CustomThemeName>` | String | Display name for the custom theme |
+| `<RoomName>` | String | Override for the room name displayed on the home screen |
+
+The image path for `<CustomThemeImageUrl>` should be a local file path accessible to the Skype user account, or a URL accessible from the device's network. Local paths are more reliable for production deployments.
+
+**Example:**
+```xml
+<CustomThemeImageUrl>C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\CustomTheme.jpg</CustomThemeImageUrl>
+<RoomName>Executive Boardroom</RoomName>
+```
+
+### Front Row and Layout Settings
+
+| Element | Values | Description |
+|---------|--------|-------------|
+| `<FrontRowEnabled>` | `true` / `false` | Enables the Front Row layout option for meetings |
+| `<FrontRowDefault>` | `true` / `false` | Sets Front Row as the default layout when a meeting begins |
+
+---
+
+## Silent-Fail Behavior
+
+This is the most important operational characteristic of SkypeSettings.xml: **the Teams application does not report errors for invalid XML elements.** If an element name is misspelled, uses incorrect casing, or contains an invalid value, the Teams application will:
+
+1. Read the XML file
+2. Encounter the unrecognized element
+3. Silently skip it — applying no configuration and generating no error message
+4. Continue applying all other recognized elements
+
+The result is that a configuration file with errors appears to have been applied (no error is shown), but the misconfigured settings are not in effect. The device behaves as if those elements were never in the file.
+
+**Practical implication:** Never assume a configuration was applied because the device didn't show an error. Always verify the applied configuration by checking the Teams app settings or observing the actual device behavior after the XML is in place.
+
+---
+
+## XSD Validation
+
+Microsoft publishes an XSD (XML Schema Definition) file for SkypeSettings.xml. The XSD defines all valid elements, their allowed values, and structural requirements — and can be used to validate a configuration file before deployment.
+
+**Validation workflow:**
+
+1. Download the current XSD from Microsoft's documentation (search "SkypeSettings.xml schema" on learn.microsoft.com)
+2. Use an XML editor that supports XSD validation (Visual Studio Code with the XML extension, Notepad++ with the XML plugin, or Visual Studio)
+3. Associate the XSD with your XML file and run validation
+4. Resolve all reported errors before deploying the file
+
+**Common validation errors caught by XSD:**
+- Misspelled element names
+- Boolean elements with values other than `true`/`false`
+- Integer values outside the allowed range
+- Missing required elements (for configurations that require dependent elements to be present together)
+
+XSD validation does not catch errors where the element name is correct but the referenced device name does not exist on the target device — those require physical verification.
+
+<DownloadButton
+  file="p1-t3-m3-l1-xml-element-reference.pdf"
+  label="SkypeSettings.xml Element Reference"
+  sizeKb={75}
+  description="Complete SkypeSettings.xml element reference — all supported elements organized by category, with correct names, value types, allowed values, and usage notes. Includes XSD validation workflow and common error patterns."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m3-l1-kc">
+  <Question>
+    You deploy a SkypeSettings.xml file with the element
+    `<dualmonitormode>true</dualmonitormode>` to enable dual display. After
+    rebooting the device, it still shows single-display behavior. No errors
+    appear anywhere. What is the most likely cause?
+  </Question>
+  <Answer>The Teams application requires a second reboot after XML changes are applied</Answer>
+  <Answer correct>The element name uses incorrect casing — SkypeSettings.xml element names are case-sensitive, and the correct element name is `&lt;DualMonitorMode&gt;` not `&lt;dualmonitormode&gt;`. The Teams app silently skipped the unrecognized element</Answer>
+  <Answer>Dual display cannot be enabled via XML — it must be set in the Teams app admin interface</Answer>
+  <Answer>The XML file is in the correct location but requires the Teams Rooms Pro license to enable dual display via XML</Answer>
+  <Explanation>
+    SkypeSettings.xml element names are case-sensitive and follow PascalCase.
+    `&lt;dualmonitormode&gt;` is not recognized by the Teams application — it silently
+    skips unrecognized elements without generating an error message. The correct
+    element name is `&lt;DualMonitorMode&gt;`. This silent-fail behavior is the most
+    common source of confusion with XML configuration: the file was read, the
+    device didn't report an error, but the setting wasn't applied.
+  </Explanation>
+
+  <Question>
+    You need to configure the `&lt;MicrophoneName&gt;` element in SkypeSettings.xml
+    for a USB speakerphone. What is the correct source for the value to use?
+  </Question>
+  <Answer>The USB device's model name from the manufacturer's website</Answer>
+  <Answer>The device's part number printed on the bottom of the unit</Answer>
+  <Answer correct>The exact Windows audio device display name as it appears in Windows Sound settings or via PowerShell — the XML value must match the Windows device name precisely, including capitalization and spacing</Answer>
+  <Answer>The Teams Admin Center peripheral name for the device</Answer>
+  <Explanation>
+    The `&lt;MicrophoneName&gt;` and `&lt;SpeakerName&gt;` values must exactly match the
+    Windows audio device display name — not the product name, not the TAC peripheral
+    name. Get the correct value from Windows Sound settings (Control Panel → Sound,
+    Playback/Recording tab) or via PowerShell with the AudioDeviceCmdlets module.
+    A mismatch means the Teams app silently skips the element, and the default
+    audio device selection remains in effect.
+  </Explanation>
+
+  <Question>
+    Before deploying a new SkypeSettings.xml to 50 MTR Windows devices, what
+    validation step would catch element name errors and value type errors before
+    deployment?
+  </Question>
+  <Answer>Deploy to one test device first and check if errors appear in the Teams app</Answer>
+  <Answer>Review the XML file manually in Notepad to check for obvious misspellings</Answer>
+  <Answer correct>Validate the XML file against Microsoft's published XSD schema using an XML editor that supports XSD validation — this catches element name errors, incorrect value types, and out-of-range values before deployment</Answer>
+  <Answer>Run the XML through an online XML syntax checker to confirm well-formedness</Answer>
+  <Explanation>
+    XSD validation against Microsoft's published schema catches element name
+    errors (including case errors), incorrect value types, and out-of-range
+    integer values before deployment. A plain XML syntax checker only confirms
+    that the file is well-formed XML — it cannot detect SkypeSettings-specific
+    errors. Deploying to a test device catches errors but requires physical access
+    and doesn't prevent the first device from receiving a bad configuration.
+    XSD validation is the correct pre-deployment step for fleet deployments.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Understand the file location:** `C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\SkypeSettings.xml` — root element `<SkypeSettings>`.
+- **Apply correct casing:** All element names are PascalCase and case-sensitive. Silent failures occur with any casing mismatch.
+- **Use the element categories:** Display (`<DualMonitorMode>`), Meeting (`<AutoScreenShare>`, `<HideMeetingName>`), Audio (`<MicrophoneName>`, `<SpeakerName>`), Camera (`<ContentCameraId>`, `<ContentCameraInverted>`), Theming (`<CustomThemeImageUrl>`, `<RoomName>`), Layout (`<FrontRowEnabled>`).
+- **Validate before deploying:** XSD validation catches schema errors before they reach devices. Never assume correct application without verifying observed behavior.
+
+---
+
+## What's Next
+
+With the schema understood, the next lesson applies it — building complete XML configurations for the most common MTR Windows deployment scenarios.
+
+[Common Configuration Scenarios — Dual Display, Content Camera, Theming, Front Row →](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/lessons/common-configuration-scenarios/)

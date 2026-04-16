@@ -1,0 +1,249 @@
+---
+id: "p4-t1-m2-l4"
+slug: "project-closeout-handover"
+title: "Project Closeout and Handover"
+shortTitle: "Project Closeout"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 2
+moduleSlug: "deployment-project-management"
+moduleTitle: "Deployment Project Management"
+
+lessonIndex: 4
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["project-manager", "solutions-architect"]
+
+objectives:
+  - "Produce a complete handover documentation package that enables the client to operate the system independently"
+  - "Conduct a structured handover walkthrough that formally transfers operational ownership to the client"
+  - "Manage warranty and support transition at the point of handover"
+  - "Conduct a project retrospective that improves future delivery"
+
+prerequisites:
+  - "p4-t1-m2-l1"
+  - "p4-t1-m2-l3"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["project-manager", "solutions-architect"]
+topicTags: ["project-closeout", "handover", "documentation", "warranty"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Project Handover Pack Template"
+    filename: "mtr-project-handover-pack.docx"
+  - label: "Project Retrospective Template"
+    filename: "mtr-project-retrospective-template.docx"
+
+relatedLessons:
+  - "p4-t1-m2-l1"
+  - "p4-t1-m3-l1"
+  - "p4-t1-m3-l4"
+
+metaDescription: "Learn to close out MTR deployment projects with a complete handover documentation package, formal handover process, warranty transition, and project retrospective."
+keywords: ["MTR project closeout", "Teams Rooms handover", "project documentation", "warranty handover"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Handover: From Contractor to Client
+
+Project closeout is the formal transfer of operational ownership from the deployment contractor to the client. A well-executed handover leaves the client with everything they need to operate, maintain, and expand the system — without needing to call the contractor for basic operational questions.
+
+A poor handover creates dependency, generates unnecessary support calls, and risks triggering disputes about what was and wasn't delivered.
+
+---
+
+## Handover Documentation Package
+
+The handover pack is a complete operational reference for the deployed system. It should be compiled throughout the project (not assembled on the final day) and reviewed with the client IT lead before the formal handover meeting.
+
+### Required Documents
+
+**1. As-Built Room Drawings**
+
+One drawing per room showing:
+- Room dimensions and layout
+- Equipment positions (display, camera, console, compute unit, speakers)
+- Cable routes (with conduit/trunking positions)
+- Network outlet locations and VLAN/port ID assignments
+- Power outlet locations
+
+Format: PDF. Named by room ID. Stored in the client's document management system.
+
+**2. Equipment Schedule**
+
+A complete inventory of all installed equipment:
+
+```
+Room ID | Equipment Type    | Manufacturer | Model            | Serial Number | Asset Tag | Warranty Expiry
+--------|------------------|--------------|------------------|---------------|-----------|----------------
+R-001   | MTR Compute Unit  | Logitech     | Rally Bar        | SN12345678    | CL-001    | 2029-04-15
+R-001   | Display           | Samsung      | QMB-T 75"        | SN98765432    | CL-002    | 2029-04-15
+R-001   | Touch Console     | Logitech     | Tap IP           | SN11223344    | CL-003    | 2029-04-15
+```
+
+**3. Configuration Reference Guide**
+
+Documents the configuration applied to every device:
+- MTR App settings (room type, display configuration, peripheral assignments)
+- Teams Admin Centre policy assignments
+- Intune configuration profile names and assignments
+- Resource account UPNs linked to each device
+- Pro Management portal — device display names and assigned tags
+- Any custom OMA-URI policies applied
+
+**4. Resource Account Summary**
+
+For each room:
+- Resource account UPN
+- License assigned
+- Password management approach (PasswordNeverExpires confirmed)
+- Calendar processing settings confirmed
+- Who owns the account going forward
+
+**5. Network Configuration Summary**
+
+- VLAN ID and subnet for MTR devices
+- Switch port assignments per room (if static)
+- QoS policy names and DSCP markings applied
+- Firewall rule names for Microsoft 365 allow-list
+
+**6. Acceptance Test Reports**
+
+Completed quality checklists and snag registers for all rooms, with:
+- Pass/fail status for all checklist items
+- Snag resolution evidence (photographs, re-test results)
+- Client signature or written acceptance confirmation
+
+**7. Warranty Summary**
+
+| Equipment | Warranty Period | Provider | Claim Process |
+|---|---|---|---|
+| Logitech Rally Bar | 3 years | Logitech | support.logi.com / case number |
+| Samsung Display | 3 years | Samsung | Samsung B2B support |
+
+**8. Support Escalation Guide**
+
+Who to call for what:
+- Microsoft Teams Rooms hardware issues → hardware manufacturer support
+- MTR app issues → Microsoft support (admin.teams.microsoft.com → Help)
+- M365/Teams service issues → Microsoft 365 admin support
+- Network issues → Client IT / network team
+- Managed service support (if contracted) → Contractor helpdesk details
+
+---
+
+## Handover Walkthrough
+
+The formal handover meeting is a structured walkthrough with the client IT lead and, ideally, the facilities or IT manager who will own the rooms day-to-day.
+
+### Agenda (2–3 hours)
+
+1. **Documentation review** (30 min): Walk through each document in the handover pack; confirm it is complete and accessible
+2. **System demonstration** (30 min): Live demonstration in a representative room — show meeting join, content sharing, camera controls, admin console
+3. **Admin portal walkthrough** (30 min): Teams Admin Centre (device list, settings), Pro Management portal (if applicable), Intune device compliance
+4. **Support and escalation briefing** (15 min): Walk through the escalation guide; confirm client has all credentials and contact details
+5. **Outstanding items review** (15 min): Confirm all snags resolved; review any open items and agree closure dates
+6. **Formal acceptance** (15 min): Client signs acceptance documentation; contractor confirms project complete
+
+### Handover Checklist
+
+```
+□ As-built drawings delivered to client DMS
+□ Equipment schedule shared and confirmed accurate
+□ Configuration reference guide reviewed
+□ Resource account summary reviewed; IT team confirmed ownership
+□ Network configuration summary accepted by network team
+□ All acceptance test reports signed
+□ Warranty summary reviewed; client understands claim process
+□ Support escalation guide reviewed
+□ Client IT admin has access to Teams Admin Centre and Pro Management portal
+□ All credentials (admin accounts, device passwords) transferred securely
+□ Client confirmation email / signed acceptance form received
+```
+
+---
+
+## Warranty and Support Transition
+
+### Warranty Period Management
+
+Clearly communicate to the client:
+- Warranty start date (typically installation date or delivery date — check manufacturer terms)
+- What is and isn't covered (hardware failure vs configuration issues vs user damage)
+- How to raise a warranty claim (manufacturer direct, or through the contractor if an RMA service is offered)
+
+If the contractor offers a managed service with hardware swap SLA, this should be confirmed in the managed service agreement (not the project SOW).
+
+### Post-Handover Support Boundary
+
+Define clearly what the contractor will and will not provide after handover:
+- Defects liability period (typically 3 months): Contractor resolves defects arising from installation workmanship at no charge
+- Configuration changes requested post-handover: Chargeable under the support agreement or T&M
+- Hardware failures during warranty: Manufacturer warranty; contractor may facilitate RMA for a fee
+
+<Callout type="warning">
+**Without a clear post-handover support boundary, clients will call the deployment team for everything.** Establish what is included in the defects liability period, what triggers a chargeable support call, and where to direct enquiries. Document this in the handover pack.
+</Callout>
+
+---
+
+## Project Retrospective
+
+Conduct a retrospective within 2 weeks of project closeout while the delivery is fresh. This is an internal session — not a client meeting.
+
+### Retrospective Questions
+
+**What went well?**
+- Which planning activities saved time or prevented problems?
+- Which team decisions proved correct?
+- Which client relationships were particularly effective?
+
+**What didn't go as planned?**
+- What caused schedule slippage?
+- What caused unplanned rework?
+- What surprised us that we should have anticipated?
+
+**What would we do differently?**
+- What would we change in our pre-sales or survey process?
+- What templates or tools would have helped?
+- What should we add to our standard risk register?
+
+**Action items:**
+- Update templates and checklists based on lessons learned
+- Add any new risk types to the standard risk register
+- Document any new technical findings (e.g., unknown hardware compatibility issues)
+- Recognise team members who contributed to good outcomes
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client calls 6 weeks after handover asking for a configuration change to the default volume level on all devices. Is this covered under the defects liability period?">
+    <Answer>Yes — the defects liability period covers all post-handover work</Answer>
+    <Answer correct>No — a configuration change is not a defect from installation workmanship; it should be treated as a chargeable support request</Answer>
+    <Answer>Yes — configuration changes are always free for 3 months</Answer>
+    <Answer>Not applicable — the contractor has no obligation after handover</Answer>
+    <Explanation>A defects liability period covers workmanship defects — issues arising from how the system was installed. A configuration change request (new default volume level) is a feature change, not a defect. This should be handled under the support agreement or charged at T&M rates.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Project Handover Pack Template" filename="mtr-project-handover-pack.docx" />
+<DownloadButton label="Project Retrospective Template" filename="mtr-project-retrospective-template.docx" />

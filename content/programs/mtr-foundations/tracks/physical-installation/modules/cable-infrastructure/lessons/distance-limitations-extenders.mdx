@@ -1,0 +1,236 @@
+---
+id: "p1-t2-m2-l2"
+slug: "distance-limitations-extenders"
+title: "Distance Limitations and Extenders — HDBaseT, USB over CAT, Fiber"
+shortTitle: "Distance & Extenders"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 2
+moduleSlug: "cable-infrastructure"
+moduleTitle: "Cable Infrastructure"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "State the passive distance limits for HDMI, USB 3.x, USB 2.0, and Cat6/6A, and identify scenarios where extenders are required"
+  - "Select the appropriate extension technology for a given signal path, distance, and quality requirement"
+  - "Identify the additional infrastructure requirements introduced by extender solutions"
+
+prerequisites:
+  - "p1-t2-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "hdbaset"
+  - "usb-extender"
+  - "fiber"
+  - "signal-extension"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m2-l2-distance-reference.pdf"
+    label: "Signal Distance Limits Reference"
+    sizeKb: 55
+
+relatedLessons:
+  - "p1-t2-m2-l1"
+  - "p1-t2-m2-l3"
+
+metaDescription: "Passive distance limits for HDMI, USB, and network cables, and how to select the right extender technology — HDBaseT, USB over CAT, or fiber — for each MTR signal path."
+
+keywords:
+  - "HDBaseT conference room"
+  - "HDMI distance limit"
+  - "USB extender ceiling camera"
+  - "fiber optic HDMI AV"
+  - "signal extension MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Every cable type has a passive distance limit — the maximum length at which the signal can travel reliably without amplification or conversion. In conference room installations, these limits are regularly exceeded. A camera mounted above the ceiling tile, a display at the far end of a large boardroom, a compute unit in a rack room rather than in the credenza — each of these scenarios introduces cable runs that may exceed passive limits. The solution for each signal type is different, and selecting the wrong extension approach creates reliability problems that are difficult to diagnose after installation.
+
+This lesson maps the passive limits for each signal type and describes the correct extension technology for each scenario.
+
+---
+
+## Passive Distance Limits
+
+Understanding these limits is foundational — commit them to memory.
+
+**Cat6/6A — Network:** 100 meters maximum channel length for 1 Gbps. Cat6A extends 10 Gbps to the full 100 meters; Cat6 supports 10 Gbps reliably to approximately 55 meters. Beyond 100 meters, a network switch or media converter is required to extend the segment.
+
+**HDMI (passive cable):** Reliable to approximately 10–15 meters for 4K/60Hz (HDMI 2.0 bandwidth). Some high-quality passive cables perform reliably to 15 meters; others show signal degradation at 10 meters. Do not specify passive HDMI for any run you cannot guarantee is under 10 meters.
+
+**HDMI (active cable):** Active HDMI cables incorporate signal conditioning electronics in the connector housings — they are powered from the source device's HDMI port. Active HDMI cables extend reliability to approximately 20–30 meters. They do not require external power but are directional — install with source and display ends in the correct orientation.
+
+**USB 2.0 (passive):** 5 meters. Active USB 2.0 cables (inline repeater) extend this to approximately 15–20 meters.
+
+**USB 3.x (passive):** 2–3 meters for USB 3.2 Gen 1 (5 Gbps) and 1–2 meters for Gen 2 (10 Gbps). Active USB 3.x cables extend to approximately 5–10 meters depending on quality. For longer runs, USB over CAT extenders are required.
+
+**DisplayPort 1.4 (passive):** Approximately 3 meters at HBR3 (32.4 Gbps). Active DP cables or fiber DP (Active Optical Cable) solutions are required for longer runs.
+
+---
+
+## HDBaseT Extension
+
+HDBaseT is the dominant long-run HDMI extension technology for commercial AV. It converts the HDMI signal to a format that travels over a single Cat6/6A cable run, transmitting video, audio, control (RS-232, IR), and Ethernet up to 100 meters. HDBaseT Class A supports the full 100-meter distance; Class B supports up to 40 meters.
+
+An HDBaseT installation consists of a transmitter (connected to the HDMI source at the near end) and a receiver (connected to the display at the far end), connected by a Cat6A cable. The transmitter and receiver require power — either from the switch's PoE port or from local power supplies, depending on the specific HDBaseT product.
+
+Key implementation considerations:
+- Use Cat6A for HDBaseT runs, not Cat6 — Cat6's alien crosstalk performance is insufficient for reliable HDBaseT at full 100-meter distance in dense cable environments
+- HDCP compliance must be maintained through the HDBaseT extender chain — verify that the transmitter/receiver pair is HDCP 2.2 compliant for 4K HDR content
+- HDBaseT passes RS-232 and IR control signals alongside video — this is a useful feature for rooms with display power control through the compute unit or control system
+- The Cat6A cable used for HDBaseT must be a home-run (dedicated) cable — do not use patch through switches or patch panels between the transmitter and receiver
+
+{/* MEDIA: HDBaseT system diagram — HDMI source (compute unit) → HDBaseT transmitter → Cat6A cable (up to 100m) → HDBaseT receiver → display. PoE power path annotated from switch. RS-232/IR control path labeled. Distance annotation at 100m limit. Filename: p1-t2-m2-l2-hdbaset-diagram.png */}
+
+---
+
+## USB Over CAT Extenders
+
+USB over CAT extenders extend USB signals (2.0 and 3.x) over Cat5e/6 runs using a transmitter/receiver extender pair. This technology is essential for ceiling-mounted cameras — the camera connects to the transmitter at the ceiling, a Cat6A cable runs to the receiver near the compute unit, and the USB connection appears normally to the compute unit.
+
+USB 2.0 over CAT: supports distances of 50–100 meters depending on the product.
+USB 3.x over CAT: more demanding — quality products from Icron, Crestron, or Legrand/C2G support 50–100 meters at USB 3.2 Gen 1 speeds, but the product must be verified for compatibility with the specific camera model and compute unit combination.
+
+USB over CAT extenders require local power at the receiver end. USB bus power is insufficient at extended distances — the receiver needs its own power supply. Include power supply requirements in the BOM and plan an outlet or PoE-to-USB power injection at the receiver location.
+
+<Callout type="warning">
+  Not all USB over CAT extenders work with all cameras. Verify compatibility between
+  the extender pair and the specific camera model before installation. Test the combination
+  at the integrator's facility during staging — an incompatible extender/camera pair
+  discovered on installation day cannot be resolved without a replacement unit, which
+  will halt the installation.
+</Callout>
+
+---
+
+## Fiber Optic HDMI
+
+Fiber optic HDMI cables (also called Active Optical Cables or AOC) carry HDMI signals over optical fiber instead of copper. They support HDMI 2.0 at distances of 50–300 meters with no signal degradation — the signal quality at 200 meters is identical to 1 meter. The cable is thin and flexible (much more so than copper HDMI at comparable distances), making it easy to route through conduit and tight pathways.
+
+Fiber AOC cables are directional (source and display ends are labeled) and do not require external power — they are powered from the HDMI port. They provide ground loop isolation, which eliminates a common source of video noise (60Hz hum or image tearing) in AV systems where the source and display are on different power circuits.
+
+Fiber is the appropriate choice for: display runs over 30 meters, installations in electrically noisy environments (near large motors, VFDs, or power distribution equipment), and any installation where ground loop isolation would be beneficial (multiple power circuits, long cable runs in commercial buildings).
+
+The cost premium of fiber over passive copper HDMI is significant but justified for long runs where the alternative is an HDBaseT extender system. For runs under 30 meters, active copper cables are typically more cost-effective.
+
+---
+
+## Compatibility Verification
+
+All extender technology has potential compatibility issues. HDCP handshake failures (the display shows a black screen or a "HDCP not supported" message), EDID mismatches (the source outputs the wrong resolution because it cannot read the display's EDID through the extender), and USB enumeration failures (the computer does not see the camera through the extender) are the most common problems.
+
+Extender manufacturers publish compatibility matrices — lists of source and display combinations that have been tested and verified. Check the compatibility matrix for your specific compute unit and display combination before specifying an extender. If the combination is not on the matrix, test it during staging before committing it to the installation.
+
+When an HDBaseT run shows video but the resolution is incorrect, EDID passing is the likely issue. Many HDBaseT transmitters have EDID management features that allow the transmitter to learn and store the display's EDID and present it to the source regardless of what the receiver reports — this is the standard fix for EDID problems in HDBaseT installations.
+
+---
+
+<KnowledgeCheck id="p1-t2-m2-l2-kc">
+  <Question>
+    A ceiling-mounted auto-tracking camera is located 12 meters above and to the side
+    of the compute unit. What is the correct connection approach for the USB 3.x camera
+    feed?
+  </Question>
+  <Answer>Use a 12-meter passive USB 3.x cable — this is within the passive limit</Answer>
+  <Answer>Use two 5-meter active USB 3.x cables connected with a USB extension coupler</Answer>
+  <Answer correct>Use a USB over CAT extender pair with a Cat6A cable — passive USB 3.x is limited to 2–3 meters and an active cable to approximately 5–10 meters; 12 meters requires a proper extender system</Answer>
+  <Answer>Convert the camera connection to HDMI and use an active HDMI cable</Answer>
+  <Explanation>
+    USB 3.x passive cables are limited to 2–3 meters. Active USB 3.x cables handle 5–10
+    meters. At 12 meters, a USB over CAT extender system is the correct solution. The
+    transmitter goes at the camera, a Cat6A cable runs to the receiver at the compute
+    unit location, and the USB device appears normally to the compute unit. Remember to
+    include local power for the receiver in the BOM.
+  </Explanation>
+
+  <Question>
+    An installation requires a display run of 45 meters from the compute unit in a rack
+    room to a display in a conference room. The pathway is through existing conduit that
+    is partially full. Which extension technology is most appropriate?
+  </Question>
+  <Answer>A 45-meter passive HDMI cable — HDMI passive cables support up to 50 meters</Answer>
+  <Answer correct>An HDBaseT Class A extender pair with a single Cat6A cable — HDBaseT transmits HDMI over Cat6A up to 100 meters and uses a single cable that fits easily in the existing conduit</Answer>
+  <Answer>An active HDMI cable — 45 meters is within the active HDMI cable range</Answer>
+  <Answer>A USB over CAT extender — USB over CAT supports video signals at this distance</Answer>
+  <Explanation>
+    Passive HDMI is reliable only to approximately 10–15 meters. Active HDMI cables extend
+    to approximately 20–30 meters — 45 meters exceeds this. HDBaseT Class A supports 100
+    meters over a single Cat6A cable, which has a much smaller diameter than any HDMI cable
+    and will route easily through partially filled conduit. HDBaseT is the correct and most
+    practical solution for a 45-meter display run.
+  </Explanation>
+
+  <Question>
+    What is the primary advantage of fiber optic HDMI (AOC) cables compared to HDBaseT
+    for long display runs?
+  </Question>
+  <Answer>Fiber optic cables are cheaper than HDBaseT extender systems for all distances</Answer>
+  <Answer>Fiber optic cables require PoE switch ports at the display end, reducing cable count</Answer>
+  <Answer correct>Fiber optic cables require no external power and provide inherent ground loop isolation, eliminating a source of video noise common in multi-circuit installations</Answer>
+  <Answer>Fiber supports longer runs than HDBaseT — fiber goes to 1,000 meters while HDBaseT only supports 100 meters</Answer>
+  <Explanation>
+    Fiber AOC cables are powered from the HDMI port (no external power required) and
+    provide complete electrical isolation between source and display (ground loop isolation).
+    Ground loops are a common source of video noise in commercial AV systems where source
+    and display are on different power circuits — fiber eliminates this entirely. HDBaseT
+    also supports long runs but requires powered transmitter and receiver units and does
+    not provide ground loop isolation.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **State passive limits:** HDMI passive ~10–15m; active HDMI ~20–30m; USB 3.x passive ~2–3m; USB 2.0 passive ~5m; Cat6A 100m; DP 1.4 passive ~3m.
+- **Select extension technology:** HDBaseT for display runs over 30m (one Cat6A cable, up to 100m); USB over CAT for camera USB runs over 5–10m; fiber AOC for runs over 30m requiring ground isolation; active cables for medium-distance extensions.
+- **Plan for extender requirements:** Power at the receiver, compatibility verification during staging, EDID management for HDBaseT.
+
+---
+
+## What's Next
+
+With signal path selection and extension technology understood, the next lesson covers the hands-on skill of terminating Cat6/6A cable correctly — including the T568B pin sequence, punchdown technique, and how to test and document the installation.
+
+[Termination Standards — T568B, Punchdown, Cable Testing →](/programs/mtr-foundations/tracks/physical-installation/modules/cable-infrastructure/lessons/termination-standards/)

@@ -1,0 +1,372 @@
+---
+id: "p3-t2-m3-l2"
+slug: "network-quality-degradation"
+title: "Network Quality Degradation Investigation for MTR"
+shortTitle: "Network Quality Degradation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 3
+moduleSlug: "network-auth-diagnostics"
+moduleTitle: "Network and Authentication Diagnostics"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Apply the network quality degradation investigation framework: baseline → degradation onset → change correlation → segment isolation → fix confirmation"
+  - "Distinguish packet loss, jitter, and latency as the primary degradation driver based on CQD data patterns"
+  - "Identify time-of-day congestion patterns from CQD data and correlate with peak bandwidth usage"
+  - "Investigate switch port and VLAN configuration issues including duplex mismatch and input/output errors"
+  - "Detect DSCP value stripping using Wireshark to confirm whether QoS markings are preserved through the WAN path"
+  - "Diagnose Wi-Fi-specific degradation using RSSI trends, channel utilization, and client association issues"
+
+prerequisites:
+  - "p3-t2-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "network"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m3-l1"
+  - "p3-t2-m3-l3"
+
+metaDescription: "Network quality degradation investigation for Microsoft Teams Rooms — investigation framework, packet loss vs. jitter vs. latency differentiation, time-of-day congestion, switch port and VLAN investigation, DSCP stripping detection, ISP capacity verification, and Wi-Fi degradation diagnosis."
+
+keywords:
+  - "MTR network quality"
+  - "Teams Rooms packet loss"
+  - "MTR QoS troubleshooting"
+  - "Teams Rooms DSCP"
+  - "network degradation MTR"
+  - "CQD network analysis"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Network quality degradation is distinct from a network outage — the room is online, calls can be joined, but call quality is consistently or intermittently poor. Diagnosing degradation requires establishing what "normal" looks like for this room before determining what changed. Many degradation cases are invisible until CQD data is queried — users accept poor quality as the room's normal behavior for weeks before a support ticket is raised. The investigation framework in this lesson provides a structured path from CQD baseline through switch-level investigation to WAN and ISP verification, with specific commands and what to expect at each step.
+
+---
+
+## Network Quality Degradation Investigation Framework
+
+The five-phase framework for network degradation cases:
+
+**Phase 1 — Establish the baseline.**
+
+Before concluding that quality has "degraded," establish what quality looked like historically. In CQD, filter for the affected room and extend the date range to 60–90 days. If the quality metrics were always poor, this is not a degradation — it is a misconfiguration or an environment that was never correctly provisioned. Degradation implies a change from a previous good state.
+
+**Phase 2 — Identify when degradation started.**
+
+In CQD, narrow the date range progressively until you identify the specific day or week when metrics changed. The transition date is the most important diagnostic data point — it bounds the search for a causative change.
+
+**Phase 3 — Correlate with changes.**
+
+What changed on or near the transition date? Query:
+- Network change records (switch firmware, VLAN changes, QoS policy updates, WAN circuit changes)
+- Teams Rooms app updates (a new version was pushed)
+- Windows Update (a Windows update changed a network driver)
+- Physical changes (the room was reconfigured, a different compute unit was installed)
+
+**Phase 4 — Isolate to segment.**
+
+Once a hypothesis is formed, isolate the problem to a specific network segment:
+- Is the problem specific to this room, or to all rooms on the same switch/VLAN? (Affects one room = room-specific; affects all rooms on VLAN = VLAN/switch issue)
+- Is the problem specific to calls with external participants? (Could indicate WAN or Internet path issue rather than LAN)
+- Does the problem appear at the same time of day regardless of meeting participants? (Time-based = congestion-based)
+
+**Phase 5 — Confirm the fix.**
+
+After applying a remediation, allow at least 5 business days of call data to accumulate before declaring the issue resolved. CQD data for the post-fix period should show the quality metrics returning to the baseline established in Phase 1.
+
+---
+
+## Packet Loss vs. Jitter vs. Latency
+
+Three different network conditions degrade call quality, and they have different causes and different fixes. CQD data allows differentiation.
+
+**Packet loss:**
+
+Definition: UDP packets sent by the MTR device are not received by the Teams transport relay. The decoder substitutes the missing packets with approximated audio/video data, producing audible gaps or visual artifacts.
+
+CQD indicators: `AudioPacketLossRate`, `VideoPacketLossRate`. Action threshold: >1% audio packet loss.
+
+Primary causes:
+- Congested switch uplink (input/output queue dropping packets under load)
+- Faulty cable or transceiver (intermittent physical layer errors)
+- Congested WAN link (packets dropped at the WAN edge)
+- Firewall session table saturation (UDP packets silently dropped when state table is full)
+
+**Jitter:**
+
+Definition: variation in the inter-packet arrival time. A Teams receiver expects packets to arrive at a consistent interval; jitter means packets arrive in bursts and gaps, stressing the jitter buffer.
+
+CQD indicators: `AudioJitterInterArrivalAvg`. Action threshold: >30 ms average jitter.
+
+Primary causes:
+- Competing traffic causing uneven queuing delay at a switch (no QoS, or QoS misconfigured)
+- DSCP markings stripped — Teams media treated as best-effort and queued behind bulk data
+- Wi-Fi channel congestion causing variable transmission delay
+
+**Latency (round-trip time):**
+
+Definition: the total time for a packet to travel from the MTR device to the Teams transport relay and back.
+
+CQD indicators: `RoundTripTime`. Action threshold: >150 ms.
+
+Primary causes:
+- Suboptimal routing (MPLS path through a data center before reaching the Internet)
+- Geographic distance from the Teams relay node (verifiable via Microsoft's Network Connectivity tool)
+- VPN hairpinning
+
+**Diagnostic differentiation table:**
+
+| CQD Pattern | Primary Culprit | First Investigation Step |
+|---|---|---|
+| High packet loss, low jitter, moderate RTT | Physical layer (cable/transceiver) or congested uplink | Check switch interface error counters |
+| Low packet loss, high jitter, moderate RTT | QoS not applied — DSCP stripping | Verify DSCP marking with Wireshark at LAN and WAN |
+| Low packet loss, low jitter, high RTT | Routing path (MPLS, VPN) | Traceroute to Teams relay IP; check SD-WAN policy |
+| High packet loss + high jitter | Severe congestion or faulty network equipment | Escalate to network team with evidence |
+
+---
+
+## Time-of-Day Congestion Pattern
+
+Time-of-day congestion is among the most common causes of poor call quality in corporate environments: the network has sufficient capacity for all other uses but the combination of MTR calls, video conferencing, large file transfers, and general user activity during business hours saturates the WAN uplink or a core switch uplink.
+
+**Identifying the pattern in CQD:**
+
+1. In CQD, filter for the affected room (or all rooms in the affected building) and set the date range to 30 days.
+2. Use the **Day of Week** and **Hour of Day** dimensions to create a heat-map view of call quality.
+3. If poor-quality periods cluster consistently during business hours (09:00–17:00) and quality is good during evenings and weekends, time-of-day congestion is the primary hypothesis.
+
+**Confirming with WAN utilization data:**
+
+Request WAN utilization graphs from the network team for the affected site. The graphs should show:
+- WAN utilization near or at 100% during the same business hours when CQD shows poor quality
+- Drops to 20–40% utilization during evenings when CQD shows good quality
+
+This correlation between WAN saturation and call quality degradation confirms the root cause. Remediation options include WAN bandwidth upgrade, SD-WAN with QoS prioritization, or local internet breakout for Microsoft 365 traffic.
+
+---
+
+## Switch Port and VLAN Investigation
+
+**Checking VLAN assignment:**
+
+On a Cisco IOS switch, verify the access VLAN on the port connected to the MTR device:
+
+```
+show interface GigabitEthernet1/0/12 switchport
+```
+
+Expected output:
+```
+Administrative Mode: static access
+Operational Mode: static access
+Access Mode VLAN: 120 (MTR-VLAN)
+```
+
+If the VLAN is incorrect (device was moved to a different port without the port being reconfigured, or the VLAN database changed), the device is on the wrong VLAN and may not have the correct QoS policy applied.
+
+**Checking for interface errors:**
+
+Physical layer errors (CRC errors, input errors, output drops) indicate a faulty cable, transceiver, or duplex mismatch — all of which can cause packet loss.
+
+```
+show interface GigabitEthernet1/0/12 counters errors
+```
+
+Look for non-zero values in:
+- **CRC:** Non-zero = physical layer error (faulty cable or transceiver most likely)
+- **Input errors:** Non-zero = received frames with errors
+- **Output drops:** Non-zero = output queue overflow (congestion on the egress port)
+
+On an HP/Aruba switch:
+```
+show interface 12 counters
+```
+
+**Detecting duplex mismatch:**
+
+A duplex mismatch (one end configured as full-duplex, the other as half-duplex) produces late collisions and CRC errors on the half-duplex end and increasing error counts without apparent cause on the full-duplex end. Symptoms in call quality: intermittent packet loss that correlates with traffic bursts.
+
+Verify:
+```
+show interface GigabitEthernet1/0/12
+```
+
+Look for the `Duplex` field. Both the switch port and the MTR device NIC should be operating at `Full-duplex`. If either shows `Half-duplex` or if the interface shows a speed negotiation mismatch (one at 100 Mbps, one at 1000 Mbps), correct the configuration.
+
+---
+
+## DSCP Value Stripping Investigation
+
+DSCP (Differentiated Services Code Point) values on Teams media packets allow network devices to prioritize media traffic over best-effort data. If DSCP values are stripped at any point between the MTR device and the WAN egress, Teams media packets lose their priority and are treated as best-effort — typically causing jitter during periods of congestion.
+
+**Verifying DSCP markings with Wireshark:**
+
+Teams Rooms on Windows marks its media packets with DSCP EF (Expedited Forwarding, DSCP 46) for audio and DSCP AF41 (DSCP 34) for video by default (subject to the organization's QoS policy configuration).
+
+To verify markings at the MTR device LAN port:
+
+1. Start a Wireshark capture on the switch port (use a SPAN/mirror port from the switch) or directly on the MTR device.
+2. Apply filter: `udp && (udp.port >= 3478 && udp.port <= 3481)`
+3. Examine the IP header DSCP field (visible in the packet details as **Differentiated Services Field**) for the captured UDP packets.
+
+Expected for correctly marked Teams media:
+```
+Differentiated Services Field: 0xb8 (DSCP: EF PHB (46), ECN: Not-ECT)
+```
+
+**Checking for stripping at the WAN edge:**
+
+Capture packets at two points simultaneously (or sequentially for the same meeting):
+- Inside the firewall/WAN edge (LAN side)
+- Outside the firewall/WAN edge (WAN side, if accessible via a WAN-side port mirror)
+
+If DSCP values are present on the LAN side but absent (value = 0x00) on the WAN side, DSCP remarking is occurring at the WAN edge. Common causes:
+- ISP remarking all incoming DSCP values to 0 (common for ISPs that do not honor DSCP from customers)
+- The organization's WAN router or firewall has a policy to remark outbound traffic to DSCP 0
+
+Remediation: work with the network team to configure a DSCP preservation policy at the WAN edge, or escalate to the ISP to honor DSCP markings (some ISPs support this under a premium service agreement).
+
+---
+
+## ISP Capacity Verification
+
+When time-of-day congestion is confirmed and the WAN utilization graphs show the link at or near capacity, the next step is verifying whether the issue is the committed bandwidth being consumed, or whether the ISP is throttling below the committed rate.
+
+**Speedtest during peak vs. off-peak:**
+
+Run a bandwidth test from the affected site during peak hours and again during off-peak hours:
+
+```powershell
+# Using the Speedtest CLI (install from speedtest.net or via winget)
+speedtest --format=json
+```
+
+Compare the results:
+- Peak result ≈ off-peak result = bandwidth is sufficient but Teams is competing with other traffic (QoS or SD-WAN local breakout is the solution)
+- Peak result significantly below off-peak = ISP may be throttling or the committed bandwidth is insufficient for peak load
+
+**Coordinating with the network team:**
+
+For ISP capacity issues, the network team must engage the ISP directly. Support information to provide to the network team:
+- The CQD data showing quality degradation times
+- The WAN utilization graph showing peak utilization
+- The Speedtest peak vs. off-peak comparison
+- The MTR media bandwidth requirements (approximately 1.5–4 Mbps upload per 1080p room call)
+
+---
+
+## Wi-Fi-Specific Degradation
+
+MTR devices connected via Wi-Fi experience an additional set of failure modes specific to wireless networking. While wired connections are strongly recommended for production MTR deployments, some deployments use Wi-Fi — particularly for Android-based MTR devices or in rooms where cable infrastructure is limited.
+
+**RSSI trend analysis:**
+
+A poor or degrading RSSI (Received Signal Strength Indicator) value is the primary indicator of Wi-Fi signal quality issues. Most enterprise AP management systems (Cisco DNA Center, Aruba Central, Juniper Mist) provide per-client RSSI history over time.
+
+RSSI thresholds for Teams Rooms:
+- > -67 dBm: Excellent — adequate for 1080p video
+- -67 to -72 dBm: Acceptable — may limit to 720p video
+- -72 to -80 dBm: Poor — audio-only calls may be affected
+- < -80 dBm: Unusable — significant packet loss expected
+
+**Channel utilization:**
+
+High channel utilization (>50% on the 5 GHz band) causes increased contention among clients, leading to elevated jitter and reduced throughput. Check channel utilization in the AP management system. If high, remediation options include channel reassignment, increasing AP density, or upgrading to Wi-Fi 6 which handles high-density environments better.
+
+**Client association issues (sticky client):**
+
+An MTR device may remain associated with a distant AP instead of roaming to a closer one — a phenomenon called "sticky client." This occurs when the device's Wi-Fi adapter has a conservative roaming threshold and does not initiate a roam until the signal is severely degraded.
+
+To diagnose: in the AP management system, check which AP the MTR device is associated with and compare its location to the room. If the device is associated with an AP two floors away while a closer AP is available, sticky client behavior is the cause.
+
+Remediation:
+- Configure 802.11r/k/v on the SSID to assist the client in roaming decisions
+- If the MTR device's Wi-Fi adapter has adjustable roaming aggressiveness settings (accessible via Device Manager → Wi-Fi adapter → Properties → Advanced), increase the roaming aggressiveness
+
+---
+
+<KnowledgeCheck id="p3-t2-m3-l2-kc">
+  <Question>
+    CQD data for a Teams Rooms device shows the following pattern over
+    the past 30 days: AudioPacketLossRate averages 0.1% (excellent);
+    AudioJitterInterArrivalAvg averages 52 ms (above the 30 ms threshold);
+    RoundTripTime averages 95 ms (acceptable). The issues are consistent
+    across all times of day and all days of the week. The room is on a
+    dedicated wired MTR VLAN. What is the most likely cause of the elevated
+    jitter, and what is the most appropriate first diagnostic step?
+  </Question>
+  <Answer>High packet loss on the WAN uplink is causing jitter — run a Speedtest during peak and off-peak hours to identify ISP throttling</Answer>
+  <Answer>The room's physical distance from the Teams media relay server is too great — jitter is caused by geographic latency variation and cannot be reduced without changing the Teams media routing</Answer>
+  <Answer correct>Consistent high jitter with minimal packet loss and acceptable RTT is the signature pattern of a QoS (DSCP) misconfiguration — Teams media packets are reaching the destination but are experiencing variable queuing delay because they are not being prioritized over competing traffic. The RTT is acceptable (95 ms), which rules out a routing path issue. The near-zero packet loss rules out congestion-based dropping. The consistent pattern across all times of day rules out time-of-day congestion as the primary cause. The first diagnostic step is to verify DSCP markings on the Teams media packets using Wireshark: capture UDP traffic on the MTR VLAN port and examine the DSCP field. If DSCP values are 0x00 (best-effort) instead of 0xb8 (EF PHB 46 for audio), QoS marking is not being applied by the MTR device or is being stripped at the VLAN/switch level</Answer>
+  <Answer>The room's VLAN is misconfigured — the elevated jitter indicates the device is on the wrong VLAN and is not receiving the correct network path to the Teams relay</Answer>
+  <Explanation>
+    The combination of high jitter with near-zero packet loss and acceptable
+    RTT is a specific diagnostic pattern. If there were significant congestion,
+    packet loss would also be elevated. If the routing path were the issue,
+    RTT would be high. Consistent jitter (not time-of-day variable) points to
+    a structural QoS issue rather than intermittent congestion. DSCP stripping
+    means Teams media packets are treated as best-effort and queued behind
+    all other traffic, including large data transfers — which introduces
+    variable queuing delay (jitter) even when total bandwidth is sufficient.
+    The Wireshark DSCP verification is the cheapest and most direct test of
+    this hypothesis.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Investigation framework:** Baseline → onset date → change correlation → segment isolation → post-fix confirmation. The onset date is the most important data point for correlating with a causative change.
+- **Packet loss vs. jitter vs. latency:** Each has different causes and different fixes; CQD metrics differentiate them. High jitter + low packet loss = QoS issue. High packet loss + moderate jitter = congestion or physical fault. High RTT = routing path issue.
+- **Time-of-day congestion:** CQD hour-of-day heat map identifies the pattern; WAN utilization graphs from the network team confirm the cause. Remediation requires bandwidth upgrade or local internet breakout.
+- **Switch investigation:** Verify VLAN assignment, check interface error counters for CRC/input errors/output drops, detect duplex mismatch via `show interface` output.
+- **DSCP stripping:** Wireshark at the LAN port confirms DSCP values on outgoing packets; comparison with WAN-side capture identifies where stripping occurs. ISP stripping requires ISP engagement or WAN-edge preservation policy.
+- **Wi-Fi degradation:** RSSI threshold < -72 dBm degrades quality; channel utilization >50% causes jitter; sticky client (no roaming despite better AP available) identified via AP management system client association data.
+
+---
+
+## What's Next
+
+[SD-WAN and MPLS Advanced Scenarios →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/network-auth-diagnostics/lessons/sd-wan-mpls-scenarios/)

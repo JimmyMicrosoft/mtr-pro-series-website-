@@ -1,0 +1,302 @@
+---
+id: "p3-t1-m3-l3"
+slug: "data-governance-mtr"
+title: "Data Governance for MTR"
+shortTitle: "Data Governance"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 3
+moduleSlug: "security-compliance"
+moduleTitle: "Security and Compliance for MTR"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "understand"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Explain where meeting recordings initiated from MTR rooms are stored and how retention labels apply to that content"
+  - "Describe how Microsoft Purview sensitivity labels and DLP policies interact with Teams meetings started from MTR devices"
+  - "Configure meeting policies to disable recording for specific room types that have compliance-driven recording restrictions"
+  - "Identify GDPR and privacy considerations specific to meeting room technology in EU-regulated environments"
+
+prerequisites:
+  - "p3-t1-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "compliance"
+  - "data-governance"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m3-l4"
+
+metaDescription: "Data governance for MTR — meeting recording storage from room accounts, transcript retention labels, Microsoft Purview sensitivity labels in MTR meetings, DLP policy behavior, legal hold for room meeting content, GDPR privacy considerations for EU meeting rooms, and restricting recording via Teams meeting policies."
+
+keywords:
+  - "MTR meeting recording governance"
+  - "Teams Rooms recording storage OneDrive SharePoint"
+  - "Microsoft Purview sensitivity labels Teams Rooms"
+  - "DLP Teams meetings MTR"
+  - "GDPR meeting room compliance"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Meeting content created in Teams Rooms — recordings, transcripts, chat — is subject to the same data governance policies as content from any other Teams meeting. What is different for MTR is the account context: the room resource account, not the meeting organizer's personal account, is the technical initiator of some actions (such as recording started from the room console), and this affects where content is stored, how legal hold applies, and who has access. This lesson maps meeting content types to their storage locations, explains how Microsoft Purview policies interact with room-initiated meeting content, and covers GDPR and privacy requirements specific to physical meeting room technology.
+
+---
+
+## Meeting Recording Storage from MTR Rooms
+
+In Teams, the storage location of a meeting recording depends on the meeting type and who starts the recording.
+
+**Standard Teams meeting (scheduled by organizer):**
+
+| Scenario | Recording Storage Location |
+|---|---|
+| Recording started by meeting organizer (from their Teams client) | Organizer's OneDrive for Business |
+| Recording started from the MTR room console | Meeting organizer's OneDrive for Business — **not** the room resource account's OneDrive |
+| Recording started by a meeting participant (not the organizer) | Meeting organizer's OneDrive for Business |
+| Channel meeting recording | SharePoint document library of the Team's channel |
+
+**Key point:** When a recording is started from the MTR room console (the room resource account presses Record), Teams attributes the recording to the meeting organizer's account and stores it in the organizer's OneDrive. The room resource account does not need a OneDrive license; the room account is not the recording owner.
+
+**Exception — when the room resource account is the meeting organizer:**
+
+If a meeting is scheduled using the room resource account as the organizer (unusual, but possible in some booking configurations), and a recording is started, Teams attempts to store the recording in the room resource account's OneDrive. Room resource accounts typically do not have a OneDrive provisioned (they are Exchange resource accounts). In this scenario, recording will fail silently or with an error. Configure meeting policies to prevent room resource accounts from being used as meeting organizers for recorded meetings, or provision a OneDrive for the room account if unavoidable.
+
+---
+
+## Transcript Storage and Retention Labels
+
+Teams meeting transcripts are stored in the same OneDrive or SharePoint location as the recording. For MTR meetings:
+
+- Transcript (.vtt file) for a standard meeting: Organizer's OneDrive → Recordings folder
+- Transcript for a channel meeting: SharePoint channel document library
+
+**Applying retention labels to meeting recordings and transcripts:**
+
+Use Microsoft Purview retention labels to govern the lifecycle of meeting content:
+
+1. In Microsoft Purview compliance portal → Data lifecycle management → Microsoft 365 → Labels → Create a retention label
+2. Create a label for meeting recordings (e.g., "Meeting Recording — Retain 3 Years, then Delete")
+3. Publish the label to OneDrive and SharePoint locations
+4. Configure auto-labeling: In the label policy, configure an auto-apply rule targeting `.mp4` and `.vtt` files in OneDrive Recordings folders
+
+**Auto-labeling PowerShell verification:**
+
+```powershell
+# Microsoft Purview / Security & Compliance PowerShell
+Connect-IPPSSession
+
+# View published retention labels
+Get-RetentionCompliancePolicy | Select-Object Name, Enabled, Workload
+
+# View auto-apply retention label policies
+Get-RetentionCompliancePolicy -RetentionRuleTypes | Where-Object { $_.RuleType -eq "AutoApply" }
+```
+
+**Retention for room resource account content:**
+
+If the room resource account has any meeting chat content stored in its Exchange mailbox (meeting chat messages are stored in participants' Exchange mailboxes), a retention policy targeting Exchange mailboxes applies to the room account's mailbox. Ensure the Exchange retention policy includes room resource accounts if the organization requires meeting chat retention.
+
+---
+
+## Microsoft Purview Sensitivity Labels in MTR Meetings
+
+Sensitivity labels can be applied to Teams meetings to control recording permissions, prevent external participant downloads, and apply encryption to meeting chat. When a sensitivity label is applied to a meeting scheduled from the Teams desktop client, MTR rooms joining that meeting are subject to the label's restrictions.
+
+**How sensitivity labels interact with MTR:**
+
+| Label Setting | Effect on MTR Room | Notes |
+|---|---|---|
+| Block recording | Room console Record button is disabled | Applied by Teams backend; room cannot initiate recording |
+| Watermark on video | Watermark visible on the room's transmitted video feed | Implemented in the Teams media stack |
+| End-to-end encryption (E2EE) | Room joins meeting with E2EE active | E2EE is supported on MTR Windows and Android |
+| Prevent copying chat | Chat copy disabled in the meeting | Applies to all participants including room display |
+| Restrict who can bypass lobby | Lobby settings enforced on room device | Room account is treated as an organizer or trusted participant per the label policy |
+
+<Callout type="warning">
+End-to-end encrypted meetings disable features that some MTR rooms depend on: PSTN dial-out, transcription, live captions, recording, and companion mode. If E2EE is enforced via sensitivity label on meetings that MTR rooms are expected to join, verify that the room functionality requirements are compatible with E2EE restrictions before deployment.
+</Callout>
+
+**Sensitivity label application from the MTR console:**
+
+The MTR room console (touch panel or touch display) does not allow users to apply or change sensitivity labels on a meeting in progress. Labels are set by the meeting organizer at meeting creation in the Teams client. The room joins with the label already set. If a meeting requires a specific label (e.g., Confidential), the meeting must be scheduled from a Teams client that supports label selection; ad hoc meetings started from the room console cannot have sensitivity labels applied at the room.
+
+---
+
+## DLP Policy Behavior in Teams Meetings on MTR
+
+Data Loss Prevention (DLP) policies in Microsoft Purview can restrict sharing of sensitive content in Teams chat and channel messages. For MTR, the relevant DLP surface is the in-meeting chat pane.
+
+**DLP in Teams meetings:**
+
+DLP policies configured for Teams (Teams chat and channel messages workload) apply to in-meeting chat messages. If a participant types content that matches a DLP policy (credit card numbers, Social Security Numbers, etc.) into the meeting chat, Teams applies the DLP policy action:
+
+- **Block:** The message is not sent; the sender sees a policy tip
+- **Override with justification:** The sender can provide a justification and send
+- **Notify:** The message is sent, but an alert is generated and the sender sees a notification
+
+For MTR rooms, the in-meeting chat is visible on the room display. DLP does not affect the room device's behavior directly — it affects the messages that reach the meeting chat. The room display shows DLP-blocked messages as "Message removed by a policy" (or similar), which is the same experience as on any Teams client.
+
+**DLP does not apply to:**
+- Audio/video content of the meeting
+- Meeting recordings (recordings are not scanned by DLP in real time; post-recording DLP scanning is a separate feature via Purview communication compliance)
+- Files shared via screen sharing
+
+---
+
+## Legal Hold Considerations for Room Meeting Content
+
+When a user is placed on legal hold in Microsoft Purview (In-Place Hold or Litigation Hold on their Exchange mailbox), all content associated with their account is preserved — including Teams meeting chat from meetings they participated in, stored in their Exchange mailbox.
+
+**Meeting content from MTR rooms and legal hold:**
+
+| Content Type | Storage Location | Legal Hold Applicability |
+|---|---|---|
+| Recording (started from room) | Organizer's OneDrive | Hold on organizer's OneDrive preserves the recording |
+| Meeting chat | Each participant's Exchange mailbox | Hold on any participant's mailbox preserves their copy of the chat |
+| Transcript | Organizer's OneDrive | Hold on organizer's OneDrive preserves the transcript |
+| Room resource account mailbox content | Room's Exchange mailbox | Must explicitly place hold on room account mailbox if needed |
+
+**Placing a hold on a room resource account mailbox:**
+
+```powershell
+# Security & Compliance PowerShell
+Connect-IPPSSession
+
+# Create an In-Place Hold for the room resource account
+New-CaseHoldPolicy -Name "Legal Hold - Boardroom Account" -Case "<eDiscovery case name>" -ExchangeLocation "boardroom@contoso.com"
+New-CaseHoldRule -Name "Legal Hold Rule - Boardroom" -Policy "Legal Hold - Boardroom Account"
+```
+
+**eDiscovery search across room account content:**
+
+```powershell
+# Search meeting-related content associated with a specific room account
+New-ComplianceSearch -Name "MTR Boardroom Content Search" `
+    -ExchangeLocation "boardroom@contoso.com" `
+    -SharePointLocation "https://contoso-my.sharepoint.com/personal/boardroom_contoso_com" `
+    -ContentMatchQuery "kind:meetings OR kind:microsoftteams"
+
+Start-ComplianceSearch -Identity "MTR Boardroom Content Search"
+```
+
+---
+
+## GDPR and Privacy Considerations for EU Meeting Rooms
+
+Organisations subject to GDPR operating meeting rooms in EU member states face specific considerations related to recording consent, biometric data, and occupancy analytics.
+
+**Recording consent requirements:**
+
+Under GDPR, recording individuals without their knowledge or consent may constitute processing of personal data (voice, image) without a lawful basis. In EU-regulated environments:
+
+- **Automated consent notification:** Configure Teams meeting settings to display a recording notification to all participants when recording starts. This is enabled by default in Teams (participants see "Recording started" notification). However, notification is not the same as consent. Legal guidance on the specific lawful basis for recording (consent, legitimate interest, contract) should be obtained from the organization's Data Protection Officer (DPO) before recording is enabled for room accounts in EU jurisdictions.
+
+- **Recording disabled in specific room types:** For rooms in EU jurisdictions where recording consent cannot be reliably obtained (e.g., open-plan meeting areas, rooms used for HR discussions), disable recording via Teams meeting policy assigned to those rooms' resource accounts:
+
+```powershell
+# Teams PowerShell — create a no-recording meeting policy for specific rooms
+Connect-MicrosoftTeams
+
+New-CsTeamsMeetingPolicy -Identity "MTR-No-Recording-EU-Compliance" `
+    -AllowCloudRecording $false `
+    -AllowTranscription $false
+
+# Assign to specific room resource accounts
+Grant-CsTeamsMeetingPolicy -PolicyName "MTR-No-Recording-EU-Compliance" `
+    -Identity "boardroom-brussels@contoso.com"
+```
+
+**Occupancy data from MTR Pro Management:**
+
+The MTR Pro Management portal collects occupancy analytics — the system detects whether a room is occupied (via camera presence detection or room sensors) and reports usage patterns. In EU jurisdictions, occupancy data that can identify individuals (e.g., data granular enough to determine when specific individuals are in a room based on booking data cross-referenced with occupancy) may constitute personal data under GDPR.
+
+**Mitigations for occupancy data:**
+
+- Review what occupancy data is collected in the Pro Management portal (Settings → Analytics) and whether it is tied to bookable individuals
+- Configure the minimum data retention period for analytics data in the organization's Microsoft 365 tenant
+- Document the lawful basis for processing occupancy data in the Record of Processing Activities (ROPA)
+- Anonymize or aggregate occupancy reports before sharing beyond the IT team
+
+---
+
+<KnowledgeCheck id="p3-t1-m3-l3-kc">
+  <Question>
+    A compliance officer at a financial services firm reports that the legal team
+    cannot find meeting recordings from the firm's main boardroom in the boardroom
+    resource account's OneDrive during an eDiscovery search. The boardroom has
+    been in use for six months and dozens of meetings have been recorded. Where
+    should the legal team search for these recordings, and why are they not in
+    the room account's OneDrive?
+  </Question>
+  <Answer>The recordings are stored on the MTR device's local storage and must be retrieved directly from the hardware</Answer>
+  <Answer correct>Meeting recordings started from an MTR room console are attributed to the meeting organizer, not the room resource account, and are stored in the meeting organizer's OneDrive for Business. The boardroom resource account's OneDrive would only contain recordings if the room account itself was the meeting organizer. The legal team should search the OneDrive accounts of the individuals who organized the recorded meetings. For a comprehensive eDiscovery search, use Content Search in Microsoft Purview targeting all relevant organizers' OneDrive accounts, filtered by meeting content type.</Answer>
+  <Answer>Teams meeting recordings are stored in SharePoint document libraries and are never in OneDrive, regardless of whether the meeting was started from an MTR room or a desktop client</Answer>
+  <Answer>The room resource account does not have sufficient Microsoft 365 licensing to store recordings; recordings for room-initiated sessions are discarded</Answer>
+  <Explanation>
+    This is one of the most common data governance misconceptions for MTR
+    deployments: the assumption that content created from the room is stored
+    in the room account. In Teams, the meeting organizer's account is the
+    content owner for recordings and transcripts regardless of who pressed
+    the Record button. The room resource account is a participant, not the
+    organizer, in the vast majority of scheduled meetings. The exception is
+    when the room account is the organizer (ad hoc meetings started entirely
+    from the room console without a prior calendar booking may use the room
+    account as organizer, depending on configuration). For eDiscovery purposes,
+    legal teams searching for meeting content from specific rooms must identify
+    the meeting organizers for those meetings and search their OneDrive accounts.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Recording storage:** Recordings started from the MTR room console are stored in the meeting organizer's OneDrive, not the room account's OneDrive — the room account is a participant, not the content owner.
+- **Retention labels:** Apply auto-labeling policies in Microsoft Purview to tag meeting recordings and transcripts in OneDrive Recordings folders; ensure room account Exchange mailboxes are included in Exchange retention policies.
+- **Sensitivity labels:** Applied at meeting creation by the organizer; MTR rooms inherit label restrictions (recording blocked, E2EE, lobby settings); the room console cannot apply labels to meetings in progress.
+- **DLP:** Applies to in-meeting chat; blocked messages show as removed on the room display; DLP does not apply to audio/video content in real time.
+- **Legal hold:** Place holds on the room resource account's Exchange mailbox explicitly if room account meeting chat content is required; recordings are preserved via holds on organizers' OneDrive accounts.
+- **GDPR:** Record consent notifications are enabled by default but are not equivalent to consent; disable recording via CsTeamsMeetingPolicy for EU rooms where recording consent cannot be reliably obtained; document the lawful basis for occupancy data processing.
+
+---
+
+## What's Next
+
+[Audit Logging for MTR →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/security-compliance/lessons/audit-logging-mtr/)

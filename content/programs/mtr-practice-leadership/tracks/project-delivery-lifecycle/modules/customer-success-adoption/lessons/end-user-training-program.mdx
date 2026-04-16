@@ -1,0 +1,209 @@
+---
+id: "p4-t1-m3-l1"
+slug: "end-user-training-program"
+title: "End-User Training Programme Design"
+shortTitle: "Training Programme"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 3
+moduleSlug: "customer-success-adoption"
+moduleTitle: "Customer Success and Technology Adoption"
+
+lessonIndex: 1
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["project-manager", "solutions-architect", "customer-success"]
+
+objectives:
+  - "Design a tiered end-user training programme that addresses different user roles and technical literacy levels"
+  - "Select appropriate training formats and channels for different organisational contexts"
+  - "Create training materials that drive adoption rather than just awareness"
+  - "Measure training effectiveness through pre- and post-training assessment"
+
+prerequisites:
+  - "p4-t1-m2-l4"
+
+technologyTags: ["MTR", "Teams Rooms", "Microsoft Teams"]
+roleTags: ["project-manager", "customer-success"]
+topicTags: ["training", "adoption", "change-management", "end-user"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Training Programme Framework"
+    filename: "mtr-training-programme-framework.docx"
+  - label: "Quick Reference Card"
+    filename: "mtr-quick-reference-card.pdf"
+
+relatedLessons:
+  - "p4-t1-m3-l2"
+  - "p4-t1-m3-l3"
+
+metaDescription: "Learn to design a tiered end-user training programme for MTR deployments that drives adoption, covers multiple user roles, and measures effectiveness."
+keywords: ["MTR end-user training", "Teams Rooms adoption", "training programme design", "technology adoption"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Training as an Adoption Driver
+
+Training is not a compliance checkbox at the end of a project — it is the primary mechanism through which technology investment converts to business value. A room that is technically perfect but confusing to use will not be used. Usage drives ROI.
+
+Effective MTR training is brief, practical, and role-appropriate. Users do not need to understand how Teams Rooms works — they need to know what to press to start a meeting.
+
+---
+
+## Training Audience Tiers
+
+Different audiences need different training:
+
+### Tier 1: General Users (All Staff)
+
+**Who**: Everyone who books and uses meeting rooms
+**Goal**: Confidence to use the room independently for standard meetings
+**Duration**: 15–20 minutes maximum
+**Content**:
+- How to start a scheduled meeting (one-touch join)
+- How to start an ad-hoc meeting (Meet Now)
+- How to share content from a laptop
+- How to adjust audio volume
+- How to end the meeting
+- Who to call if something doesn't work
+
+**Format options**:
+- 15-minute floor walkthrough (group of 8–10 people, in the room)
+- Short video (2–3 minutes) accessible from the intranet
+- Quick reference card posted in the room (or QR code linking to video)
+
+### Tier 2: Room Champions
+
+**Who**: One or two nominated power users per floor or department
+**Goal**: Confident first-line support; can resolve common issues and assist colleagues
+**Duration**: 45–60 minutes
+**Content**: All Tier 1 content plus:
+- Camera controls (manual pan/tilt, selecting between cameras if applicable)
+- Whiteboard features (if room has whiteboard capability)
+- Room controls (lighting scenes, AV routing if control system installed)
+- Common troubleshooting: restart the device, cable check, report a fault
+- How to raise a support ticket
+
+**Format**: Dedicated session with project team or IT champion, in the room.
+
+### Tier 3: IT Administrators
+
+**Who**: Client IT team members who will manage the fleet ongoing
+**Goal**: Ability to manage devices, accounts, and policies independently
+**Duration**: 2–3 hours (may span multiple sessions)
+**Content**: All Tier 2 content plus:
+- Teams Admin Centre: device list, settings, policies
+- Pro Management portal: device health, alerts, diagnostics
+- Intune: device compliance, configuration profiles
+- Resource account management: password reset, license management
+- Windows Update management: ring assignments, deferral policies
+- Common advanced troubleshooting (log collection, restart via TAC, remote sign-out)
+
+**Format**: Hands-on sessions with the commissioning engineer at project handover.
+
+---
+
+## Training Material Design
+
+### Quick Reference Card
+
+The most impactful single training asset. Post it in the room (laminated, on the table or wall near the touch console) or provide a QR code linking to a digital version.
+
+Should contain:
+1. **Join a scheduled meeting**: "Touch the meeting name on the screen at meeting time"
+2. **Start an ad-hoc meeting**: "Tap 'Meet Now' on the home screen"
+3. **Share your laptop screen**: "Connect the HDMI/USB-C cable from the table"
+4. **Adjust volume**: "Use the +/- buttons on the touch console"
+5. **End the meeting**: "Tap the red phone icon, then 'End'"
+6. **Something not working**: "Call [IT helpdesk number] or email [address]"
+
+Keep it to one page, large font, with screenshots of the actual UI.
+
+### Training Video Script Structure
+
+A 2–3 minute room overview video should follow this structure:
+1. Opening (15s): "This room is equipped with Microsoft Teams Rooms. Here's everything you need to know."
+2. Join a scheduled meeting (30s): Screen recording of tapping a meeting on the home screen
+3. Start an ad-hoc meeting (20s): Tapping Meet Now, entering participants
+4. Share content (30s): Plugging in HDMI, screen appearing on display
+5. End meeting (15s): End button, confirm
+6. Get help (10s): Who to call, where to find more information
+
+Record in the actual room with the actual device. Generic Microsoft demo videos do not drive adoption as effectively as client-specific content.
+
+---
+
+## Training Logistics
+
+### Scheduling Training
+
+- Book training sessions into the project schedule as a named deliverable, not an afterthought
+- For large deployments, train floor-by-floor or department-by-department as rooms go live — not all at the end
+- Schedule Tier 1 sessions within 2 days of a room going live; users who encounter an untrained room and have a bad experience are the hardest to convert
+
+### Champions Programme
+
+Nominating floor/department champions multiplies training capacity without additional contractor cost:
+
+1. Identify 1–2 willing champions per floor at project kickoff
+2. Train champions in a Tier 2 session at handover
+3. Champions conduct peer Tier 1 training informally
+4. Champions receive a support channel (Teams channel or group email) with the IT team
+5. Champions are the first point of contact for day-to-day queries
+
+### Remote Training Options
+
+For multi-site or distributed workforce deployments:
+- Live virtual training session (Teams meeting) with screen share of the MTR App
+- Pre-recorded training video on the company intranet
+- Self-guided walkthrough document with screenshots
+- QR code in each room linking to a 2-minute room-specific video
+
+---
+
+## Measuring Training Effectiveness
+
+Track these metrics post-training:
+
+| Metric | How to Measure | Target |
+|---|---|---|
+| Room utilisation rate | Pro Management portal usage data | Trending upward within 30 days |
+| Help desk calls about MTR rooms | Ticket system filter | Declining after initial 2-week peak |
+| Training session attendance | Sign-in sheet / calendar attendance | >70% of targeted users trained within 2 weeks of go-live |
+| User satisfaction | Short survey (3–5 questions) | >3.5/5 average satisfaction |
+
+Use these metrics in the post-go-live review with the client sponsor. Declining help desk calls and increasing utilisation are the clearest indicators that training is working.
+
+---
+
+<KnowledgeCheck>
+  <Question text="A 500-person organisation is rolling out MTR across 30 rooms. Which training approach is most scalable and cost-effective for general users?">
+    <Answer>Book 500 people into 1-hour hands-on training sessions delivered by the project team</Answer>
+    <Answer correct>Train a floor champion per department, provide a quick reference card in each room and a 2-minute intranet video, and have champions deliver informal peer walkthrough sessions</Answer>
+    <Answer>Email all staff a link to Microsoft's generic Teams Rooms tutorial</Answer>
+    <Answer>Rely on users to figure it out — MTR is intuitive enough</Answer>
+    <Explanation>A champions programme with self-service resources (card + video) scales training across a large organisation without requiring the project team to deliver hundreds of individual sessions. Generic Microsoft content is less effective than client-specific materials.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Training Programme Framework" filename="mtr-training-programme-framework.docx" />
+<DownloadButton label="Quick Reference Card" filename="mtr-quick-reference-card.pdf" />

@@ -1,0 +1,221 @@
+---
+id: "p2-t1-m1-l1"
+slug: "mtr-network-topology"
+title: "MTR Network Topology — VLANs, Subnets, and Segmentation"
+shortTitle: "Network Topology"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 1
+moduleSlug: "mtr-network-architecture"
+moduleTitle: "MTR Network Architecture and Design"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Design a VLAN structure that segments MTR devices from general office traffic and justify the segmentation rationale"
+  - "Define IP addressing and subnet sizing for a MTR VLAN based on room count and growth headroom"
+  - "Identify the inter-VLAN routing and DHCP requirements for MTR network segments"
+
+prerequisites:
+  - "p1-t3-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "vlan"
+  - "subnet"
+  - "dhcp"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-l1-network-design-checklist.pdf"
+    label: "MTR Network Design Checklist"
+    sizeKb: 45
+
+relatedLessons:
+  - "p2-t1-m1-l2"
+  - "p2-t1-m1-l3"
+
+metaDescription: "MTR network topology design — VLAN segmentation, subnet sizing, DHCP requirements, inter-VLAN routing, and network design rationale for Teams Rooms deployments."
+
+keywords:
+  - "MTR VLAN design"
+  - "Teams Rooms network segmentation"
+  - "MTR subnet design"
+  - "Teams Rooms DHCP requirements"
+  - "MTR network topology"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The network design decisions made before an MTR deployment begins determine how reliably those rooms will perform for the next several years. MTR devices that share a flat network with general office workstations compete for bandwidth with user traffic, expose the room devices to unnecessary broadcast traffic, and cannot be managed independently from the broader network. Proper network segmentation is not optional — it is the baseline architectural decision that enables QoS, simplifies firewall policy, and creates a manageable, supportable device estate.
+
+---
+
+## Why Segment MTR Devices
+
+Three operational reasons drive MTR VLAN segmentation:
+
+**QoS enforcement:** DSCP QoS marking is most reliably applied when MTR devices are on a known subnet. A dedicated MTR VLAN allows the network team to apply QoS policies based on source IP range — ensuring that all traffic from the MTR subnet receives correct DSCP marking regardless of whether the endpoint itself marks traffic correctly.
+
+**Firewall policy scope:** Microsoft publishes a specific set of URLs, IP addresses, and ports required for Teams Rooms connectivity. Applying these as firewall rules is far cleaner when the source is a defined subnet rather than an IP list that changes with every device addition or change.
+
+**Simplified management and monitoring:** Network monitoring tools, DHCP reservations, and access control policies are all simpler to manage when MTR devices live on a known, bounded network segment. A new device added to the MTR VLAN automatically inherits the correct policies.
+
+---
+
+## VLAN Architecture
+
+**Recommended segmentation approach:**
+
+For most enterprise deployments, a single dedicated VLAN for all MTR devices across the site is the standard approach. Some organizations with specific security requirements may segment further — separate VLANs per building or floor, or separation between Windows and Android devices — but a single MTR VLAN is sufficient for the majority of deployments and is simpler to manage.
+
+| VLAN | Purpose | Example Subnet |
+|------|---------|----------------|
+| VLAN 100 (example) | MTR room devices (Windows + Android) | 10.10.100.0/24 |
+| VLAN 101 (optional) | Teams Panels and scheduling displays | 10.10.101.0/24 |
+| VLAN 10 | General office workstations | 10.10.10.0/22 |
+
+The VLAN number is site-specific — use whatever numbering convention the client organization has already established. The subnet example above is illustrative; any RFC 1918 range the organization assigns is valid.
+
+**Subnet sizing:**
+
+Size the MTR subnet based on room count plus growth headroom. A /24 (254 usable addresses) is appropriate for the vast majority of sites — even large campuses rarely deploy more than 200 MTR room devices at a single location. A /25 (126 usable) works for smaller sites. Avoid /26 or smaller for MTR — the administrative overhead of managing IP exhaustion is not worth the marginal subnet efficiency.
+
+**DHCP reservations:** Assign DHCP reservations for all MTR devices based on MAC address. This ensures each device always receives the same IP address, which simplifies firewall rules (if IP-based rules are used), remote management, and troubleshooting. Document each reservation in the as-built network documentation.
+
+---
+
+## Inter-VLAN Routing
+
+MTR devices require internet access to reach Microsoft 365 services. The MTR VLAN must have a default gateway configured that routes to the internet — typically through a firewall or a Layer 3 switch with an upstream path to the internet.
+
+**Routing to internal services:** MTR devices also need to reach internal resources — NTP servers (for clock synchronization), internal DNS resolvers, and potentially internal proxy servers. Ensure that the routing table for the MTR VLAN includes paths to these internal segments, not just the internet default route.
+
+**No requirement for lateral access to workstations:** MTR devices do not need to initiate connections to general workstation VLANs. The inter-VLAN routing policy can block lateral access between the MTR VLAN and workstation VLANs, which limits the blast radius if an MTR device is compromised. The exception is Proximity Join (Bluetooth, which operates at Layer 2 and does not require routing) and any network-based content sharing or room finder features that your organization uses.
+
+---
+
+## DHCP Configuration
+
+**Required DHCP options for the MTR VLAN:**
+
+| Option | Value | Reason |
+|--------|-------|--------|
+| Default Gateway | MTR VLAN gateway IP | Internet routing |
+| DNS Server | Internal DNS resolver (+ public backup) | Name resolution for M365 endpoints |
+| NTP Server (Option 42) | Internal NTP server | Clock synchronization for OAuth |
+| Lease Time | 24 hours or longer | Stability — avoids IP changes during meeting sessions |
+
+**NTP via DHCP Option 42:** Configure the DHCP server to deliver the organization's NTP server address via Option 42. This supplements the NTP configuration in the device's OEM admin interface and ensures NTP is available from the network layer even if device-level NTP configuration is incorrect. Android MTR devices in particular benefit from this belt-and-suspenders approach to NTP delivery.
+
+---
+
+## Switch Port Configuration
+
+Each switch port connecting an MTR device should be configured as an access port (not a trunk) in the MTR VLAN. No VLAN tagging is required on the device side — the switch handles VLAN assignment by port.
+
+**PoE considerations:** If the MTR device is powered via PoE (common for Teams Panels, Android bar devices, and some Windows compute units), the switch port must be configured for the appropriate PoE standard (802.3af, 802.3at, or 802.3bt depending on the device). Verify the PoE requirement for each device model before configuring the switch.
+
+**Spanning tree:** Ensure PortFast (or equivalent rapid STP transition) is enabled on MTR switch ports. MTR devices do not participate in spanning tree — enabling PortFast prevents the 15–30 second STP listening/learning delay from causing network connectivity issues at device boot.
+
+<DownloadButton
+  file="p2-t1-m1-l1-network-design-checklist.pdf"
+  label="MTR Network Design Checklist"
+  sizeKb={45}
+  description="Pre-deployment network design checklist covering VLAN structure, subnet sizing, DHCP configuration, inter-VLAN routing, switch port settings, and documentation requirements for MTR network deployments."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m1-l1-kc">
+  <Question>
+    Why is a dedicated VLAN recommended for MTR devices rather than placing
+    them on the general office workstation VLAN?
+  </Question>
+  <Answer>MTR devices require a separate VLAN because they use a different operating system than workstations</Answer>
+  <Answer correct>A dedicated VLAN enables source-subnet-based QoS policy enforcement, simplifies firewall rule scoping to a known IP range, and creates a bounded segment for device management and monitoring — all of which are impractical on a shared workstation VLAN</Answer>
+  <Answer>Microsoft requires a dedicated VLAN as a licensing condition for Teams Rooms</Answer>
+  <Answer>MTR devices cannot communicate with Microsoft 365 if they share a VLAN with workstations</Answer>
+  <Explanation>
+    VLAN segmentation provides three practical benefits for MTR deployments:
+    QoS policy can be applied by source subnet (all MTR traffic gets correct
+    DSCP marking), firewall rules can be scoped to a known IP range (simpler
+    policy management), and the device estate is a bounded, manageable segment
+    for monitoring and troubleshooting. These are operational benefits, not
+    licensing or technical requirements — MTR devices function on a shared
+    VLAN, but they are significantly harder to manage and monitor reliably
+    without segmentation.
+  </Explanation>
+
+  <Question>
+    An MTR deployment has 45 conference rooms across a single building. What
+    subnet size is appropriate for the dedicated MTR VLAN?
+  </Question>
+  <Answer>/26 — 62 usable addresses, enough for 45 devices with some headroom</Answer>
+  <Answer correct>/24 — 254 usable addresses, appropriate for the current 45 devices with substantial growth headroom and minimal administrative overhead</Answer>
+  <Answer>/30 — small subnets are more secure and conserve IP space</Answer>
+  <Answer>/16 — large subnets are always better to avoid future exhaustion</Answer>
+  <Explanation>
+    A /24 is the standard recommendation for MTR VLANs. It provides 254 usable
+    addresses — enough for 45 current devices with room to grow significantly
+    without requiring a subnet redesign. A /26 (62 addresses) is too small for
+    comfortable growth in a 45-room deployment. A /30 (2 usable addresses) is
+    not appropriate — it is sized for point-to-point links. A /16 is wasteful
+    and contradicts most organizations' IP address management policies.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Justify segmentation:** Dedicated MTR VLAN enables QoS by source subnet, scopes firewall policy to a known IP range, and creates a manageable device segment.
+- **Size the subnet:** /24 for most sites — 254 usable addresses with room for growth.
+- **Configure DHCP:** Default gateway, internal DNS, NTP via Option 42, longer lease times (24h+), DHCP reservations for all devices.
+- **Set switch ports:** Access port in MTR VLAN, PoE per device requirements, PortFast enabled.
+
+---
+
+## What's Next
+
+With the VLAN and subnet structure designed, the next lesson covers what traffic must flow through that network — the complete Microsoft 365 connectivity requirements that define the firewall rule set for MTR.
+
+[Microsoft 365 Connectivity Requirements — URLs, IPs, and Ports →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/m365-connectivity-requirements/)

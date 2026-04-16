@@ -1,0 +1,203 @@
+---
+id: "p4-t2-m2-l4"
+slug: "demo-skills-objection-handling"
+title: "Demo Skills and Objection Handling"
+shortTitle: "Demo Skills"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 2
+moduleSlug: "presales-competitive"
+moduleTitle: "Pre-Sales and Competitive Positioning"
+
+lessonIndex: 4
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "presales-engineer", "account-manager"]
+
+objectives:
+  - "Design and deliver a demonstration that converts interest to conviction in an MTR pre-sales context"
+  - "Apply a problem-to-solution demonstration structure that keeps the audience engaged"
+  - "Prepare and operate a reliable demo environment that never fails during a client presentation"
+  - "Handle the most common objections in an MTR sales process with evidence-based responses"
+
+prerequisites:
+  - "p4-t2-m2-l1"
+  - "p4-t2-m2-l2"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management"]
+roleTags: ["solutions-architect", "presales-engineer", "account-manager"]
+topicTags: ["presales", "demonstration", "objection-handling", "sales"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t2-m2-l1"
+  - "p4-t2-m3-l4"
+
+metaDescription: "Learn to design and deliver compelling MTR demonstrations, set up a reliable demo environment, and handle common objections in the sales process."
+keywords: ["MTR demo", "Teams Rooms demonstration", "presales skills", "objection handling", "demo environment"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Demo as a Sales Event
+
+A product demonstration is not a feature tour — it is a sales event with a specific objective: to move the audience from "interested" to "convinced." Every minute of the demo should be working toward that objective.
+
+The most common demo failure is showing what the product can do, rather than showing why it solves the audience's specific problems. This is a feature tour. A feature tour informs but rarely convinces.
+
+---
+
+## Demo Design Principles
+
+### Show Pain, Then Relief
+
+Structure the demo around the problems discovered during the discovery conversation. For each problem, show the current state (the pain) and then show how the solution resolves it.
+
+Example structure:
+- "You mentioned that meetings often start late because people can't figure out how to start a call. Watch what happens when I walk into a room..."
+- [Demo: calendar meeting appears on screen; one tap to join; meeting starts in 10 seconds]
+- "The calendar integration means there's nothing to configure. The meeting is just there."
+
+This is more powerful than showing the same feature without the problem context.
+
+### Involve the Audience
+
+The most memorable demonstrations involve the audience in the experience:
+
+- Ask a participant to attempt a meeting join themselves (one-touch join)
+- Have an executive join from their phone to demonstrate the remote experience
+- Show the Pro Management portal live with the demo room's data
+- Ask: "Have you ever tried to share your laptop in a meeting room and it didn't work?" Then show HDMI ingest working first time.
+
+### Keep it Short
+
+A standard MTR pre-sales demo should be 20–30 minutes. Longer than 30 minutes loses the audience unless they have specifically requested extended exploration.
+
+The demo's job is to build conviction and create questions — not to explain every feature. If the audience is asking questions, the demo is working.
+
+---
+
+## Demo Environment Setup
+
+### Demo Room Requirements
+
+- A properly installed MTR device (not a laptop with Teams) — the demo must show the actual product
+- Active network connection with adequate bandwidth
+- A remote participant pre-arranged (colleague or partner calling in from another location)
+- A laptop for HDMI ingest demonstration
+- Room lighting appropriate for camera (not backlit)
+
+### Demo Tenant
+
+Maintain a dedicated demo M365 tenant separate from the practice's production tenant:
+- Resource accounts configured and licensed for every demo device
+- Demo content prepared (PowerPoint, documents to share)
+- Test meetings pre-scheduled on the demo calendar
+- Pro Management configured and showing a realistic device inventory
+
+### Pre-Demo Checklist
+
+```
+□ Device online and signed in (check Pro Management portal before leaving the office)
+□ Test meeting in calendar for demo date/time
+□ Remote participant briefed and available
+□ HDMI cable present at table
+□ Screen sharing content loaded on laptop
+□ Pro Management portal open on separate device (for admin demo)
+□ Room temperature and lighting comfortable for client
+□ Backup plan if primary device fails (have a laptop MTR client ready)
+```
+
+<Callout type="warning">
+**Never demo on a live client tenant unless absolutely necessary and explicitly agreed.** Use your demo tenant. Client tenants have unknown Conditional Access policies, firewall rules, and configurations that can cause demo failures at the worst possible moment.
+</Callout>
+
+### The Backup Plan
+
+Even with perfect preparation, things fail. Have a contingency:
+
+- If the device fails to sign in: show a pre-recorded 2-minute video of the full user journey, then pivot to the management portal demo which is laptop-based
+- If the remote participant drop out: have a mobile device ready to join as a second participant
+- If the network fails: use mobile data on a hotspot
+
+Acknowledging a technical issue calmly and having an immediate workaround builds more confidence than a working demo. It demonstrates operational competence.
+
+---
+
+## Demo Flow for MTR Pre-Sales
+
+### Recommended 25-Minute Structure
+
+**1. Setup the context (3 min)**
+"Based on what you told me, the biggest frustrations are [X, Y, Z]. Let me show you how this system addresses each of those."
+
+**2. One-touch join (3 min)**
+Walk into the room. Show the calendar meeting on the home screen. Tap to join. Meet someone remotely. Conclude: "That's it — nothing to configure, nothing to remember."
+
+**3. Remote participant experience (4 min)**
+Ask the audience to look at what the remote participant sees. Show IntelliFrame if available. Show Front Row layout. Ask: "Does this look different from what your remote participants experience today?"
+
+**4. Content sharing (3 min)**
+Plug in HDMI. Laptop screen appears. Show that both in-room and remote participants see it simultaneously. "No codes, no apps, no waiting."
+
+**5. Pro Management overview (5 min)**
+Switch to the management portal. Show the device list. Show utilisation data. Show how alerts work: "If this device goes offline at 3am, your IT team gets a notification. If they're on a managed service with us, we get the notification."
+
+**6. Handle questions (5 min)**
+Leave 5 minutes for audience questions. The best indicator that a demo worked is genuine technical questions.
+
+**7. Close (2 min)**
+"What we've shown you today is what your teams would experience in every room. What would be most useful next — visiting a reference site, or moving to a proposal for your specific requirements?"
+
+---
+
+## Objection Handling
+
+### "The devices are expensive"
+
+**Type**: Price objection
+**Response**: "Per device, yes, there's a premium over consumer equipment. But the right comparison is total cost of ownership — hardware, support, management overhead, and the cost of meetings that fail or start late. Based on what you've described, the ROI typically pays back within 12–18 months. Would it be useful to model this against your specific situation?"
+
+### "Our IT team doesn't have bandwidth to manage another platform"
+
+**Type**: Operational objection
+**Response**: "That's actually one of the strongest arguments for MTR. Your team already manages Windows devices with Intune. MTR appears in the same device list, follows the same update policies, and has the same compliance reporting. It's not a new platform — it's another Windows endpoint. What MDM are you using today?"
+
+### "We had Teams Rooms before and it was unreliable"
+
+**Type**: Past experience objection
+**Response**: "When was that? The platform has changed substantially in the last 18 months — Autopilot enrollment, Intune management, the Pro Management portal, and significant improvements to the Teams Rooms App. The reliability issues that affected early deployments were largely addressed in the App 4.x releases. I'd like to understand what specifically failed — was it the hardware, the network, or the configuration? That will tell us what to do differently."
+
+### "Can it join Zoom meetings?"
+
+**Type**: Interoperability objection
+**Response**: "Yes. MTR devices can join Zoom meetings via direct guest join (no additional license required) — the host just needs to enable it in their Zoom settings. It's not as seamless as joining a Teams meeting, but it works. What percentage of your external meeting invites come in as Zoom vs Teams?"
+
+---
+
+<KnowledgeCheck>
+  <Question text="During a demo, the MTR device fails to sign in due to a network issue. What is the best response?">
+    <Answer>Apologise profusely and cancel the remainder of the demo</Answer>
+    <Answer>Blame the client's network and suggest it's a known problem</Answer>
+    <Answer correct>Acknowledge the issue calmly, explain what you believe caused it, switch to the pre-prepared backup (recording or laptop client), and continue the demo — demonstrating operational confidence</Answer>
+    <Answer>Pretend the sign-in issue was intentional and part of the demo</Answer>
+    <Explanation>Calm, competent handling of a technical failure during a demo builds more trust than a perfect demo. The client is watching how you respond to pressure — because they're evaluating whether to trust you with their production environment. A pre-prepared backup plan executed smoothly signals professionalism.</Explanation>
+  </Question>
+</KnowledgeCheck>

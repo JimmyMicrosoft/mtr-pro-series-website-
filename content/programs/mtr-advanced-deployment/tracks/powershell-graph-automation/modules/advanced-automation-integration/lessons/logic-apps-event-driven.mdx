@@ -1,0 +1,267 @@
+---
+id: "p3-t3-m3-l3"
+slug: "logic-apps-event-driven"
+title: "Logic Apps and Event-Driven MTR Automation"
+shortTitle: "Logic Apps Event-Driven Automation"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 3
+moduleSlug: "advanced-automation-integration"
+moduleTitle: "Advanced Automation and Integration"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Evaluate when to use Azure Logic Apps versus Power Automate for MTR automation scenarios based on scale, complexity, and cost"
+  - "Design a Logic App workflow for MTR incident routing with conditional branching and retry logic"
+  - "Implement Azure Service Bus as a reliable event queue between Pro Management webhooks and Logic App consumers"
+
+prerequisites:
+  - "p3-t3-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "automation"
+  - "integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m3-l2"
+  - "p3-t3-m3-l4"
+
+metaDescription: "Azure Logic Apps for event-driven MTR automation — Logic Apps vs Power Automate decision framework, incident routing with conditional branching, Azure Service Bus reliable event queue, Managed Identity, and cost optimization."
+
+keywords:
+  - "Azure Logic Apps MTR automation"
+  - "Teams Rooms Logic Apps event-driven"
+  - "MTR event-driven automation Azure"
+  - "Logic Apps Pro Management webhook"
+  - "Azure Service Bus MTR automation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Azure Logic Apps and Power Automate share the same underlying runtime, but they serve different organizational contexts. Power Automate is optimized for M365-native workflows built and owned by IT professionals using a browser-based designer. Logic Apps is optimized for enterprise integration scenarios that require version-controlled deployment, custom connector development, complex branching logic, and higher execution volume. For an enterprise MTR fleet generating thousands of alerts per month, Logic Apps is often the more appropriate platform. This lesson covers the decision framework, a practical Logic App design for MTR incident routing, and the Service Bus pattern that makes webhook processing reliable at scale.
+
+---
+
+## Logic Apps vs Power Automate: Decision Framework
+
+| Dimension | Use Power Automate | Use Logic Apps |
+|-----------|-------------------|----------------|
+| Primary users | IT admins, non-developers | Developers, architects |
+| Deployment | Manual in browser | ARM templates, Bicep, CI/CD pipeline |
+| Version control | Limited (export JSON) | Native via source control |
+| Execution volume | < 500 runs/day | Thousands of runs/day |
+| Custom connectors | Available, browser-built | ISE custom connectors, full API spec |
+| Retry and error handling | Basic configure-run-after | Built-in retry policies, dead-letter queues |
+| Pricing model | Per user or per flow/month | Consumption (per action) or Standard (fixed) |
+| M365 connector access | Native (Teams, SharePoint, etc.) | Via managed connectors (same functionality) |
+| Managed Identity | Not supported | Supported — no stored credentials |
+
+For MTR automation that processes Pro Management webhooks at enterprise scale (fleet of 500+ rooms, potentially 100+ alerts/day), Logic Apps with Service Bus is the production-grade choice.
+
+---
+
+## Logic App Workflow Design for MTR Incident Routing
+
+A Logic App workflow processes Pro Management webhooks and routes them to the appropriate handler:
+
+```
+[HTTP Trigger: POST /mtralert]
+        │
+        ▼
+[Parse JSON] — extract incidentType, severity, deviceId, resourceUPN
+        │
+        ▼
+[Switch — incidentType]
+    ├── "Camera not detected"
+    │   └── [Condition: severity == Critical]
+    │         ├── YES → [HTTP: TAC restart endpoint]
+    │         │         └── [Condition: restart HTTP 200?]
+    │         │               ├── YES → [HTTP: add note to Pro Mgmt incident]
+    │         │               └── NO  → [HTTP: create SNOW incident]
+    │         └── NO  → [HTTP: create SNOW incident (NonUrgent)]
+    ├── "Network connectivity"
+    │   └── [HTTP: create SNOW incident → Network Ops group]
+    ├── "Sign-in failed"
+    │   └── [HTTP: create SNOW incident → Identity team]
+    └── Default
+        └── [HTTP: log to Azure Log Analytics — informational only]
+```
+
+In Logic Apps, this is implemented using the **Switch** action (like a `case` statement) with each case handling one incident type. Retry policies on HTTP actions automatically retry on transient failures (network timeouts, 429 throttling) with configurable count and interval.
+
+---
+
+## Configuring Retry Policies
+
+Logic App HTTP actions support built-in retry policies without custom code:
+
+```json
+{
+  "type": "Http",
+  "inputs": {
+    "method": "POST",
+    "uri": "https://[instance].service-now.com/api/now/table/incident",
+    "headers": { "Authorization": "@{concat('Bearer ', variables('SNOWToken'))}" },
+    "body": "@body('Build_Incident_Payload')"
+  },
+  "runAfter": {},
+  "runtimeConfiguration": {
+    "staticResult": { "staticResultOptions": "Disabled" }
+  },
+  "operationOptions": "None",
+  "retryPolicy": {
+    "type": "exponential",
+    "count": 4,
+    "interval": "PT7S",
+    "minimumInterval": "PT5S",
+    "maximumInterval": "PT1H"
+  }
+}
+```
+
+The exponential retry policy retries up to 4 times with increasing backoff (5s, 7s, 14s, 28s...) before marking the action as failed. This handles transient ServiceNow API unavailability without manual intervention.
+
+---
+
+## Azure Service Bus for Reliable Webhook Processing
+
+A direct webhook → Logic App connection has a single point of failure: if the Logic App is temporarily unavailable (during deployment, maintenance, or a platform outage), the Pro Management webhook is lost. Azure Service Bus acts as a durable buffer:
+
+```
+Pro Management
+      │
+      ▼ HTTP POST
+Azure Function (lightweight receiver)
+      │ enqueue message
+      ▼
+Azure Service Bus Queue
+      │ dequeue (Logic App consumer)
+      ▼
+Logic App (processes message)
+      │
+      ▼
+Remediation actions
+```
+
+The Azure Function receiver acknowledges Pro Management's webhook immediately (HTTP 200) and enqueues the payload to Service Bus. The Logic App reads from the queue at its own pace — if the Logic App is temporarily unavailable, messages wait in the queue (configurable retention: up to 7 days) and are processed when the Logic App comes back online.
+
+Service Bus setup in Logic Apps:
+
+```powershell
+# Create Service Bus namespace and queue via PowerShell (Azure module)
+New-AzServiceBusNamespace -ResourceGroupName "MTR-Automation-RG" `
+    -Name "mtr-automation-sb" -Location "uksouth" -SkuName "Standard"
+
+New-AzServiceBusQueue -ResourceGroupName "MTR-Automation-RG" `
+    -Namespace "mtr-automation-sb" -Name "pro-mgmt-incidents" `
+    -LockDuration "PT5M" `      # 5 minute message lock for processing
+    -MaxDeliveryCount 5         # Dead-letter after 5 failed attempts
+```
+
+Messages that exceed `MaxDeliveryCount` (failed processing 5 times) are moved to the **dead-letter queue** — a separate queue that holds messages requiring manual investigation. Monitor the dead-letter queue count as an operational metric; a growing dead-letter queue indicates a processing failure pattern.
+
+---
+
+## Managed Identity for Logic Apps
+
+Managed Identity eliminates stored credentials in Logic App definitions — the Logic App authenticates to Azure resources (Key Vault, Service Bus, Graph API) using its own identity:
+
+```powershell
+# Enable System-Assigned Managed Identity on Logic App
+$logicApp = Get-AzLogicApp -ResourceGroupName "MTR-Automation-RG" -Name "mtr-incident-router"
+Set-AzResource -ResourceId $logicApp.Id -Properties @{
+    identity = @{ type = "SystemAssigned" }
+} -Force
+
+# Grant the Logic App's Managed Identity permission to read Key Vault secrets
+$principalId = (Get-AzLogicApp -ResourceGroupName "MTR-Automation-RG" -Name "mtr-incident-router").Identity.PrincipalId
+New-AzRoleAssignment -ObjectId $principalId `
+    -RoleDefinitionName "Key Vault Secrets User" `
+    -Scope "/subscriptions/$subscriptionId/resourceGroups/MTR-Automation-RG/providers/Microsoft.KeyVault/vaults/mtr-keyvault"
+```
+
+In the Logic App definition, reference Key Vault secrets via the Key Vault managed connector using the Managed Identity — no client secrets stored in the workflow definition or environment variables.
+
+---
+
+## Cost Optimization: Consumption vs Standard Plan
+
+| Factor | Consumption Plan | Standard Plan |
+|--------|-----------------|---------------|
+| Pricing | Per action execution (~$0.000025/action) | Fixed monthly ($~150-300/month) |
+| Break-even | ~6M actions/month | Above ~6M actions/month |
+| MTR fleet of 200 rooms | ~50K actions/month → ~$1.25/month | Overkill |
+| MTR fleet of 2000 rooms | ~500K actions/month → ~$12.50/month | Still Consumption |
+| Managed Services (10K alerts/day) | ~3M actions/month → ~$75/month | Consider Standard |
+| VNet integration | Not available | Available |
+| Stateful + stateless workflows | Stateful only | Both |
+
+For most enterprise MTR deployments (< 500 rooms, < 100 alerts/day), the Consumption plan is dramatically more cost-effective than Standard. The Standard plan becomes attractive at managed services scale with high alert volume and when VNet integration is required for private connectivity to on-premises ITSM systems.
+
+---
+
+<KnowledgeCheck id="p3-t3-m3-l3-kc">
+  <Question>
+    Your Logic App processes Pro Management webhooks directly via HTTP trigger (no Service Bus). During a planned Logic App deployment at 02:00 on a Tuesday, 12 Pro Management webhooks fire while the Logic App is unavailable (deployment takes 8 minutes). What happens to those 12 alerts, and how does adding Service Bus change this outcome?
+  </Question>
+  <Answer>The Logic App HTTP trigger has a built-in queue that holds up to 100 messages during deployment — the 12 alerts are processed automatically when the deployment completes</Answer>
+  <Answer correct>Without Service Bus, the 12 Pro Management webhooks receive a connection error or 503 response during the 8-minute deployment window. Pro Management may retry the webhook (depending on its retry configuration), but if it does not, those 12 alerts are permanently lost — no incident was created in ServiceNow and no automated remediation ran. With Service Bus, an always-available lightweight Azure Function enqueues each webhook payload immediately, so even during Logic App deployment the messages are durably persisted in the queue. When the Logic App deployment completes, it processes the 12 queued messages in order. No alerts are lost.</Answer>
+  <Answer>The Logic App deployment does not cause downtime — Logic Apps use blue/green deployment and the HTTP trigger remains available throughout</Answer>
+  <Answer>Pro Management automatically retries failed webhooks for up to 24 hours, so the alerts will eventually be processed after the deployment completes</Answer>
+  <Explanation>
+    Direct HTTP trigger endpoints are unavailable during Logic App deployment, redeployment, and platform maintenance events. This is the fundamental motivation for the Service Bus buffer pattern — it decouples the webhook acknowledgement (the Azure Function, which is always available) from the processing logic (the Logic App, which may be briefly unavailable). Service Bus provides at-least-once delivery guarantee: messages are retained until a consumer successfully acknowledges them. The dead-letter queue handles messages that repeatedly fail processing, ensuring no alert is silently dropped.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Decision framework:** Use Power Automate for M365-native, browser-managed workflows at moderate volume. Use Logic Apps when you need CI/CD deployment, version control, higher execution volume, or Managed Identity.
+- **Incident routing:** Switch action on `incidentType` with nested conditions on severity provides clean, readable routing logic; exponential retry policies handle transient API failures automatically.
+- **Service Bus buffer:** Azure Function → Service Bus Queue → Logic App consumer prevents webhook loss during Logic App deployments or outages; dead-letter queue surfaces messages that failed repeated processing attempts.
+- **Managed Identity:** Eliminates stored credentials in Logic App definitions; grant the Managed Identity access to Key Vault, Service Bus, and other Azure resources via RBAC.
+- **Cost:** Consumption plan is cost-effective for most enterprise MTR deployments; Standard plan makes sense only at managed services scale (> 6M actions/month) or when VNet integration is required.
+
+---
+
+## What's Next
+
+[Azure Monitor Integration for MTR Telemetry →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/advanced-automation-integration/lessons/azure-monitor-mtr-telemetry/)

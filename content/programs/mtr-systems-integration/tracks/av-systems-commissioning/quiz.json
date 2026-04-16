@@ -1,0 +1,128 @@
+{
+  "trackSlug": "av-systems-commissioning",
+  "trackTitle": "AV Systems Commissioning",
+  "programSlug": "mtr-systems-integration",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "During a conference room commissioning, a far-end participant on a test call reports hearing a distinct echo of their own voice approximately 300ms after they speak. What is the most likely root cause?",
+      "answers": [
+        "The room camera is positioned too close to the display.",
+        "Acoustic echo cancellation (AEC) in the room's DSP or software is not functioning correctly — loudspeaker audio is being picked up by the microphone and returned to the far end.",
+        "The network has insufficient bandwidth for the audio codec.",
+        "The MTR device's video codec is adding processing delay to the audio stream."
+      ],
+      "correct": 1,
+      "explanation": "Echo heard by far-end participants is caused by the near-end loudspeaker output being captured by the near-end microphone and transmitted back. This is the acoustic echo path. If the AEC in the DSP or Teams software is not correctly configured or is disabled, the echo passes through. 300ms delay is consistent with the acoustic path in a medium-sized room."
+    },
+    {
+      "id": 2,
+      "text": "What is the recommended camera horizontal field of view (FoV) for a medium conference room designed to seat 8–10 people at a rectangular table, ensuring all participants are visible?",
+      "answers": [
+        "60° — to provide a tight, presenter-focused frame.",
+        "90°–120° — wide enough to capture the full table width at typical room depths of 5–7 metres.",
+        "180° — fisheye coverage for all 360° participant views.",
+        "30° — telephoto to capture fine facial detail from the back of the room."
+      ],
+      "correct": 1,
+      "explanation": "A medium room (8–10 seats, 5–7m depth) requires a camera with approximately 90°–120° horizontal FoV to frame all participants at the table. Too narrow a FoV will miss people at the sides; too wide causes distortion and makes participants at the near end appear oversized."
+    },
+    {
+      "id": 3,
+      "text": "A commissioning checklist for an MTR room lists tasks in a specific order. Which sequence correctly reflects the dependency order of commissioning steps?",
+      "answers": [
+        "End-to-end test call → hardware installation → resource account sign-in → cable verification",
+        "Resource account sign-in → hardware installation → cable verification → display calibration",
+        "Hardware installation → cable verification → resource account sign-in → end-to-end test call → customer acceptance walkthrough",
+        "Customer acceptance walkthrough → hardware installation → test call → as-built documentation"
+      ],
+      "correct": 2,
+      "explanation": "The correct dependency order is: physical hardware installation first, then cable verification to confirm all signal paths, then sign in the resource account, then run an end-to-end test call to verify the complete system, and finally conduct the customer acceptance walkthrough to hand over a proven system."
+    },
+    {
+      "id": 4,
+      "text": "During display calibration, a technician sets the colour temperature to 9300K for a conference room display. A colleague advises this is incorrect. What is the recommended colour temperature for a meeting room display, and why?",
+      "answers": [
+        "9300K is correct — it produces the brightest whites for daytime rooms.",
+        "6500K (D65) is the reference standard for video displays, as it most closely matches natural daylight and is the standard for broadcast and presentation content.",
+        "3200K is recommended to produce warm skin tones that are flattering under fluorescent lighting.",
+        "There is no standard; colour temperature should be set to the highest available value for maximum visibility."
+      ],
+      "correct": 1,
+      "explanation": "D65 (6500 Kelvin) is the international reference white point for video displays per ITU-R BT.709. It provides accurate colour reproduction for presentation content and video conferencing. 9300K produces an overly blue-white image that distorts colours and causes eye fatigue."
+    },
+    {
+      "id": 5,
+      "text": "An HDMI matrix switcher in a boardroom is not routing the selected input to the correct output. The commissioning engineer has verified cable connections are correct. What is the most systematic next step?",
+      "answers": [
+        "Replace the matrix switcher immediately, as hardware failure is the only explanation.",
+        "Verify the control system (or manual control panel) has the correct routing command mapped to the expected button, and confirm the switcher's firmware and configuration match the as-designed specification.",
+        "Swap the HDMI cables between inputs and outputs to redistribute the problem.",
+        "Power cycle the display and check if HDMI auto-detect resolves the routing."
+      ],
+      "correct": 1,
+      "explanation": "Matrix switcher routing problems most often arise from incorrect control system programming (wrong input/output numbers mapped to buttons) or misconfiguration of the switcher itself. Systematically verifying the control logic and switcher configuration against the design spec is the correct approach before assuming hardware failure."
+    },
+    {
+      "id": 6,
+      "text": "What is the purpose of a 'punch list' (also called a snag list) in the context of AV commissioning?",
+      "answers": [
+        "A list of cable types and quantities used during installation for materials reconciliation.",
+        "A formal record of all outstanding defects, incomplete items, and deviations from specification identified during commissioning, which must be resolved before the system is accepted by the customer.",
+        "A daily log of hours worked by each technician on the project.",
+        "A list of punch-through cable holes that require fire-stopping to comply with building regulations."
+      ],
+      "correct": 1,
+      "explanation": "A punch list (snag list) is a formal quality document listing all items that do not meet specification or are incomplete at the point of commissioning. It is produced during or after the commissioning walkthrough and must be resolved before final customer sign-off and practical completion."
+    },
+    {
+      "id": 7,
+      "text": "During a microphone coverage test in a 10-metre-long conference room, participants seated at the far end of the table are barely audible to far-end participants on a test call. What is the most appropriate corrective action?",
+      "answers": [
+        "Increase the volume on the far-end participant's loudspeaker.",
+        "Move the MTR compute unit to the far end of the room.",
+        "Add a supplementary ceiling or table microphone to extend coverage to the far end of the table, and adjust DSP gain and zone configuration accordingly.",
+        "Ask far-end participants to enable noise cancellation in their Teams client."
+      ],
+      "correct": 2,
+      "explanation": "Microphone coverage gaps are solved by adding microphone coverage — a supplementary ceiling or tabletop microphone extending the pickup zone to the underserved area. The DSP must then be reconfigured to mix the additional microphone into the send bus with appropriate gain and AEC routing."
+    },
+    {
+      "id": 8,
+      "text": "What is the minimum information that as-built documentation must include at the conclusion of an MTR room installation?",
+      "answers": [
+        "The project manager's name and the installation date only.",
+        "Updated floor plans, rack elevations, cable schedules (with labels matching physical cables), signal flow diagrams, device serial numbers, IP and MAC addresses, configuration settings, and test results.",
+        "A single-page summary of the equipment installed with model numbers.",
+        "A photograph of the completed rack, plus a copy of the original quotation."
+      ],
+      "correct": 1,
+      "explanation": "Professional as-built documentation must comprehensively reflect the final installed state: floor plans, rack layouts, labelled cable schedules, signal flow, all device identifiers (serial/MAC/IP), configuration parameters, and commissioning test results. This enables future maintenance, fault diagnosis, and system modifications by any technician."
+    },
+    {
+      "id": 9,
+      "text": "A customer acceptance walkthrough has been completed and the customer identifies two items: (1) the far-end camera PTZ preset is incorrectly saved, and (2) a cable label is missing on one run. How should these items be handled?",
+      "answers": [
+        "Both items are cosmetic and can be closed without any further action.",
+        "Add both items to the punch list, assign responsibility and a target resolution date, resolve both items before requesting final sign-off, and confirm resolution in writing with the customer.",
+        "Fix only the PTZ preset immediately; label issues can be resolved at the next site visit.",
+        "Ask the customer to sign the acceptance form immediately, then address the items on the next scheduled maintenance visit."
+      ],
+      "correct": 1,
+      "explanation": "All items identified during a customer walkthrough — regardless of severity — must be formally recorded on the punch list with assigned ownership and target dates. The system should not be signed off as practically complete until all punch list items are resolved and confirmed closed by the customer."
+    },
+    {
+      "id": 10,
+      "text": "When conducting an end-to-end test call to verify an MTR room system, which combination of checks provides the most comprehensive validation?",
+      "answers": [
+        "Confirming the MTR app opens without errors.",
+        "Placing a call to a voicemail number and listening to the recording.",
+        "Joining a scheduled Teams meeting from the room, verifying audio send/receive with a remote participant, confirming video quality and camera framing, testing content sharing, and verifying room display and touchscreen responsiveness.",
+        "Pinging the Microsoft 365 endpoints from the MTR device's command line."
+      ],
+      "correct": 2,
+      "explanation": "A comprehensive end-to-end test call must exercise every media path: audio transmit and receive, video transmit and receive with confirmed framing, content sharing from both the room and a remote participant, and verification that the touchscreen console and front-of-room displays function correctly throughout the call."
+    }
+  ]
+}

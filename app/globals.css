@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens (Light Mode) ────────────────────────────────────────────── */
+:root {
+  --color-primary:        #0078D4;
+  --color-primary-hover:  #0065b8;
+  --color-primary-light:  #dbeafe;
+  --color-accent:         #a855f7;
+  --color-accent-light:   #f3e8ff;
+
+  --color-bg-base:        #ffffff;
+  --color-bg-subtle:      #f8fafc;
+  --color-bg-muted:       #f1f5f9;
+  --color-bg-overlay:     rgba(0, 0, 0, 0.5);
+
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted:     #94a3b8;
+  --color-text-inverse:   #ffffff;
+  --color-text-link:      #0078D4;
+
+  --color-border:         #e2e8f0;
+  --color-border-strong:  #cbd5e1;
+
+  --color-success:        #16a34a;
+  --color-success-bg:     #dcfce7;
+  --color-warning:        #d97706;
+  --color-warning-bg:     #fef3c7;
+  --color-error:          #dc2626;
+  --color-error-bg:       #fee2e2;
+  --color-info:           #0078D4;
+  --color-info-bg:        #dbeafe;
+
+  /* Difficulty colors */
+  --color-beginner:       #16a34a;
+  --color-intermediate:   #0078D4;
+  --color-advanced:       #9333ea;
+  --color-expert:         #dc2626;
+
+  /* Bloom's level colors */
+  --color-bloom-remember:   #64748b;
+  --color-bloom-understand: #0284c7;
+  --color-bloom-apply:      #16a34a;
+  --color-bloom-analyze:    #9333ea;
+  --color-bloom-evaluate:   #d97706;
+  --color-bloom-create:     #dc2626;
+
+  /* Spacing */
+  --header-height: 4rem;
+  --sidebar-width: 18rem;
+  --meta-sidebar-width: 16rem;
+  --content-max-width: 48rem;
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* Z-index scale */
+  --z-sidebar:  10;
+  --z-header:   20;
+  --z-overlay:  30;
+  --z-modal:    40;
+  --z-toast:    50;
+}
+
+/* ─── Dark Mode ──────────────────────────────────────────────────────────────── */
+.dark {
+  --color-bg-base:        #0f172a;
+  --color-bg-subtle:      #1e293b;
+  --color-bg-muted:       #334155;
+  --color-text-primary:   #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted:     #64748b;
+  --color-border:         #334155;
+  --color-border-strong:  #475569;
+  --color-primary-light:  #1e3a5f;
+  --color-info-bg:        #1e3a5f;
+}
+
+/* ─── Base Reset ─────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter, Inter, system-ui, sans-serif);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ─── Prose / Lesson Content Styles ─────────────────────────────────────────── */
+.prose {
+  max-width: var(--content-max-width);
+  color: var(--color-text-primary);
+}
+
+.prose h1 { @apply text-3xl font-bold mt-8 mb-4 text-neutral-900 dark:text-neutral-50; }
+.prose h2 { @apply text-2xl font-semibold mt-8 mb-3 text-neutral-800 dark:text-neutral-100; }
+.prose h3 { @apply text-xl font-semibold mt-6 mb-2 text-neutral-800 dark:text-neutral-100; }
+.prose h4 { @apply text-lg font-medium mt-4 mb-2 text-neutral-700 dark:text-neutral-200; }
+.prose p  { @apply text-base leading-7 mb-4 text-neutral-700 dark:text-neutral-300; }
+
+.prose ul { @apply list-disc pl-6 mb-4 space-y-1; }
+.prose ol { @apply list-decimal pl-6 mb-4 space-y-1; }
+.prose li { @apply text-neutral-700 dark:text-neutral-300; }
+
+.prose a {
+  @apply text-primary-500 underline underline-offset-2 hover:text-primary-600 transition-colors;
+}
+
+.prose code {
+  @apply font-mono text-sm bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-primary-600 dark:text-primary-300;
+}
+
+.prose pre {
+  @apply rounded-lg overflow-x-auto mb-6 bg-neutral-900 dark:bg-neutral-950;
+}
+
+.prose pre code {
+  @apply bg-transparent text-neutral-100 px-0 py-0 rounded-none;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary-500 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4;
+}
+
+.prose table {
+  @apply w-full border-collapse mb-6;
+}
+.prose th {
+  @apply bg-neutral-100 dark:bg-neutral-800 font-semibold text-left px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-sm;
+}
+.prose td {
+  @apply px-4 py-2 border border-neutral-200 dark:border-neutral-700 text-sm text-neutral-700 dark:text-neutral-300;
+}
+.prose tr:nth-child(even) { @apply bg-neutral-50 dark:bg-neutral-900; }
+
+.prose strong { @apply font-semibold text-neutral-900 dark:text-neutral-100; }
+.prose em     { @apply italic; }
+
+.prose hr { @apply border-neutral-200 dark:border-neutral-700 my-8; }
+
+/* ─── Syntax Highlight (highlight.js github-dark theme minimal) ──────────────── */
+.hljs { background: #1e293b; color: #e2e8f0; }
+.hljs-keyword { color: #60a5fa; }
+.hljs-string  { color: #86efac; }
+.hljs-comment { color: #94a3b8; font-style: italic; }
+.hljs-number  { color: #fbbf24; }
+.hljs-built_in { color: #c084fc; }
+.hljs-variable { color: #f97316; }
+.hljs-title    { color: #60a5fa; }
+.hljs-attr     { color: #7dd3fc; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ─── Focus Ring ─────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Utility Classes ────────────────────────────────────────────────────────── */
+.container-content {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

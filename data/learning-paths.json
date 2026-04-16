@@ -1,0 +1,624 @@
+[
+  {
+    "slug": "junior-installer",
+    "cardTitle": "Junior Installer / Apprentice",
+    "cardDescription": "Start from zero. Learn the MTR ecosystem, safe installation practices, cable infrastructure, and how to execute a supervised MTR deployment.",
+    "cardTracks": ["Track 1: The MTR Ecosystem", "Track 2: Physical Installation"],
+    "hours": 10,
+    "prerequisites": "No experience required",
+    "badge": "Partial MTR Foundations Badge",
+    "pageTitle": "Junior Installer Path",
+    "subtitle": "Build a solid MTR foundation for field installation work",
+    "persona": "newcomer",
+    "difficulty": "beginner",
+    "totalHours": "~10 hrs",
+    "description": "Perfect for those new to AV and Microsoft Teams Rooms. You will learn what MTR is, understand the hardware ecosystem, and develop hands-on physical installation skills.",
+    "outcomes": [
+      "Recall and describe all components of a standard MTR system",
+      "Differentiate between MTR Windows and MTR Android platforms",
+      "Execute proper cable termination to T568B standard",
+      "Mount and connect MTR hardware safely and correctly",
+      "Read and follow site preparation documentation"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Understand the MTR landscape, product categories, licensing, and the AV integrator role.",
+        "focus": "Start here — no prerequisites required."
+      },
+      {
+        "trackSlug": "physical-installation",
+        "trackTitle": "Track 2: Physical Installation",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Site preparation, cable infrastructure, hardware mounting, and safe installation practices.",
+        "focus": "Hands-on lab exercises for every lesson."
+      }
+    ]
+  },
+  {
+    "slug": "lead-installer",
+    "cardTitle": "Lead Installer / Field Tech",
+    "cardDescription": "Take ownership of end-to-end MTR installations. Configure devices, manage cable infrastructure, and confidently complete customer-facing deployments.",
+    "cardTracks": ["Track 1", "Track 2", "Track 3", "Track 4"],
+    "hours": 22,
+    "prerequisites": "Basic AV installation experience",
+    "badge": "MTR Foundations Badge",
+    "pageTitle": "Lead Installer Path",
+    "subtitle": "Take ownership of full MTR deployments from rack to handoff",
+    "persona": "practitioner",
+    "difficulty": "intermediate",
+    "totalHours": "~22 hrs",
+    "description": "Extends the Junior Installer path with device configuration, basic networking, and a structured commissioning workflow. Ideal for field technicians moving into a lead role.",
+    "outcomes": [
+      "Configure MTR Windows and Android devices through full OOBE",
+      "Apply XML configuration profiles using SkypeSettings.xml",
+      "Configure VLANs and firewall allowlists for MTR deployments",
+      "Execute a complete commissioning test script and punch list",
+      "Deliver a professional customer handoff package"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "MTR fundamentals and the integrator role.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "physical-installation",
+        "trackTitle": "Track 2: Physical Installation",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Site prep, cabling, hardware mounting.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "MTR Windows, MTR Android, and XML profiles.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "network-infrastructure",
+        "trackTitle": "Track 4: Network & Infrastructure",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Networking fundamentals, QoS, and infrastructure planning.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "av-programmer",
+    "cardTitle": "AV Programmer",
+    "cardDescription": "Deep-dive into MTR configuration, network requirements, M365 admin, audio/video systems integration, and commissioning workflows.",
+    "cardTracks": ["Tracks 1, 3, 5, 6, 7"],
+    "hours": 30,
+    "prerequisites": "Programming background, AV experience",
+    "badge": "MTR Systems Integration Badge",
+    "pageTitle": "AV Programmer Path",
+    "subtitle": "Master the configuration, integration, and commissioning layer",
+    "persona": "practitioner",
+    "difficulty": "intermediate",
+    "totalHours": "~30 hrs",
+    "description": "For AV programmers and systems integrators focused on the technical configuration side of MTR deployments — M365 admin, network, audio/video, and enterprise management.",
+    "outcomes": [
+      "Provision resource accounts via PowerShell at scale",
+      "Configure Teams policies and room profiles in Teams Admin Center",
+      "Implement QoS DSCP markings and validate with TNAT",
+      "Configure and tune USB/DSP audio systems for MTR",
+      "Set up MTR Pro Management for ongoing monitoring"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Foundation knowledge for all AV professionals.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Device setup, OOBE, and XML configuration.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "microsoft-365-administration",
+        "trackTitle": "Track 5: Microsoft 365 Administration",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Resource accounts, Teams Admin Center, calendar integration.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "av-systems-commissioning",
+        "trackTitle": "Track 6: Audio/Video Systems & Commissioning",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Video, audio, and structured commissioning workflow.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "enterprise-configuration-management",
+        "trackTitle": "Track 7: Enterprise Configuration & Management",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "MTR Pro Management, Intune, and enterprise-scale operations.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "remote-support",
+    "cardTitle": "Remote Support (L1/L2)",
+    "cardDescription": "Diagnose and resolve MTR issues remotely. Master Teams Admin Center, resource account management, and the 20 most common MTR failure scenarios.",
+    "cardTracks": ["Tracks 1, 3, 5, 8"],
+    "hours": 24,
+    "prerequisites": "IT helpdesk experience",
+    "badge": "Partial MTR Advanced Deployment Badge",
+    "pageTitle": "Remote Support Path",
+    "subtitle": "Diagnose and resolve MTR issues efficiently from any location",
+    "persona": "practitioner",
+    "difficulty": "intermediate",
+    "totalHours": "~24 hrs",
+    "description": "Designed for L1/L2 support technicians who need to quickly identify, diagnose, and resolve MTR issues remotely using the right tools and a systematic methodology.",
+    "outcomes": [
+      "Use Teams Admin Center device health views effectively",
+      "Collect and interpret MTR log files for common failures",
+      "Resolve the 20 most common MTR issues from a structured playbook",
+      "Escalate with complete diagnostic information when needed",
+      "Monitor fleet health proactively via MTR Pro Management"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Platform and ecosystem fundamentals.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "How devices are configured — essential for diagnosing issues.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "microsoft-365-administration",
+        "trackTitle": "Track 5: Microsoft 365 Administration",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Resource accounts, policies, and calendar — primary failure domains.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "troubleshooting-diagnostics",
+        "trackTitle": "Track 8: Troubleshooting & Diagnostics",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "Diagnostic framework, common issue playbook, and advanced analysis.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "escalation-engineer",
+    "cardTitle": "Escalation Engineer (L3)",
+    "cardDescription": "All 9 technical tracks. Master CQD analysis, log forensics, PowerShell automation, Graph API, and Microsoft support escalation.",
+    "cardTracks": ["All 9 technical tracks (Programs 1–3)"],
+    "hours": 60,
+    "prerequisites": "L1/L2 experience, strong networking",
+    "badge": "MTR Advanced Deployment Badge",
+    "pageTitle": "Escalation Engineer Path",
+    "subtitle": "Master all 9 technical tracks for L3 escalation capability",
+    "persona": "specialist",
+    "difficulty": "advanced",
+    "totalHours": "~60 hrs",
+    "description": "The complete technical path for L3 escalation engineers. Covers all three programs — from foundations through advanced scripting and automation. No gaps allowed.",
+    "outcomes": [
+      "Apply a systematic diagnostic methodology to any MTR failure scenario",
+      "Analyse CQD data and produce remediation recommendations",
+      "Build PowerShell provisioning scripts with error handling",
+      "Automate health monitoring and firmware reporting via Graph API",
+      "Construct Intune compliance policies and conditional access for MTR"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "MTR ecosystem fundamentals.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "physical-installation",
+        "trackTitle": "Track 2: Physical Installation",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Physical installation.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Device configuration.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "network-infrastructure",
+        "trackTitle": "Track 4: Network & Infrastructure",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Network and infrastructure.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "microsoft-365-administration",
+        "trackTitle": "Track 5: Microsoft 365 Administration",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "M365 administration.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "av-systems-commissioning",
+        "trackTitle": "Track 6: Audio/Video Systems & Commissioning",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "AV systems and commissioning.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "enterprise-configuration-management",
+        "trackTitle": "Track 7: Enterprise Configuration & Management",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "Enterprise configuration.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "troubleshooting-diagnostics",
+        "trackTitle": "Track 8: Troubleshooting & Diagnostics",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "Troubleshooting and diagnostics.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "scripting-automation",
+        "trackTitle": "Track 9: Scripting & Automation",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 8,
+        "description": "Scripting and automation.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "project-manager",
+    "cardTitle": "Technical Project Manager",
+    "cardDescription": "Scope, deliver, and close MTR projects. BOM development, SOW writing, stakeholder management, and commissioning documentation.",
+    "cardTracks": ["Tracks 1, 10, 12"],
+    "hours": 25,
+    "prerequisites": "PM experience in AV or IT",
+    "badge": "Partial MTR Practice Leader Badge",
+    "pageTitle": "Project Manager Path",
+    "subtitle": "Deliver MTR projects on time, on spec, and on budget",
+    "persona": "specialist",
+    "difficulty": "intermediate",
+    "totalHours": "~25 hrs",
+    "description": "For technical project managers and delivery leads. Combines MTR ecosystem knowledge with full project delivery methodology — scoping, execution, control, and closeout.",
+    "outcomes": [
+      "Develop accurate MTR project BOMs and SOW documents",
+      "Manage stakeholders and change control through deployment",
+      "Coordinate subcontractors and site access for MTR rollouts",
+      "Produce professional as-built and commissioning documentation",
+      "Structure warranty and ongoing support handoffs"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Product, licensing, and integrator role fundamentals.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "project-management-delivery",
+        "trackTitle": "Track 10: Project Management & Delivery",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 3,
+        "hours": 8,
+        "description": "Initiation, execution, control, and closeout methodology.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "adoption-training-success",
+        "trackTitle": "Track 12: Adoption, Training & Customer Success",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 3,
+        "hours": 6,
+        "description": "End-user training, adoption strategy, and ongoing success metrics.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "presales-engineer",
+    "cardTitle": "Pre-Sales Engineer",
+    "cardDescription": "Win MTR opportunities. Technical discovery, competitive positioning vs. Zoom/Cisco/Google, RFP response, and TCO analysis.",
+    "cardTracks": ["Tracks 1, 3, 4, 11"],
+    "hours": 28,
+    "prerequisites": "Technical AV/UC background",
+    "badge": "Partial MTR Practice Leader Badge",
+    "pageTitle": "Pre-Sales Engineer Path",
+    "subtitle": "Win more MTR opportunities with deep technical credibility",
+    "persona": "specialist",
+    "difficulty": "advanced",
+    "totalHours": "~28 hrs",
+    "description": "For pre-sales and solutions engineers who need to scope accurately, respond to RFPs, and differentiate against Zoom Rooms, Cisco, and Google competition.",
+    "outcomes": [
+      "Apply a structured hardware selection framework to any room scenario",
+      "Build defensible TCO models for MTR vs. competitive platforms",
+      "Construct a compelling technical proposal and RFP response",
+      "Design MTR network architecture for enterprise environments",
+      "Position MTR Foundations and Systems Integration credentials in proposals"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Product ecosystem, licensing, and competitive landscape.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Technical depth on device capabilities for pre-sales conversations.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "network-infrastructure",
+        "trackTitle": "Track 4: Network & Infrastructure",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Network requirements you must understand to scope accurately.",
+        "focus": ""
+      },
+      {
+        "trackSlug": "solution-architecture-presales",
+        "trackTitle": "Track 11: Solution Architecture & Pre-Sales",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 2,
+        "hours": 7,
+        "description": "Design frameworks, competitive positioning, and proposal writing.",
+        "focus": ""
+      }
+    ]
+  },
+  {
+    "slug": "solutions-architect",
+    "cardTitle": "Solutions Architect",
+    "cardDescription": "The complete curriculum. Design enterprise MTR architectures, write technical proposals, lead pre-sales, and deliver managed services.",
+    "cardTracks": ["All 12 tracks (all 4 programs)"],
+    "hours": 80,
+    "prerequisites": "Senior AV/UC experience",
+    "badge": "MTR Pro Certified (Master Credential)",
+    "pageTitle": "Solutions Architect Path",
+    "subtitle": "Design and govern enterprise-scale MTR deployments end-to-end",
+    "persona": "expert",
+    "difficulty": "advanced",
+    "totalHours": "~80 hrs",
+    "description": "The master path. All 12 tracks across all 4 programs. For practice directors and solutions architects who need comprehensive mastery of the entire MTR lifecycle.",
+    "outcomes": [
+      "Architect MTR solutions for complex enterprise environments",
+      "Define and govern deployment standards across a partner practice",
+      "Evaluate build vs. buy decisions for managed service delivery",
+      "Lead a team of specialists across all MTR technical domains",
+      "Achieve all four MTR Pro Series credentials"
+    ],
+    "steps": [
+      {
+        "trackSlug": "mtr-ecosystem",
+        "trackTitle": "Track 1: The MTR Ecosystem",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 2,
+        "hours": 4,
+        "description": "Program 1 · Track 1",
+        "focus": ""
+      },
+      {
+        "trackSlug": "physical-installation",
+        "trackTitle": "Track 2: Physical Installation",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Program 1 · Track 2",
+        "focus": ""
+      },
+      {
+        "trackSlug": "device-configuration-essentials",
+        "trackTitle": "Track 3: Device Configuration Essentials",
+        "programSlug": "mtr-foundations",
+        "programTitle": "MTR Foundations",
+        "modules": 3,
+        "hours": 6,
+        "description": "Program 1 · Track 3",
+        "focus": ""
+      },
+      {
+        "trackSlug": "network-infrastructure",
+        "trackTitle": "Track 4: Network & Infrastructure",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Program 2 · Track 4",
+        "focus": ""
+      },
+      {
+        "trackSlug": "microsoft-365-administration",
+        "trackTitle": "Track 5: Microsoft 365 Administration",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Program 2 · Track 5",
+        "focus": ""
+      },
+      {
+        "trackSlug": "av-systems-commissioning",
+        "trackTitle": "Track 6: Audio/Video Systems & Commissioning",
+        "programSlug": "mtr-systems-integration",
+        "programTitle": "MTR Systems Integration",
+        "modules": 3,
+        "hours": 8,
+        "description": "Program 2 · Track 6",
+        "focus": ""
+      },
+      {
+        "trackSlug": "enterprise-configuration-management",
+        "trackTitle": "Track 7: Enterprise Configuration & Management",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "Program 3 · Track 7",
+        "focus": ""
+      },
+      {
+        "trackSlug": "troubleshooting-diagnostics",
+        "trackTitle": "Track 8: Troubleshooting & Diagnostics",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 9,
+        "description": "Program 3 · Track 8",
+        "focus": ""
+      },
+      {
+        "trackSlug": "scripting-automation",
+        "trackTitle": "Track 9: Scripting & Automation",
+        "programSlug": "mtr-advanced-deployment",
+        "programTitle": "MTR Advanced Deployment",
+        "modules": 3,
+        "hours": 8,
+        "description": "Program 3 · Track 9",
+        "focus": ""
+      },
+      {
+        "trackSlug": "project-management-delivery",
+        "trackTitle": "Track 10: Project Management & Delivery",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 3,
+        "hours": 8,
+        "description": "Program 4 · Track 10",
+        "focus": ""
+      },
+      {
+        "trackSlug": "solution-architecture-presales",
+        "trackTitle": "Track 11: Solution Architecture & Pre-Sales",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 2,
+        "hours": 7,
+        "description": "Program 4 · Track 11",
+        "focus": ""
+      },
+      {
+        "trackSlug": "adoption-training-success",
+        "trackTitle": "Track 12: Adoption, Training & Customer Success",
+        "programSlug": "mtr-practice-leadership",
+        "programTitle": "MTR Practice Leadership",
+        "modules": 3,
+        "hours": 6,
+        "description": "Program 4 · Track 12",
+        "focus": ""
+      }
+    ]
+  }
+]

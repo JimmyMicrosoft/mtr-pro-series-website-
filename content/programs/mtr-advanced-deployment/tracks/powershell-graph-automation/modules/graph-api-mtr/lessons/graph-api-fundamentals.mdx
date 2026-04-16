@@ -1,0 +1,286 @@
+---
+id: "p3-t3-m2-l1"
+slug: "graph-api-fundamentals"
+title: "Graph API Fundamentals for Room Management"
+shortTitle: "Graph API Fundamentals"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 2
+moduleSlug: "graph-api-mtr"
+moduleTitle: "Microsoft Graph API for MTR"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "understand"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Understand the Graph API authentication model and select the correct flow for unattended automation scripts"
+  - "Register an Azure App with the minimum required permissions for MTR room management operations"
+  - "Make authenticated Graph API calls from PowerShell with correct pagination and throttling handling"
+
+prerequisites:
+  - "p3-t3-m1-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "graph-api"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m2-l2"
+
+metaDescription: "Microsoft Graph API fundamentals for MTR room management — OAuth 2.0 app registration, client credentials flow, PowerShell authentication, pagination, throttling handling, and key endpoints for room management."
+
+keywords:
+  - "Microsoft Graph API MTR"
+  - "Teams Rooms Graph API PowerShell"
+  - "Graph API room management"
+  - "Graph API authentication PowerShell"
+  - "MTR Graph API app registration"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Microsoft Graph API is the unified REST interface for Microsoft 365 data — the same data that the Microsoft.Graph PowerShell module wraps. Understanding Graph directly matters for MTR automation because some endpoints are only available in the Graph beta version (not yet in the PowerShell module), because calling Graph directly gives you precise control over query parameters and pagination, and because any language or runtime — not just PowerShell — can call Graph, making your automation logic portable. This lesson covers the fundamentals: app registration, authentication, making calls, handling pagination, and the key endpoints relevant to MTR fleet management.
+
+---
+
+## App Registration for Unattended Scripts
+
+Automated scripts must authenticate without user interaction. This requires an **App Registration** in Azure Entra ID with **application permissions** (not delegated):
+
+1. In the Azure portal, navigate to **Entra ID → App registrations → New registration**
+2. Name the app (e.g., `MTR-Automation-Script`) and set it as a **single-tenant** app
+3. Under **API permissions → Add a permission → Microsoft Graph → Application permissions**, add the required permissions
+4. **Grant admin consent** — application permissions always require admin consent
+
+Minimum permissions for common MTR operations:
+
+| Permission | Operations |
+|------------|------------|
+| `DeviceManagementManagedDevices.Read.All` | Read Intune device compliance, OS version |
+| `DeviceManagementManagedDevices.ReadWrite.All` | Trigger device sync, wipe actions |
+| `User.Read.All` | Read resource account properties |
+| `Calendars.Read` | Read room calendar events for availability checks |
+| `Place.Read.All` | Read room resource properties (building, capacity) |
+| `Reports.Read.All` | Access Microsoft 365 usage reports |
+| `CallRecords.Read.All` | Access Teams call quality records |
+
+For authentication, create a **client secret** (simpler, requires rotation every 1-2 years) or a **certificate** (more secure, no rotation — recommended for production). Store either in Azure Key Vault.
+
+---
+
+## Getting an Access Token: Client Credentials Flow
+
+The Client Credentials flow exchanges the app's credentials directly for a token — no user sign-in involved:
+
+```powershell
+function Get-GraphToken {
+    param(
+        [string]$TenantId,
+        [string]$ClientId,
+        [string]$ClientSecret
+    )
+
+    $tokenUri = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
+    $body = @{
+        grant_type    = "client_credentials"
+        client_id     = $ClientId
+        client_secret = $ClientSecret
+        scope         = "https://graph.microsoft.com/.default"
+    }
+
+    $response = Invoke-RestMethod -Uri $tokenUri -Method POST -Body $body `
+        -ContentType "application/x-www-form-urlencoded" -ErrorAction Stop
+
+    return $response.access_token
+}
+
+# Usage
+$token = Get-GraphToken `
+    -TenantId     $env:AZURE_TENANT_ID `
+    -ClientId     $env:AZURE_CLIENT_ID `
+    -ClientSecret $env:AZURE_CLIENT_SECRET
+
+$headers = @{ Authorization = "Bearer $token" }
+```
+
+<Callout type="note">
+Access tokens expire after **60-90 minutes**. For long-running scripts, check token expiry and refresh before each API call, or re-request a token on a 401 Unauthorized response.
+</Callout>
+
+---
+
+## Making Graph API Calls with Pagination
+
+A single Graph API call returns at most 100-1000 objects depending on the endpoint. Use `@odata.nextLink` to retrieve all pages:
+
+```powershell
+function Invoke-GraphRequest {
+    param(
+        [string]$Uri,
+        [hashtable]$Headers,
+        [string]$Method = "GET",
+        [object]$Body = $null
+    )
+
+    $allResults = [System.Collections.Generic.List[PSObject]]::new()
+    $nextUri    = $Uri
+
+    do {
+        $params = @{
+            Uri     = $nextUri
+            Method  = $Method
+            Headers = $Headers
+        }
+        if ($Body -and $Method -ne "GET") {
+            $params.Body        = ($Body | ConvertTo-Json -Depth 10)
+            $params.ContentType = "application/json"
+        }
+
+        try {
+            $response = Invoke-RestMethod @params -ErrorAction Stop
+        } catch {
+            # Handle throttling (429 Too Many Requests)
+            if ($_.Exception.Response.StatusCode -eq 429) {
+                $retryAfter = [int]($_.Exception.Response.Headers["Retry-After"] ?? 30)
+                Write-Warning "Throttled — waiting $retryAfter seconds"
+                Start-Sleep -Seconds $retryAfter
+                continue   # Retry the same URI
+            }
+            throw
+        }
+
+        if ($response.value) {
+            $allResults.AddRange($response.value)
+        } else {
+            $allResults.Add($response)
+        }
+
+        $nextUri = $response.'@odata.nextLink'
+
+    } while ($nextUri)
+
+    return $allResults
+}
+
+# Example: get all room resource accounts
+$rooms = Invoke-GraphRequest `
+    -Uri     "https://graph.microsoft.com/v1.0/places/microsoft.graph.room" `
+    -Headers $headers
+```
+
+The `do/while` loop continues until `@odata.nextLink` is null, ensuring the full result set is retrieved regardless of fleet size.
+
+---
+
+## Handling Throttling
+
+Graph API throttling returns HTTP 429 with a `Retry-After` header indicating the seconds to wait. The `Invoke-GraphRequest` function above handles this automatically. Key throttling thresholds to be aware of:
+
+| API Area | Typical Throttle Limit |
+|----------|------------------------|
+| User/Group reads | 10,000 requests per 10 minutes per app |
+| Reports API | 1 request per second |
+| Calendar reads | 10,000 requests per 10 minutes per app |
+| Devices / Intune | 3,000 requests per 5 minutes per app |
+| Call Records | 1 request per second |
+
+For fleet-scale scripts querying hundreds of rooms, always add `Start-Sleep -Milliseconds 100` between individual device calls and use Graph batch requests (covered in Module 2 Lesson 2) to reduce API call volume.
+
+---
+
+## Key Graph API Endpoints for MTR
+
+```powershell
+# Room resource listing
+$uri = "https://graph.microsoft.com/v1.0/places/microsoft.graph.room"
+
+# Specific room resource by email
+$uri = "https://graph.microsoft.com/v1.0/places/conf-lon-01@contoso.com/microsoft.graph.room"
+
+# Resource account user object
+$uri = "https://graph.microsoft.com/v1.0/users/conf-lon-01@contoso.com"
+
+# Room calendar events (next 7 days)
+$start = (Get-Date).ToString("o")
+$end   = (Get-Date).AddDays(7).ToString("o")
+$uri   = "https://graph.microsoft.com/v1.0/users/conf-lon-01@contoso.com/calendarView?startDateTime=$start&endDateTime=$end"
+
+# Intune managed devices
+$uri = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices?`$filter=operatingSystem eq 'Windows'&`$top=100"
+
+# Teams Rooms device health (Graph beta)
+$uri = "https://graph.microsoft.com/beta/teamwork/devices"
+
+# Call records (last 7 days)
+$since = (Get-Date).AddDays(-7).ToString("o")
+$uri   = "https://graph.microsoft.com/v1.0/communications/callRecords?`$filter=startDateTime ge $since"
+
+# Microsoft 365 Teams device usage report
+$uri = "https://graph.microsoft.com/v1.0/reports/getTeamsDeviceUsageDistributionUserCounts(period='D7')"
+```
+
+---
+
+<KnowledgeCheck id="p3-t3-m2-l1-kc">
+  <Question>
+    You register an Azure App with User.Read.All (application permission) and admin consent is granted. When you run your script and call GET /users, you receive a 403 Forbidden. What is the most likely cause?
+  </Question>
+  <Answer>User.Read.All requires delegated permission, not application permission — change the permission type and re-consent</Answer>
+  <Answer>The access token has expired — re-request a token and retry the call</Answer>
+  <Answer correct>The most likely cause is that admin consent was granted in a different tenant, or the consent was granted for a different app registration (e.g., a duplicate was created). Verify in the App Registration → API Permissions blade that the User.Read.All permission shows "Granted for [your tenant]" status. A 403 (not 401) specifically means the token is valid but the permission has not been granted — if it were a token issue, you would receive 401 Unauthorized instead</Answer>
+  <Answer>The Client Credentials flow cannot be used for User.Read.All — switch to the Authorization Code flow</Answer>
+  <Explanation>
+    HTTP 403 Forbidden from Graph means the authenticated identity (the app) has a valid token but lacks the permission to access the requested resource. HTTP 401 Unauthorized means the token itself is invalid or expired. When you see 403 after setting up a new app registration, the first check is always the API Permissions blade — verify the correct permission is listed AND that admin consent has been granted for the correct tenant. The Client Credentials flow works correctly with User.Read.All as an application permission; the permission type is not the issue here.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **App registration:** Create a single-tenant App Registration with application permissions (not delegated) for unattended scripts. Grant admin consent.
+- **Client Credentials flow:** Exchange `client_id` + `client_secret` for a token at the `/oauth2/v2.0/token` endpoint — no user interaction required.
+- **Pagination:** Always follow `@odata.nextLink` until null to retrieve the complete result set.
+- **Throttling:** Handle HTTP 429 by reading the `Retry-After` header and sleeping before retrying the same request.
+- **API versions:** Use `v1.0` for stable production operations; `beta` only for functionality not yet in v1.0 (such as `/teamwork/devices` for Teams Rooms health).
+
+---
+
+## What's Next
+
+[Room Resource and Calendar Management via Graph →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/graph-api-mtr/lessons/room-resource-calendar-graph/)

@@ -1,0 +1,247 @@
+---
+id: "p1-t2-m2-l1"
+slug: "cable-types"
+title: "Cable Types — Cat6/6A, HDMI, USB, DisplayPort, Speakon, Euroblock"
+shortTitle: "Cable Types"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 2
+moduleSlug: "cable-infrastructure"
+moduleTitle: "Cable Infrastructure"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Identify the correct cable type for each MTR signal path based on the connected devices, required bandwidth, distance, and installation environment"
+  - "Explain the characteristics that differentiate Cat6 from Cat6A, HDMI 2.0 from 2.1, and USB-A from USB-C"
+  - "Specify the correct cable type and specification for each signal path in a given MTR system design"
+
+prerequisites:
+  - "p1-t2-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "cable"
+  - "hdmi"
+  - "usb"
+  - "network"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m2-l1-cable-selection-matrix.pdf"
+    label: "Cable Selection Matrix"
+    sizeKb: 70
+
+relatedLessons:
+  - "p1-t2-m2-l2"
+  - "p1-t2-m2-l3"
+
+metaDescription: "Cable type selection for MTR installations — Cat6 vs. Cat6A, HDMI 2.0 vs. 2.1, USB versions and connectors, DisplayPort 1.4, Speakon, and Euroblock. Specification guidance for every MTR signal path."
+
+keywords:
+  - "HDMI 2.0 vs 2.1 conference room"
+  - "Cat6A vs Cat6 MTR"
+  - "USB cable for camera Teams Rooms"
+  - "AV cable types MTR"
+  - "Speakon connector AV"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Specifying the wrong cable type is a persistent source of installation problems. The cable arrives on-site, gets installed in conduit or ceiling pathways, and the signal fails — either immediately or intermittently. Tracing an intermittent problem to a cable specification error after the walls are closed is expensive. Getting the cable specification right before the BOM is finalized prevents the problem entirely.
+
+This lesson covers every cable type used in MTR signal paths: what differentiates the variants, what the performance implications are, and how to match the right cable to each application.
+
+---
+
+## Network Cables — Cat6 and Cat6A
+
+**Cat6** supports 1 Gbps at the full 100-meter channel length and 10 Gbps at approximately 55 meters. Its conductors are typically 24 AWG and the cable geometry manages near-end crosstalk within TIA-568 specifications for 1G applications.
+
+**Cat6A** (Category 6 Augmented) supports 10 Gbps at the full 100-meter channel length. It achieves this through tighter geometry specifications, typically larger 23 AWG conductors, enhanced shielding in some variants (F/UTP or S/FTP designs), and a physically larger jacket — Cat6A cables are noticeably bulkier than Cat6. The "augmented" specification specifically addresses alien crosstalk (interference between adjacent cables), which is the limiting factor for 10G performance at distance.
+
+For MTR installations, Cat6A is the recommended baseline for all new network infrastructure. The cost difference between Cat6 and Cat6A is modest at the cable level, and the future-proofing value of 10G-capable infrastructure for a system that will serve a room for 5–10 years is significant. All compute unit network connections and any connections to PoE-powered devices should use Cat6A.
+
+<Callout type="tip">
+  Verify that the Cat6A cable you specify is compatible with the keystones, patch panels,
+  and plugs in the BOM. Cat6A has a larger cable diameter than Cat6 and requires Cat6A-rated
+  jacks and plugs — Cat6 keystones will not achieve Cat6A performance and may not physically
+  accept the larger cable properly.
+</Callout>
+
+---
+
+## Video Cables — HDMI 2.0 and HDMI 2.1
+
+**HDMI 2.0** supports up to 4K resolution at 60Hz with a maximum bandwidth of 18 Gbps. It handles 4K/60Hz HDR content and supports up to 32 audio channels. For current MTR deployments, HDMI 2.0 is the standard specification — most MTR compute units output 4K/60Hz, and HDMI 2.0 cables carry that signal reliably.
+
+**HDMI 2.1** supports resolutions up to 8K at 60Hz or 4K at 120Hz with a maximum bandwidth of 48 Gbps. It also introduces Variable Refresh Rate (VRR) and Auto Low Latency Mode (ALLM). For MTR rooms today, HDMI 2.1 capability is not required by current compute hardware but provides meaningful future-proofing.
+
+For new infrastructure installations, specifying HDMI 2.1 cable adds minimal cost and ensures compatibility with next-generation hardware. When specifying HDMI 2.1 cable, use cables with published specifications from commercial AV suppliers — consumer HDMI 2.1 cables vary significantly in quality, and unrated cables may not maintain signal integrity at full 48 Gbps bandwidth in commercial installation lengths.
+
+{/* MEDIA: Connector reference visual — high-quality photos of HDMI Type A, HDMI Type C (mini), HDMI Type D (micro), USB-A, USB-C, DisplayPort, Speakon NL4FC, and Euroblock 3-pin, each labeled with name, gender, and common MTR use case. Filename: p1-t2-m2-l1-connector-reference.png */}
+
+---
+
+## USB Cables — Type A, Type C, and Version Matters
+
+USB cables used in MTR systems connect cameras, audio devices, touch consoles (in some configurations), and BYOD connections. The connector type (A or C) matters less than the USB version the cable supports.
+
+**USB 2.0** supports 480 Mbps bandwidth. This is sufficient for audio devices and USB 2.0 cameras. Passive cable limit: 5 meters. Active USB 2.0 cables extend this to approximately 15–20 meters.
+
+**USB 3.x (USB 3.2 Gen 1 and Gen 2)** supports 5 Gbps (Gen 1) or 10 Gbps (Gen 2). USB 3.x is required for cameras that output uncompressed or high-bitrate 4K video. This is critical: an MTR-certified 4K auto-tracking camera connected via a USB 2.0 cable will either fail to initialize or produce degraded video. Always verify the USB version requirement from the camera's technical specification sheet and match the cable accordingly. Passive cable limit for USB 3.x: approximately 2–3 meters. Active USB 3.x cables are required for any run beyond that.
+
+**USB-A vs. USB-C connectors:** USB-C is smaller and symmetrical (reversible). USB-A is the traditional rectangular connector. The connector type is determined by the device ports — match the cable connector to the device connector. Many modern compute units use USB-C for high-speed camera connections and USB-A for legacy peripherals.
+
+---
+
+## Video Cables — DisplayPort 1.4
+
+DisplayPort 1.4 supports up to 32.4 Gbps bandwidth (HBR3), enabling 8K/60Hz or 4K/120Hz output. It is used on some compute units as the primary display output, particularly when the compute unit is a compact PC with both DisplayPort and HDMI outputs.
+
+Passive DisplayPort cables are reliable up to approximately 3 meters at full HBR3 bandwidth. Active DisplayPort cables or fiber DP (Active Optical Cable) solutions are required for runs beyond 3 meters. DP-to-HDMI adapters are technically viable but introduce potential compatibility and EDID/HDCP issues — where possible, match the display input to the compute output type to avoid adapters entirely. If an adapter is unavoidable, use a passive adapter for short runs and an active adapter for longer runs where signal conditioning is needed.
+
+---
+
+## Audio Cables — Speakon and Euroblock
+
+**Speakon (NL4FC)** connectors are the professional standard for amplified speaker wiring. Speakon provides a locking, high-current-rated connection that is safer and more reliable than bare wire, banana plugs, or spring-clip terminals. They are used in MTR rooms with separate amplifiers and ceiling or surface speakers — typically medium to large rooms where a USB audio bar is insufficient for coverage or volume requirements. The NL4FC designation indicates a 4-pole Speakon connector, which supports dual-channel (stereo) amplifier connections on a single connector.
+
+**Euroblock (Phoenix/pluggable terminal block)** connectors are used for line-level audio I/O, RS-232/485 control, GPIO, and low-current power connections on DSPs, amplifiers, and control systems. Biamp TesiraFORTE, QSC Q-SYS Core, and similar DSP platforms use Euroblock throughout. Correct Euroblock termination technique: strip approximately 5–6mm of insulation, insert fully into the terminal, tighten the set screw to the specified torque. Loose Euroblock connections — the most common Euroblock failure — cause intermittent audio loss or control failures that are difficult to diagnose without a termination inspection.
+
+---
+
+## Hands-On Exercise
+
+The Cable Selection Matrix provides a 15-path signal path table for a large conference room MTR system, including network connections, display runs, camera feeds, audio connections, control cable, and a BYOD table cable. For each path, specify the correct cable type, minimum performance specification, connector types at each end, and whether an active cable or extender is required based on the stated run distance.
+
+<DownloadButton
+  file="p1-t2-m2-l1-cable-selection-matrix.pdf"
+  label="Cable Selection Matrix"
+  sizeKb={70}
+  description="15-path cable selection exercise for a large conference room MTR system. Specify cable type, specification, connectors, and extender requirements for each signal path."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t2-m2-l1-kc">
+  <Question>
+    An MTR system design includes a 4K auto-tracking camera connected to the compute unit
+    via a 6-meter cable. The camera's spec sheet states it requires USB 3.2 Gen 1. Which
+    cable is correct?
+  </Question>
+  <Answer>A 6-meter passive USB-A 2.0 cable — USB 2.0 supports all USB cameras</Answer>
+  <Answer>A 3-meter passive USB-C 3.2 Gen 1 cable with a 3-meter passive extension</Answer>
+  <Answer correct>An active USB 3.2 Gen 1 cable rated for at least 6 meters — passive USB 3.x cables are limited to approximately 2–3 meters</Answer>
+  <Answer>A Cat6 cable with a USB over CAT extender pair</Answer>
+  <Explanation>
+    USB 3.x passive cables are limited to approximately 2–3 meters. A 6-meter passive
+    USB 3.x cable will likely cause intermittent connectivity or initialization failures.
+    The correct solution is an active USB cable (with built-in signal conditioning) rated
+    for at least 6 meters, or a USB over CAT extender system. The camera also requires
+    USB 3.2 Gen 1 bandwidth — a USB 2.0 cable would limit bandwidth and degrade video
+    quality or cause the camera to fail initialization entirely.
+  </Explanation>
+
+  <Question>
+    Why is Cat6A recommended over Cat6 for new MTR infrastructure installations?
+  </Question>
+  <Answer>Cat6A is required by Microsoft's certified device program for all Teams Rooms installations</Answer>
+  <Answer>Cat6A uses a smaller cable diameter that is easier to route through tight conduit</Answer>
+  <Answer correct>Cat6A supports 10 Gbps at the full 100-meter channel length, providing future-proofing for next-generation networking without a significant cost premium over Cat6</Answer>
+  <Answer>Cat6A eliminates the need for PoE injectors since it delivers more power per conductor</Answer>
+  <Explanation>
+    Cat6A supports 10 Gbps at 100 meters; Cat6 supports 10 Gbps only at approximately
+    55 meters or shorter. For new installations that will serve a room for 5–10 years,
+    the marginal cost difference between Cat6 and Cat6A is justified by the future-proofing
+    benefit. Cat6A is not a Microsoft requirement but is an industry best practice
+    recommendation for commercial installations.
+  </Explanation>
+
+  <Question>
+    A Euroblock connector on a DSP is showing intermittent audio loss on one channel.
+    What is the most likely cause?
+  </Question>
+  <Answer>The Euroblock connector is not compatible with this DSP model</Answer>
+  <Answer correct>A loose set screw on the Euroblock terminal — insufficient tightening during installation left the conductor with intermittent contact</Answer>
+  <Answer>The Euroblock cable type is wrong — a different conductor gauge is required</Answer>
+  <Answer>Euroblock connectors do not support audio channels — an XLR connector should be used instead</Answer>
+  <Explanation>
+    Loose Euroblock set screws are the most common cause of intermittent audio issues
+    on DSP and amplifier connections that use Euroblock terminations. The conductor must
+    be fully inserted and the set screw tightened to the specified torque. Vibration and
+    thermal cycling over time can loosen improperly torqued connections. Inspecting and
+    re-tightening Euroblock terminals is the first diagnostic step for intermittent
+    audio on DSP-based systems.
+  </Explanation>
+
+  <Question>
+    A room design shows a compute unit with a DisplayPort 1.4 output connected to a
+    display with only HDMI inputs. The cable run is 8 meters. What is the correct approach?
+  </Question>
+  <Answer>Use a passive DisplayPort to HDMI adapter with a standard 8-meter HDMI cable</Answer>
+  <Answer>Replace the display with one that has a DisplayPort input</Answer>
+  <Answer correct>Use an active DisplayPort to HDMI adapter (to handle signal conversion at the source) with an active HDMI cable rated for 8 meters, since passive HDMI is reliable to approximately 10–15 meters but DP passive cables are limited to 3 meters</Answer>
+  <Answer>DisplayPort cannot be converted to HDMI — the compute unit must be replaced with one that has native HDMI output</Answer>
+  <Explanation>
+    DisplayPort passive cables are limited to approximately 3 meters at HBR3 bandwidth.
+    An 8-meter passive DP cable will likely not maintain signal integrity. An active
+    DisplayPort to HDMI adapter handles the signal conversion at the source; an active
+    HDMI cable handles the 8-meter run. This is a workable solution when the display
+    input type cannot be changed, though matching compute output to display input type
+    (both HDMI or both DisplayPort) is preferable to avoid conversion entirely.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Select network cable:** Cat6A for all new network infrastructure; Cat6 acceptable for short runs and replacements in existing Cat6 systems.
+- **Specify video cable:** HDMI 2.0 for current MTR compute; HDMI 2.1 or fiber for new infrastructure; active cables or HDBaseT for runs over 10–15 meters.
+- **Specify USB cable:** Match USB version to camera requirements (USB 3.x for 4K cameras); use active cables for any USB 3.x run over 2–3 meters or USB 2.0 run over 5 meters.
+- **Identify audio connectors:** Speakon for amplified speaker runs; Euroblock for line-level DSP I/O and control connections.
+
+---
+
+## What's Next
+
+With cable types defined, the next lesson focuses on what to do when the required run length exceeds the cable's passive distance limit — and which extension technology is the right choice for each signal type and distance.
+
+[Distance Limitations and Extenders — HDBaseT, USB over CAT, Fiber →](/programs/mtr-foundations/tracks/physical-installation/modules/cable-infrastructure/lessons/distance-limitations-extenders/)

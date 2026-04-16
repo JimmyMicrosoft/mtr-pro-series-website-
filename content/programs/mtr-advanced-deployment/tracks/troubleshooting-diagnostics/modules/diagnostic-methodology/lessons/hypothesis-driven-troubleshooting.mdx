@@ -1,0 +1,230 @@
+---
+id: "p3-t2-m1-l1"
+slug: "hypothesis-driven-troubleshooting"
+title: "Hypothesis-Driven Troubleshooting for MTR"
+shortTitle: "Diagnostic Methodology"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 1
+moduleSlug: "diagnostic-methodology"
+moduleTitle: "Diagnostic Methodology"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Apply the hypothesis-driven diagnostic methodology to an MTR problem to reach a root cause systematically"
+  - "Distinguish between symptoms and root causes in common MTR failure scenarios"
+  - "Build a diagnostic hypothesis set for a given MTR problem based on the available evidence"
+
+prerequisites:
+  - "p3-t1-m3-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "diagnostics"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m1-l2"
+  - "p3-t2-m2-l1"
+
+metaDescription: "Hypothesis-driven troubleshooting methodology for MTR — problem definition, evidence gathering, hypothesis formation, test design, systematic elimination, and root cause documentation for Teams Rooms issues."
+
+keywords:
+  - "MTR troubleshooting methodology"
+  - "Teams Rooms diagnostic framework"
+  - "hypothesis-driven troubleshooting"
+  - "MTR root cause analysis"
+  - "Teams Rooms problem investigation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The most common failure mode in technical troubleshooting is jumping to a solution before understanding the problem. A technician who restarts a device because "that usually fixes it" sometimes gets lucky and resolves the issue; but when the issue recurs, or when the restart doesn't fix it, they are left without a path forward. Hypothesis-driven troubleshooting starts from the evidence and builds a systematic path to root cause — every action is a test of a specific hypothesis, and every result narrows the problem space.
+
+---
+
+## The Diagnostic Framework
+
+The hypothesis-driven methodology has five phases:
+
+**Phase 1 — Define the problem precisely:**
+The initial report ("the room doesn't work") is rarely specific enough to diagnose. Before taking any action, establish:
+- What exactly is failing? (audio, video, joining meetings, display, specific feature)
+- When did it start? (specific time, after an update, after a room configuration change)
+- How consistently does it fail? (every meeting, intermittently, only at certain times)
+- Who is affected? (one room, one building, all rooms)
+- Has anything changed recently? (Teams app update, network change, hardware replacement)
+
+*A specific problem statement is the input to the diagnostic process:* "The camera shows in TAC as healthy, but remote participants see a frozen frame approximately 20 minutes into any meeting started in Room B-204."
+
+**Phase 2 — Gather evidence:**
+Collect relevant data before forming a hypothesis. Evidence for MTR issues:
+- Pro Management incident history and AI analysis
+- TAC device health status and peripheral health
+- CQD call quality data for the room
+- Windows Event Log on the device (if accessible)
+- Teams app log files (collected via Pro Management log collection)
+- Network monitoring data during the affected period
+
+**Phase 3 — Form hypotheses:**
+Based on the evidence, generate a set of hypotheses ordered by probability:
+- H1 (most likely): [explanation of why this is most likely, based on evidence]
+- H2 (second most likely): ...
+- H3: ...
+
+For the frozen video example:
+- H1: USB bandwidth saturation — camera USB bandwidth may be insufficient for 20-minute sessions (USB hub issue, USB 2.0 port limitation)
+- H2: Network bandwidth issue — video bitrate degrades after 20 minutes due to network congestion at that time of day
+- H3: Camera overheating — camera firmware issue causes thermal throttling after extended use
+- H4: Teams app memory leak — app accumulates memory over 20 minutes until video subsystem is affected
+
+**Phase 4 — Design tests, cheapest first:**
+For each hypothesis, design a test that would either confirm or eliminate it. Order tests by cost (time, disruption, complexity) — start with the cheapest test that would eliminate the most hypotheses.
+
+For the hypotheses above:
+- Test H2 first (cheapest): Check CQD for the affected calls — does packet loss or bandwidth data show degradation at the 20-minute mark?
+- Test H1 next: Connect the camera directly to the compute unit (bypass USB hub) — does the freeze still occur?
+- Test H3: Check camera model for known firmware issues; check device temperature via thermal imaging or device log
+- Test H4: Collect app memory profile during a call via Pro Management log collection
+
+**Phase 5 — Document and close:**
+Once root cause is confirmed:
+- Document the problem, evidence gathered, hypotheses formed, tests run, and root cause found
+- Document the resolution and any steps taken to prevent recurrence
+- Update the team's diagnostic runbook with this pattern if it is new
+
+---
+
+## Symptoms vs. Root Causes
+
+A critical diagnostic skill is distinguishing between symptoms (what the user sees) and root causes (why it's happening). Acting on a symptom without understanding the root cause leads to incomplete fixes.
+
+**Common symptom/root cause pairs in MTR:**
+
+| Symptom | Could Be Root Cause |
+|---------|-------------------|
+| Far end hears echo | AEC not configured; AEC reference signal not connected; speaker too close to microphone |
+| Device shows Offline in TAC | Network connectivity lost; device powered off; Teams app not running; resource account sign-out |
+| Video freezes periodically | Packet loss (network); USB camera issue; camera driver crash; Teams app bug |
+| Meeting quality is consistently poor in one room | Room network issue; QoS not applied; microphone coverage problem; acoustic issue |
+| Resource account keeps signing out | NTP out of sync; CA policy blocking; MFA not excluded; password expired |
+| Device shows Critical in Pro Management | Camera not detected; Teams app not responding; authentication failure |
+
+The same symptom can have different root causes — diagnosing the symptom correctly requires evidence, not assumption.
+
+---
+
+## Building a Diagnostic Runbook Entry
+
+Each novel MTR issue investigated and resolved should be documented as a runbook entry for the support team. A runbook entry format:
+
+```
+ISSUE: [Clear problem statement]
+SYMPTOMS: [What users/monitoring sees]
+EVIDENCE: [What data pointed to the root cause]
+ROOT CAUSE: [Confirmed cause]
+RESOLUTION: [Steps taken to fix]
+VERIFICATION: [How to confirm resolution]
+RECURRENCE PREVENTION: [Configuration change or monitoring added]
+TIME TO RESOLVE: [From detection to resolution]
+RELATED TO: [Similar issues or known patterns]
+```
+
+Over time, a populated runbook allows the support team to identify a familiar pattern within seconds of receiving a new incident — dramatically reducing MTTR.
+
+---
+
+## When Not to Solve Immediately
+
+Not every MTR issue should be resolved by the first person who sees it. Escalation indicators:
+
+- Issue recurs after the same "fix" has been applied twice — pattern suggests misdiagnosed root cause
+- Multiple rooms exhibiting the same symptom simultaneously — likely a platform-level change (Microsoft 365 service incident, network change, policy update)
+- Issue is outside the technical scope of the current tier (Teams service incident requires Microsoft escalation)
+- Issue has compliance or security implications (unauthorized sign-in, unusual access pattern)
+
+In these cases, escalate according to the support structure rather than continuing to apply incorrect fixes.
+
+---
+
+<KnowledgeCheck id="p3-t2-m1-l1-kc">
+  <Question>
+    A support engineer receives a Pro Management Critical incident: "Camera not
+    detected — USB connection lost at 08:22." The AI analysis says "Remote
+    restart may restore detection." The engineer performs a remote restart.
+    The camera is detected after restart. The same incident occurs again at
+    08:22 the following day. Applying the diagnostic methodology, what should
+    the engineer do?
+  </Question>
+  <Answer>Perform another remote restart — the issue was resolved twice without a site visit, which is acceptable</Answer>
+  <Answer>Replace the camera hardware immediately — the recurrence indicates hardware failure</Answer>
+  <Answer correct>The recurrence at the same time (08:22) two days in a row is a pattern that points to a systematic cause, not a random hardware fault. The engineer should apply Phase 1 (precise problem definition): why exactly 08:22? What happens at that time — is there a scheduled task, a Windows Update check, a configuration change, a Teams app update that runs at that time? The engineer should form hypotheses based on this timing evidence (H1: a scheduled task restarts a service that conflicts with the USB camera driver; H2: Windows Update check runs at 08:22 and consumes bandwidth that interrupts the camera USB bandwidth; H3: the first meeting of the day starts at 08:30 and participants connecting triggers a state that the camera doesn't survive). The correct next step is investigating what occurs at 08:22 systematically, not immediately replacing hardware</Answer>
+  <Answer>Escalate to Microsoft Support — a recurring incident with the same timestamp indicates a Teams app bug</Answer>
+  <Explanation>
+    The recurrence pattern is the critical evidence here. A random hardware
+    fault would recur randomly, not at the same time each day. The 08:22
+    timestamp two days running is a diagnostic signal that the cause is
+    systematic — something happens at that time that triggers the camera
+    loss. Investigating the system state at 08:22 (scheduled tasks, Windows
+    Update, device wake events in the Windows Event Log, Pro Management
+    incident timeline for both days) will identify the trigger. This is
+    the hypothesis-driven approach: the symptom is the same, but the recurrence
+    pattern changes the most likely hypothesis from "hardware fault" to
+    "scheduled trigger causing USB conflict." Replacing hardware without
+    confirming a hardware fault wastes money and time — and if the hardware
+    isn't the cause, the new hardware will exhibit the same 08:22 failure.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Five phases:** Define precisely → Gather evidence → Form hypotheses → Test cheapest first → Document.
+- **Symptoms vs. root causes:** Never treat the symptom description as the cause; ask "why" at each level.
+- **Hypothesis ordering:** Most likely first; test cheapest tests first; each test eliminates one or more hypotheses.
+- **Runbook:** Document every novel issue; a populated runbook converts investigation time to pattern recognition time.
+- **Escalation triggers:** Same fix applied twice without resolution; fleet-wide symptoms; security implications.
+
+---
+
+## What's Next
+
+[Log Collection and Analysis →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/diagnostic-methodology/lessons/log-collection-analysis/)

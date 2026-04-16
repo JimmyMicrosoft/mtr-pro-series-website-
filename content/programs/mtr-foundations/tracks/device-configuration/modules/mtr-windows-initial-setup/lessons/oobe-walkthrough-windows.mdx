@@ -1,0 +1,218 @@
+---
+id: "p1-t3-m1-l1"
+slug: "oobe-walkthrough-windows"
+title: "OOBE Walkthrough — First-Boot Setup on MTR Windows Devices"
+shortTitle: "OOBE Walkthrough"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 1
+moduleSlug: "mtr-windows-initial-setup"
+moduleTitle: "MTR Windows — Initial Setup"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Complete the Out-of-Box Experience process on an MTR Windows device from first power-on through the Teams application welcome screen"
+  - "Identify each OOBE screen and its purpose, including Windows setup steps and initial app configuration"
+  - "Troubleshoot common OOBE failures using available diagnostic tools"
+
+prerequisites:
+  - "p1-t2-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "programmer"
+
+topicTags:
+  - "oobe"
+  - "windows"
+  - "commissioning"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m1-l1-oobe-reference.pdf"
+    label: "OOBE Error Reference Guide"
+    sizeKb: 60
+
+relatedLessons:
+  - "p1-t3-m1-l2"
+
+metaDescription: "Complete the MTR Windows OOBE from first power-on through Teams app welcome screen — OOBE sequence, network requirements, Autopilot interaction, OEM variations, and common first-boot failure troubleshooting."
+
+keywords:
+  - "MTR Windows OOBE first boot"
+  - "Teams Rooms initial setup"
+  - "MTR OOBE network requirement"
+  - "Windows Autopilot MTR"
+  - "MTR first boot failure"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Out-of-Box Experience is the first-boot configuration sequence that transforms a freshly received MTR Windows device into a signed-in, functioning Teams Room. Unlike a consumer Windows setup, the MTR OOBE is designed for AV integrators and IT staff — it is simplified, kiosk-oriented, and focused on getting the device to the Teams application sign-in screen. Understanding each step, the network dependencies, and the failure modes that occur at each stage means a smooth first boot on every device.
+
+---
+
+## Before You Power On
+
+Preparation before first boot prevents the most common OOBE failures:
+
+**Confirm network connectivity.** Connect an Ethernet cable before powering on. The MTR device needs network access during OOBE to activate Windows, download initial app updates from the Microsoft Store, and authenticate with Microsoft 365 for resource account sign-in. A Wi-Fi connection is technically possible but is not recommended for OOBE — Wi-Fi association failures during OOBE are difficult to troubleshoot and lengthen the process unnecessarily.
+
+**Verify the resource account is ready.** Before powering on the device, confirm that the resource account configuration has been verified (using the PowerShell commands covered in Module 1.2) — AutomateProcessing set to AutoAccept, license assigned, password not expired, MFA excluded. Discovering account configuration issues after the device is powered on extends the OOBE session.
+
+**Check whether Windows Autopilot is in use.** Ask the client's IT administrator whether Windows Autopilot is configured for the tenant. In an Autopilot scenario, the OOBE is modified — the device may join Azure AD and receive a configuration profile during OOBE automatically. Beginning OOBE on an Autopilot device without knowing this can result in conflicting configuration steps. If Autopilot is in use, follow IT's Autopilot provisioning workflow rather than the manual OOBE sequence described here.
+
+---
+
+## The OOBE Sequence
+
+**Step 1 — OEM Pre-Setup Screens:** Some OEM devices (notably Lenovo ThinkSmart) display OEM-specific screens before the standard Windows OOBE begins. These may include Lenovo's ThinkSmart Manager provisioning screen, hardware registration prompts, or warranty registration. Navigate these screens per the OEM's quick start guide — do not attempt to skip them by pressing ESC or Power, as this can interrupt the OEM initialization sequence.
+
+**Step 2 — Windows Regional Settings:** Language, locale, and keyboard layout selection. Select the appropriate settings for the deployment region. For North American deployments: English (United States), US keyboard. For multilingual environments, set the primary language and additional keyboard layouts per the client's requirement. These settings affect the room console display language.
+
+**Step 3 — Network Configuration:** Windows will attempt to connect via Ethernet automatically if a cable is connected. Confirm the network connection status on the network configuration screen before proceeding. If the device is on a network with DHCP, the IP assignment happens automatically. If static IP assignment is required, this can be configured here or later through Windows Settings after OOBE is complete.
+
+**Step 4 — Windows Activation:** The device activates Windows against Microsoft's activation servers over the network connection. This step requires internet access. Proxy servers that require authentication create a failure here — the Windows OOBE cannot authenticate through a proxy. If the corporate network uses an authenticated proxy, the device must have direct internet access or proxy bypass for Microsoft endpoints during OOBE.
+
+**Step 5 — Windows Privacy Settings:** A series of privacy consent screens related to location services, diagnostic data, and activity history. These can typically be accepted at default settings for enterprise MTR deployments — specific privacy settings can be managed through Group Policy or Intune after initial setup.
+
+**Step 6 — MTR Application Launch:** After Windows setup completes, the system restarts and the MTR application launches automatically. The app may download a Microsoft Store update at this point — do not interrupt the update. Allow it to complete fully before proceeding to sign-in.
+
+**Step 7 — Resource Account Sign-In:** The MTR application presents a sign-in screen. Enter the resource account UPN (email address) and password. The device authenticates against Azure AD using Modern Authentication (OAuth 2.0). On success, the MTR home screen appears with the room name displayed. On failure, an error message identifies the cause.
+
+{/* MEDIA: OOBE flow diagram — linear flowchart showing all OOBE steps in sequence with decision branches for failure conditions: network failure (check cable/DHCP), activation failure (check proxy/firewall), app update (wait, do not interrupt), sign-in failure (check resource account). Filename: p1-t3-m1-l1-oobe-flowchart.png */}
+
+---
+
+## Local Administrator Account
+
+MTR Windows devices run the Teams Rooms application under a restricted Windows account (named "Skype" on most devices). The local Administrator account is a separate account used for OS-level administration — accessing Windows Settings, managing files, or troubleshooting outside the Teams app.
+
+On OEM devices, the local admin password is either:
+- A default password documented in the OEM's setup guide (must be changed during initial setup)
+- A randomly generated password set during Autopilot provisioning (retrieved from Intune or IT)
+
+During OOBE, change the local admin password from the OEM default to a secure, documented password. Record this password in the project's secure documentation — it is required for any OS-level work on the device after commissioning. A device whose local admin password is unknown at the time of a support call requires OEM recovery procedures to regain access.
+
+---
+
+## Common OOBE Failures
+
+**Network connectivity failure:** The device cannot reach Microsoft activation servers. Causes: Ethernet cable not connected, network requires 802.1X authentication (the device cannot authenticate at OOBE), DHCP not available on the VLAN, or proxy blocking Microsoft endpoints. Resolution: confirm physical connection, verify DHCP is active on the port, confirm proxy bypass or direct internet path for Microsoft endpoints.
+
+**Windows activation failure:** Network is connected but activation fails. Cause: firewall blocking activation endpoints (kms.microsoft.com, activation.microsoft.com, and related FQDNs). Resolution: confirm with IT that Microsoft activation endpoints are accessible from the device's network segment.
+
+**App does not launch after Windows setup:** The MTR application fails to start automatically. Cause: Microsoft Store is blocked by firewall or Group Policy, preventing the app from downloading or updating. Resolution: verify Microsoft Store endpoints are accessible. In managed environments, the Microsoft Store app package may need to be deployed via Intune rather than auto-updated from the Store.
+
+**Sign-in fails with MFA prompt:** The resource account has not been excluded from MFA Conditional Access policy. Resolution: IT administrator must add the resource account to the MFA exclusion list in Conditional Access before sign-in can proceed.
+
+<DownloadButton
+  file="p1-t3-m1-l1-oobe-reference.pdf"
+  label="OOBE Error Reference Guide"
+  sizeKb={60}
+  description="Reference guide for MTR Windows OOBE error messages — error text, likely cause, and first-response troubleshooting action for each common failure."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m1-l1-kc">
+  <Question>
+    An MTR Windows device fails to activate Windows during OOBE. Network connectivity
+    is confirmed (the device has an IP address). What is the most likely cause?
+  </Question>
+  <Answer>The Windows license key has already been used on another device</Answer>
+  <Answer correct>A firewall is blocking outbound access to Microsoft's Windows activation endpoints</Answer>
+  <Answer>The MTR device's clock is not synchronized, preventing activation</Answer>
+  <Answer>Windows activation requires a domain-joined account to complete</Answer>
+  <Explanation>
+    Network connectivity (IP address present) does not confirm internet access to specific
+    Microsoft endpoints. Windows activation requires outbound access to activation.microsoft.com
+    and related FQDNs. Enterprise firewalls that have not been configured to allow these
+    endpoints will cause activation failure even when general internet access is available.
+    Confirm with IT that Microsoft activation endpoints are on the firewall allow list.
+  </Explanation>
+
+  <Question>
+    Before powering on an MTR Windows device for first-boot OOBE, you learn that the
+    client's tenant uses Windows Autopilot for device provisioning. What should you do?
+  </Question>
+  <Answer>Proceed with the standard OOBE sequence — Autopilot does not affect MTR devices</Answer>
+  <Answer>Skip OOBE entirely and ask IT to push the configuration via Intune</Answer>
+  <Answer correct>Contact the client's IT administrator for their Autopilot provisioning workflow before proceeding — the OOBE experience is modified in an Autopilot scenario and following the manual OOBE sequence may conflict with Autopilot's automatic configuration</Answer>
+  <Answer>Perform OOBE normally, then disconnect the device from the network to prevent Autopilot from overwriting your configuration</Answer>
+  <Explanation>
+    Autopilot modifies the OOBE experience — the device may join Azure AD and receive
+    configuration profiles automatically during the process. Beginning the manual OOBE
+    sequence without knowing the Autopilot workflow can create conflicting configuration
+    states. Always confirm Autopilot status with IT before starting OOBE and follow IT's
+    documented provisioning procedure for Autopilot devices.
+  </Explanation>
+
+  <Question>
+    After completing Windows OOBE, the MTR application launches and begins downloading
+    an update from the Microsoft Store. What is the correct action?
+  </Question>
+  <Answer>Restart the device to apply the update faster</Answer>
+  <Answer>Skip the update by navigating away from the update screen</Answer>
+  <Answer correct>Wait for the update to complete fully — interrupting a Microsoft Store app update can corrupt the app installation and may require a factory reset to recover</Answer>
+  <Answer>Cancel the update and proceed with sign-in — updates can be applied after commissioning</Answer>
+  <Explanation>
+    Microsoft Store app updates on MTR Windows devices should never be interrupted. A
+    partial update can leave the Teams Rooms app in an inconsistent state that may not
+    be recoverable without a factory reset or re-imaging the device. Allow the update to
+    complete, including any automatic restarts, before proceeding to resource account
+    sign-in.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Prepare for OOBE:** Ethernet connected, resource account verified, Autopilot status confirmed before first power-on.
+- **Navigate the OOBE sequence:** OEM screens → regional settings → network → Windows activation → privacy → MTR app launch → Teams Store update → resource account sign-in.
+- **Troubleshoot common failures:** Network → check cable and DHCP; activation → check firewall endpoints; app update → wait, never interrupt; sign-in with MFA prompt → resource account needs Conditional Access exclusion.
+- **Secure the admin account:** Change the local admin password from OEM default; document the new password in project records.
+
+---
+
+## What's Next
+
+With the OOBE complete and the Teams application at its welcome screen, the next step is signing in the resource account and running the verification sequence that confirms the device is fully operational.
+
+[Resource Account Sign-In and Verification →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-windows-initial-setup/lessons/resource-account-sign-in-verification/)

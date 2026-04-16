@@ -1,0 +1,321 @@
+---
+id: "p3-t2-m3-l4"
+slug: "firewall-proxy-advanced"
+title: "Firewall and Proxy Advanced Scenarios for MTR"
+shortTitle: "Firewall and Proxy Advanced Scenarios"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 3
+moduleSlug: "network-auth-diagnostics"
+moduleTitle: "Network and Authentication Diagnostics"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify DPI interference with Teams TLS 1.3 and QUIC using Wireshark packet analysis"
+  - "Explain the impact of UDP 443 blocking on Teams QUIC usage and the fallback behavior"
+  - "Verify that the stateful firewall UDP session timeout is sufficient for Teams calls"
+  - "Diagnose Symmetric NAT as the cause of TURN relay-only media and understand the escalation path"
+  - "Identify proxy re-authentication intervals as the cause of periodic call drops"
+  - "Recognize the symptoms of SSL inspection certificate injection blocking Teams connections"
+
+prerequisites:
+  - "p3-t2-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "troubleshooting"
+  - "network"
+  - "firewall"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m3-l3"
+  - "p3-t2-m3-l5"
+
+metaDescription: "Firewall and proxy advanced troubleshooting for Microsoft Teams Rooms — DPI interference with TLS 1.3 and QUIC, QUIC UDP 443 blocking, stateful firewall UDP timeouts, Symmetric NAT and TURN relay, proxy re-authentication intervals, and SSL certificate pinning."
+
+keywords:
+  - "MTR firewall troubleshooting"
+  - "Teams Rooms QUIC"
+  - "MTR proxy issues"
+  - "Teams Rooms SSL inspection"
+  - "MTR NAT traversal"
+  - "Teams Rooms firewall UDP"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Firewalls and proxy servers are the components most likely to unintentionally degrade Teams Rooms performance while appearing to operate correctly. A firewall with a UDP session timeout of 60 seconds silently drops Teams media connections mid-call without logging the event. A proxy server that requires NTLM re-authentication every 45 minutes causes Teams to drop and re-establish the call at the same interval. SSL inspection that intercepts TLS connections for security purposes may be inadvertently breaking Teams' certificate pinning behavior. These are difficult scenarios because the network infrastructure appears healthy, no firewall block rules are explicitly denying Teams, and the failures are intermittent or subtle. This lesson provides the specific diagnostic techniques to identify each of these advanced firewall and proxy failure modes.
+
+---
+
+## Deep Packet Inspection and Teams
+
+Deep Packet Inspection (DPI) devices (commonly part of Next-Generation Firewalls from vendors including Palo Alto Networks, Fortinet, and Check Point) examine packet content beyond the transport layer headers. For HTTPS traffic, DPI typically involves SSL inspection — the device acts as a man-in-the-middle, decrypting TLS traffic, inspecting it, and re-encrypting it before forwarding.
+
+**DPI interference with TLS 1.3:**
+
+Teams endpoints use TLS 1.3 where supported. Some DPI/SSL inspection implementations do not fully support TLS 1.3 and either downgrade to TLS 1.2 or fail the handshake entirely. Symptoms: Teams app fails to connect to specific Teams endpoints; app shows sign-in or meeting join failures that intermittently resolve; Wireshark shows a TLS handshake failure with a `Close Notify` or `Handshake Failure` alert at the ClientHello.
+
+**How to identify DPI interference with Wireshark:**
+
+1. Capture traffic on the MTR device during a Teams connection failure.
+2. Filter: `ssl.alert_message.desc == 40` (handshake failure) or `tls.handshake.type == 2` (ServerHello).
+3. In a ServerHello packet, examine the **Certificate** field. If the issuer is the organization's internal CA (rather than a well-known public CA like DigiCert or Microsoft), SSL inspection is injecting a certificate. This is expected behavior for SSL inspection — but the next step is to check if Teams is rejecting it.
+4. If Teams is rejecting the injected certificate, you will see a `Certificate Unknown` or `Bad Certificate` TLS alert in the capture, followed by a TCP RST or application error.
+
+**What to tell the network team:**
+
+Microsoft Teams pins specific CAs for its endpoints. SSL inspection must be bypassed for the Teams Optimize endpoint category. The specific instruction for the network team:
+- Add the Microsoft 365 Optimize FQDN list to the SSL inspection bypass/exclusion list on the firewall
+- For Palo Alto: add the FQDNs to a URL category and exclude that category from the SSL decryption policy
+- For Fortinet: add the FQDNs to the SSL inspection exemption list in the firewall policy
+
+---
+
+## QUIC Protocol and Teams
+
+Microsoft Teams uses the QUIC protocol (UDP 443) where available. QUIC provides lower latency than TCP-based TLS for initial connection establishment and handles network path changes more gracefully — important for mobile and Wi-Fi environments.
+
+**What QUIC means for firewalls:**
+
+QUIC runs on UDP port 443. Many firewalls have policies that allow TCP 443 (HTTPS) but inadvertently block UDP 443 (QUIC). When UDP 443 is blocked, Teams falls back to TCP 443 (HTTPS/TLS 1.3) — Teams continues to work but loses the QUIC performance advantages. The fallback is automatic and transparent, but the quality difference may be perceptible in environments where TCP latency is higher than UDP.
+
+**Testing whether Teams is using QUIC:**
+
+During an active Teams call on the MTR device, capture with Wireshark and apply the filter:
+
+```
+udp.port == 443
+```
+
+If packets matching this filter are visible, Teams is using QUIC on UDP 443.
+
+If no packets match, apply:
+
+```
+tcp.port == 443
+```
+
+Active TCP 443 traffic during a call indicates Teams has fallen back to TCP (either because UDP 443 is blocked or because the QUIC negotiation failed).
+
+**Impact of blocking UDP 443:**
+
+| Scenario | Impact |
+|---|---|
+| UDP 443 blocked, TCP 443 allowed | Teams falls back to TCP; calls work but may have slightly higher RTT during initial connection; no significant impact for most rooms |
+| Both UDP 443 and TCP 443 blocked | Teams cannot connect to Microsoft 365 endpoints; sign-in and calls fail completely |
+| UDP 443 allowed, TCP 443 blocked | Unusual; Teams will use QUIC but cannot fall back if QUIC path degrades |
+
+For most production environments, allowing UDP 443 alongside TCP 443 is the recommended configuration. If UDP 443 cannot be allowed (security policy), TCP 443 fallback is acceptable but should be documented.
+
+---
+
+## Stateful Firewall and UDP Session Timeout
+
+UDP is a connectionless protocol — there is no TCP three-way handshake and no connection teardown sequence. Stateful firewalls create a session table entry when the first UDP packet from the internal host to the external destination is observed, and they remove that entry after a configurable idle timeout. When the session table entry is removed and a subsequent UDP packet arrives from the external host, the firewall may drop the packet (because there is no matching session entry) — effectively terminating the UDP media flow.
+
+**Why this matters for Teams:**
+
+A Teams call uses UDP for media. The media is continuous, but during natural pauses (someone stops speaking, a video freeze for a moment) there may be brief gaps in UDP traffic. If the firewall's UDP session timeout is shorter than these gaps, the session entry expires and the next UDP packet (when speaking resumes) is dropped — causing a brief but real media interruption.
+
+The minimum safe UDP session timeout for Teams media ports (3478–3481) is **5 minutes (300 seconds)**. The recommended value is 10 minutes (600 seconds) or greater.
+
+**Verifying UDP session timeout:**
+
+The UDP session timeout setting location varies by firewall platform:
+
+| Platform | Location |
+|---|---|
+| Palo Alto NGFW | **Policies → Security → [Policy] → Applications → Custom UDP Timeout**, or **Device → Setup → Session → Session Timeouts → UDP** |
+| Cisco ASA | `timeout udp 0:05:00` (global), or per-access-group policy |
+| Fortinet FortiGate | **Policy → IPv4 Policy → [Policy] → Session TTL**, or global: **System → Settings → Session Timeout → UDP** |
+| Check Point | **SmartConsole → Global Properties → Stateful Inspection → UDP Virtual Session Timeout** |
+
+**Diagnosing UDP session timeout as the cause of call drops:**
+
+Call drops caused by UDP session timeout have a distinctive pattern: calls drop approximately at the same elapsed time (matching the firewall timeout interval) after periods of silence or low-activity media. The drop is not correlated with network congestion, packet loss, or application events.
+
+If the call drop interval is consistent (e.g., always at 4:30 to 5:00 elapsed call time), measure whether this matches the configured UDP session timeout on the firewall.
+
+---
+
+## NAT and Teams Media
+
+Network Address Translation (NAT) translates the MTR device's private IP address to a public IP address at the firewall or NAT device. The type of NAT in use directly affects whether Teams can use direct peer-to-peer media paths or must use TURN relay servers.
+
+**NAT types and their effect on Teams:**
+
+| NAT Type | Teams Media | Impact |
+|---|---|---|
+| Full Cone (1:1 NAT) | Direct media path possible | Best — lowest latency |
+| Address-Restricted Cone | Direct media path possible | Acceptable |
+| Port-Restricted Cone | Direct media path possible | Acceptable |
+| Symmetric NAT | All media must use TURN relay | Higher latency; increased bandwidth usage via relay |
+
+**Symmetric NAT and Teams:**
+
+With Symmetric NAT, each outgoing UDP connection from the internal host is mapped to a unique external source port — the external port changes for each destination. Teams' STUN connectivity checks (ICE negotiation) fail because the external port used to reach the STUN server differs from the external port used to reach the Teams media relay — the relay cannot punch through the NAT. Teams automatically falls back to using TURN relay servers, which forward all media through Microsoft's infrastructure.
+
+**Identifying TURN relay-only media via Wireshark:**
+
+During an active call, capture UDP traffic with filter:
+```
+udp && (udp.dstport >= 3478 && udp.dstport <= 3481)
+```
+
+Examine the destination IPs. Microsoft publishes its TURN relay IP ranges. If all media packets are destined for known TURN relay IPs (rather than a mix of direct peer IPs and relay IPs), the call is using TURN relay only — consistent with Symmetric NAT.
+
+**Escalation path for Symmetric NAT:**
+
+Changing NAT type requires the network team to reconfigure the firewall/NAT device. The request is to change from Symmetric NAT to port-restricted cone NAT for outbound connections from the MTR VLAN. This is a network infrastructure change that requires change management approval and testing.
+
+---
+
+## Proxy Authentication Timeout
+
+Organizations that route HTTPS traffic through an authenticating proxy (which requires clients to re-authenticate using NTLM or Kerberos) introduce a specific call-drop scenario: when the proxy authentication ticket expires and the proxy requires re-authentication, Teams cannot respond to the NTLM challenge and the proxied connection is terminated.
+
+**Identifying proxy re-auth as the cause:**
+
+The signature: call drops occur at a consistent interval (typically 45–60 minutes) after the call starts. The interval matches the proxy re-authentication interval configured on the proxy server. After the drop, Teams automatically reconnects — but the re-connection itself may take 30–90 seconds.
+
+Confirming evidence:
+1. Check the proxy server access logs for the MTR device IP at the time of the call drop — look for a re-authentication request (HTTP 407 Proxy Authentication Required) at the drop time.
+2. Check the Teams app log (`*_Lync.txt`) for proxy authentication error messages around the drop time.
+
+**Remediation:**
+
+Teams Rooms devices should be excluded from proxy authentication requirements. Options:
+- Configure the proxy server to allow connections from the MTR VLAN or MTR device IP range without authentication (IP-based bypass)
+- Configure the MTR VLAN as a "trusted zone" that bypasses proxy authentication
+- Configure a pac file (`proxy.pac`) on the MTR device that directs Teams traffic directly to the Internet, bypassing the proxy entirely for Microsoft 365 Optimize endpoints
+
+**Configuring proxy bypass via pac file on Windows MTR:**
+
+In `SkypeSettings.xml`:
+
+```xml
+<SkypeSettings>
+  <Network>
+    <ProxyServer>http://proxy.contoso.com:8080</ProxyServer>
+    <BypassProxyForLocalAddresses>true</BypassProxyForLocalAddresses>
+  </Network>
+</SkypeSettings>
+```
+
+For granular bypass (direct internet for Microsoft 365, proxy for other traffic), deploy a pac file via Intune Configuration Profile → Windows → Device Configuration → Proxy → Use setup script. The pac file should return `DIRECT` for Microsoft 365 Optimize FQDNs.
+
+---
+
+## Certificate Pinning and SSL Inspection
+
+Teams applications validate the TLS certificates presented by Microsoft endpoints against a set of expected CAs. When SSL inspection injects a certificate from the organization's internal CA, Teams' certificate validation fails — the connection is rejected.
+
+**Symptoms of certificate pinning failure:**
+
+- Teams app fails to connect to specific Microsoft 365 endpoints despite HTTPS being generally available
+- The failure is selective: some HTTPS connections succeed (those not pinned by Teams) and some fail (those to pinned endpoints)
+- Wireshark shows a TLS handshake followed by a client-side alert: `bad_certificate` or `unknown_ca`
+- The certificate in the ServerHello is issued by the organization's internal CA rather than a public CA
+
+**Identifying SSL inspection injection via Wireshark:**
+
+1. Filter: `ssl.handshake.type == 11` (Certificate message in TLS handshake)
+2. Click on a certificate message for a connection to a Teams endpoint (e.g., `*.teams.microsoft.com`)
+3. In the certificate details, check the **Issuer** field:
+   - If issuer is `DigiCert`, `Baltimore CyberTrust Root`, or another well-known public CA: SSL inspection is not active for this connection
+   - If issuer is `contoso-CA` or any internal CA name: SSL inspection is injecting a certificate for this connection
+
+**What to tell the network team:**
+
+Provide the following exact instruction:
+
+> "Microsoft Teams performs certificate validation for its core service endpoints and will reject connections where the certificate chain does not lead to a trusted public CA. The following Microsoft 365 Optimize FQDNs must be excluded from SSL inspection: `*.teams.microsoft.com`, `*.skype.com`, `*.microsoft.com`, and the ranges listed in the Microsoft 365 Optimize endpoint list. For the full, current list, retrieve from: https://endpoints.office.com/endpoints/worldwide?clientrequestid=<GUID>&format=CSV and filter for category=Optimize."
+
+The network team's next action is to add these FQDNs to the SSL inspection bypass list on the firewall.
+
+---
+
+<KnowledgeCheck id="p3-t2-m3-l4-kc">
+  <Question>
+    A Teams Rooms device experiences call drops exactly at 45–50 minutes
+    into every meeting. After the drop, Teams automatically reconnects within
+    60–90 seconds and the meeting continues. CQD data for the dropped calls
+    shows no packet loss or elevated jitter preceding the drop. The network
+    engineer confirms there are no firewall policy changes, no WAN events,
+    and no switch events at the drop times. What should the support engineer
+    investigate next?
+  </Question>
+  <Answer>The Teams Rooms app has a 45-minute inactivity timeout that disconnects and reconnects calls — update the app to the latest version to resolve the timeout behavior</Answer>
+  <Answer>The UDP session timeout on the firewall is set to 45 minutes — increase it to 10 minutes to prevent session table entries from expiring mid-call</Answer>
+  <Answer correct>The consistent 45–50 minute drop interval, with automatic reconnection and no network-layer evidence of packet loss or congestion, is the signature of a proxy re-authentication timeout. The proxy server is configured with a 45-minute authentication ticket lifetime. When the ticket expires, the proxy sends an HTTP 407 challenge; Teams cannot respond to the NTLM challenge and the proxied connection terminates, causing the call drop. Teams then re-establishes the connection (which succeeds because the initial connection through the proxy works), completing the 60–90 second reconnect. The engineer should check the proxy server access logs for HTTP 407 events from the MTR device IP at each drop time, and cross-reference with the Teams app Lync log for proxy authentication errors at the same timestamps</Answer>
+  <Answer>The MTR device's NTP clock is drifting and causing token validation failures at 45-minute intervals — verify NTP synchronization status with w32tm /query /status</Answer>
+  <Explanation>
+    The key evidence is the combination of a consistent interval (45–50 minutes),
+    clean reconnection after the drop, and no network-layer signals in CQD.
+    UDP session timeout is typically much shorter (seconds to a few minutes)
+    and would cause brief drop-and-recovery rather than a full 60–90 second
+    reconnection. NTP token validation failure would produce an authentication
+    error and a "Not signed in" state, not a call drop with reconnection.
+    The Teams app has no 45-minute inactivity timeout by design. The proxy
+    re-authentication hypothesis fits all the evidence: 45-minute proxy ticket
+    lifetime produces exactly this pattern, it explains the consistent interval,
+    the reconnect time (re-establishing through the proxy), and the absence
+    of network-layer events (the proxy handles the connection at the application
+    layer, invisible to CQD).
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **DPI and TLS 1.3:** SSL inspection that injects an internal CA certificate can cause Teams certificate validation failure. Identify by examining the TLS ServerHello certificate issuer in Wireshark. Resolution: add Microsoft 365 Optimize FQDNs to the SSL inspection bypass list.
+- **QUIC (UDP 443):** Teams uses QUIC where available for lower latency; blocked UDP 443 causes fallback to TCP 443. Verify QUIC usage with Wireshark filter `udp.port == 443`. TCP fallback is acceptable; both ports being blocked causes total connection failure.
+- **UDP session timeout:** Must be ≥5 minutes (300 seconds) for Teams media ports 3478–3481. Shorter timeouts cause mid-call drops during brief media pauses. Verify and increase in firewall global or per-policy UDP timeout settings.
+- **Symmetric NAT:** Causes STUN ICE failure; all media routes through TURN relay. Identified via Wireshark — all media to TURN relay IPs only. Resolution: change to port-restricted cone NAT (requires network team/change management).
+- **Proxy re-authentication:** Authenticating proxy with a short ticket lifetime causes consistent-interval call drops (drop interval = proxy re-auth interval). Confirm via proxy access logs (HTTP 407 at drop times). Resolution: exclude MTR VLAN from proxy authentication or use pac file for Microsoft 365 bypass.
+- **Certificate pinning:** Teams rejects SSL-inspected connections to its pinned endpoints. Identified by internal CA issuer in Wireshark TLS certificate. Resolution: add Microsoft 365 Optimize FQDNs to SSL inspection exclusion list.
+
+---
+
+## What's Next
+
+[Building a Diagnostic Runbook →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/network-auth-diagnostics/lessons/building-diagnostic-runbook/)

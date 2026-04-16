@@ -1,0 +1,236 @@
+---
+id: "p2-t2-m1-l5"
+slug: "entra-id-governance"
+title: "Entra ID Governance for MTR Deployments"
+shortTitle: "Entra ID Governance"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 1
+moduleSlug: "resource-account-management-at-scale"
+moduleTitle: "Resource Account Management at Scale"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Define a naming convention for MTR resource accounts that supports discovery, filtering, and automation"
+  - "Organize MTR accounts using Entra ID groups and attributes for policy targeting and reporting"
+  - "Implement a lifecycle management process for room account decommissioning and location changes"
+
+prerequisites:
+  - "p2-t2-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "entra-id"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "resource-accounts"
+  - "governance"
+  - "entra-id"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-l5-governance-template.docx"
+    label: "MTR Account Governance Template"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t2-m1-l1"
+  - "p2-t2-m1-l3"
+
+metaDescription: "Entra ID governance for MTR resource accounts — naming conventions, group structures, extension attributes for room metadata, lifecycle management (decommission/relocation), and audit reporting."
+
+keywords:
+  - "Teams Rooms Entra ID governance"
+  - "MTR resource account naming convention"
+  - "Teams Rooms account lifecycle"
+  - "MTR Entra ID groups"
+  - "Teams Rooms account management"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A well-governed MTR account estate is self-documenting — the account name tells you the room's location and type, the group membership tells you the policy state, and the attributes tell you the deployment date and assigned IT owner. A poorly governed estate is a collection of accounts with names like "ConfRoom01" and "MTR-test-do-not-delete" where no one is certain which rooms are still active. Governance is not glamorous work, but it determines whether the account estate remains manageable as the deployment grows and ages.
+
+---
+
+## Naming Convention
+
+A consistent naming convention is the foundation of governance. The convention should encode enough information to identify the room without requiring a lookup in a separate system.
+
+**Recommended pattern:**
+```
+[Building]-[Floor]-[RoomType]-[RoomID]@domain.com
+```
+
+**Examples:**
+- `hq-03-board-001@contoso.com` — HQ building, floor 3, boardroom, room 001
+- `nyc-12-conf-204@contoso.com` — New York City office, floor 12, conference room 204
+- `sfo-02-huddle-007@contoso.com` — San Francisco office, floor 2, huddle room 007
+
+**Display Name pattern:**
+- `[Building] [Floor] [Room Name]`
+- Example: `HQ Floor 3 Boardroom A`
+
+**Benefits of structured naming:**
+- Filtering in PowerShell: `Get-Mailbox -Filter {UserPrincipalName -like "hq-*"}` returns all HQ building rooms
+- TAC filtering by name prefix to show only rooms in a specific building
+- Room Finder in Outlook shows rooms organized by building when the Exchange building attribute matches
+
+**Enforce at provisioning time:** Add naming validation to the provisioning script — check the UPN against the naming pattern before creating the account and reject rows that don't conform.
+
+---
+
+## Group Structure
+
+Three categories of Entra ID groups support MTR governance:
+
+**Category 1 — Policy targeting groups:**
+- `MTR Resource Accounts` — all room accounts; target for CA policy exclusions
+- `MTR Windows Devices` — Windows-only rooms; target for Windows QoS GPO, Intune policies
+- `MTR Android Devices` — Android rooms; target for Android-specific policies
+
+**Category 2 — Location groups:**
+- `MTR Rooms - [Building]` — per-building groups for building-specific policies or TAC filtering
+- `MTR Rooms - [Site]` — per-site groups for WAN/network policy correlation
+
+**Category 3 — License and service tier groups:**
+- `MTR Pro License` — rooms assigned Pro licenses; enables dynamic Intune device group
+- `MTR Basic License` — rooms assigned Basic licenses
+- `MTR Managed Service` — rooms under active managed service contract
+
+**Dynamic group rules (Entra ID Premium):** For organizations with Entra ID P1 or P2, use dynamic membership rules to automatically maintain group membership based on account attributes:
+
+```
+(user.userPrincipalName -contains "@contoso.com") and (user.userType -eq "Member") and (user.jobTitle -eq "Room Resource Account")
+```
+
+Set `jobTitle` on all MTR accounts to "Room Resource Account" during provisioning to enable this rule.
+
+---
+
+## Extension Attributes for Room Metadata
+
+Entra ID extension attributes (extension1–15 on the Exchange mailbox object, or custom attributes via Microsoft Graph) can store additional room metadata:
+
+```powershell
+# Set custom attributes on room mailboxes
+Set-Mailbox -Identity $room.UPN `
+    -CustomAttribute1 "MTR-Windows" `           # device platform
+    -CustomAttribute2 "2026-04-13" `            # deployment date
+    -CustomAttribute3 "IT-Room-Management" `    # IT owner/team
+    -CustomAttribute4 "Pro" `                   # license tier
+    -CustomAttribute5 "Managed"                 # service tier
+```
+
+These attributes can be queried and filtered in PowerShell:
+```powershell
+Get-Mailbox -RecipientTypeDetails RoomMailbox -Filter {CustomAttribute1 -eq "MTR-Windows"}
+```
+
+---
+
+## Lifecycle Management
+
+Room accounts require maintenance over time — rooms close, buildings change, devices are replaced.
+
+**Decommissioning a room:**
+1. Remove the resource account from the MTR CA exclusion group
+2. Disable the account (`Update-MgUser -AccountEnabled $false`)
+3. Remove the Teams Rooms license (releases the license for reassignment)
+4. Wait 30 days (allow any in-progress meetings to complete and calendar to clear)
+5. Delete the mailbox and Entra ID account
+
+**Room relocation (same building, different room):**
+1. Update the account's `DisplayName` and UPN if the naming convention encodes the room number
+2. Update `Set-Place` with the new floor and capacity
+3. Update the Exchange building attribute to reflect the new location
+4. Update Entra ID group membership if building-specific groups are used
+5. Update the building data CSV in CQD to reflect the new subnet mapping
+
+**Device replacement (same room, new device):**
+No account changes are needed — the new device signs in with the same resource account. Remove the old device from TAC and OEM cloud portals; the new device will register automatically upon sign-in.
+
+<DownloadButton
+  file="p2-t2-m1-l5-governance-template.docx"
+  label="MTR Account Governance Template"
+  sizeKb={35}
+  description="MTR account governance template — naming convention specification, group structure design, extension attribute usage table, provisioning checklist, and lifecycle management procedures (decommission, relocation, device replacement)."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m1-l5-kc">
+  <Question>
+    An IT administrator runs a PowerShell command to add a new room account
+    to the CA exclusion group and mistakenly adds an incorrect account. Three
+    weeks later, a new room is provisioned using an account not added to the
+    exclusion group. Which governance practice would have prevented both issues?
+  </Question>
+  <Answer>Manual review of all CA group membership changes by a second administrator</Answer>
+  <Answer correct>Including CA exclusion group membership in the provisioning script ensures every new account is added to the group during creation. A dynamic group rule based on a specific attribute (e.g., jobTitle = "Room Resource Account") automatically maintains membership without manual steps that can be missed or applied incorrectly</Answer>
+  <Answer>Disabling Conditional Access entirely for the tenant to remove the dependency</Answer>
+  <Answer>Using a separate Entra ID tenant for all room accounts to isolate them from CA policies</Answer>
+  <Explanation>
+    Two failures are described: incorrect manual group membership addition, and
+    a missed addition for a new account. Both are eliminated by automation.
+    Adding CA exclusion group membership to the provisioning script (as shown
+    in Lesson 2.1.1) means every account is added at creation time — no
+    manual step to miss. A dynamic group rule using a provisioning-time
+    attribute (like jobTitle) automatically maintains membership as accounts
+    are created, without requiring any manual group management. The combination
+    eliminates both the "missing account" and "wrong account" failure modes.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Naming convention:** `[building]-[floor]-[type]-[id]@domain.com` — encodes location in UPN; enables PowerShell filtering.
+- **Group structure:** Policy targeting (CA exclusion, Windows/Android), location, license/service tier.
+- **Extension attributes:** Deployment date, IT owner, license tier, service tier — queryable in PowerShell.
+- **Lifecycle:** Disable → remove license → delete after 30 days for decommission; update Place attributes for relocation; no account changes for device replacement.
+
+---
+
+## Module Complete
+
+You have completed Module 2.1: Resource Account Management at Scale. You can now provision, license, secure, and govern large MTR account estates using PowerShell and systematic policy structures.
+
+Module 2.2 covers Teams Admin Center fleet management — the operational management platform for day-to-day device oversight.
+
+[Continue to Module 2.2: TAC Policies and Fleet Management →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/)

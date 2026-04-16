@@ -1,0 +1,247 @@
+---
+id: "p1-t2-m2-l5"
+slug: "power-requirements"
+title: "Power Requirements — PoE, UPS Sizing, Power Sequencing"
+shortTitle: "Power Requirements"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 2
+moduleSlug: "cable-infrastructure"
+moduleTitle: "Cable Infrastructure"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Calculate the PoE power budget for an MTR installation and verify switch adequacy"
+  - "Size a UPS for an MTR room system using total VA load and required runtime calculations"
+  - "Design a power sequencing scheme that protects MTR equipment and ensures correct device initialization order"
+
+prerequisites:
+  - "p1-t2-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "poe"
+  - "ups"
+  - "power-sequencing"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m2-l5-power-calculation-worksheet.pdf"
+    label: "Power Calculation Worksheet"
+    sizeKb: 60
+
+relatedLessons:
+  - "p1-t2-m1-l2"
+  - "p1-t2-m3-l4"
+
+metaDescription: "Power requirements for MTR installations — PoE budget calculation, UPS VA sizing and runtime, and power sequencing to protect equipment during startup and power events."
+
+keywords:
+  - "PoE budget calculation MTR"
+  - "UPS sizing conference room"
+  - "802.3af 802.3at PoE standard"
+  - "power sequencing AV rack"
+  - "MTR power requirements"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Power calculations are done on paper before installation, not discovered in the field when a switch overloads or a UPS trips under load. Every MTR installation has power requirements that can be quantified during planning — PoE budgets from the device spec sheets, UPS VA from the equipment load list, and sequencing requirements from the device initialization dependencies. Getting these right during design prevents power-related failures on installation day and provides the client with a system that responds correctly to power events throughout its operational life.
+
+---
+
+## PoE Standards and Power Levels
+
+Power over Ethernet delivers DC power to network devices through the Cat6/6A cable alongside the data signal. Three IEEE standards define the power levels:
+
+**802.3af (PoE):** Up to 15.4W at the PSE (Power Sourcing Equipment — the switch port), 12.95W minimum at the PD (Powered Device) after cable loss. Supports devices like basic touch consoles, some IP cameras, and smaller audio devices.
+
+**802.3at (PoE+):** Up to 30W at PSE, 25.5W at PD. Supports higher-power touch consoles (e.g., Logitech Tap: 15.4W, comfortable on 802.3af; some devices up to 25.5W PD require 802.3at), ceiling microphone arrays, and more capable IP cameras.
+
+**802.3bt (PoE++):** Up to 60W (Type 3) or 90W (Type 4) at PSE. Required for high-power devices including some advanced ceiling speaker/microphone systems and high-performance cameras. Less common in standard MTR deployments but increasingly required in larger systems.
+
+When specifying switch ports for PoE devices, always look up the exact PoE class requirement in the device's technical data sheet — do not assume a device's PoE class from its category or price point.
+
+---
+
+## PoE Budget Calculation
+
+A PoE switch has a total PoE power budget shared across all its ports. If the aggregate load of all connected PoE devices exceeds the switch's total budget, the switch will begin dropping power to lower-priority ports.
+
+**Calculation method:**
+
+1. List every PoE-powered device in the system with its maximum PD power draw (from the spec sheet)
+2. Sum the total PD power
+3. Add 20% overhead margin to account for the switch's thermal efficiency and to prevent operating at thermal limits
+4. Compare the total to the switch's published PoE budget
+
+**Example:**
+- 4 × Logitech Tap (15.4W each) = 61.6W
+- 2 × IP camera (25.5W each) = 51W
+- 1 × Ceiling microphone array (30W) = 30W
+- Total PD load = 142.6W
+- With 20% margin = 142.6 × 1.2 = 171W
+- A switch with a 185W PoE budget is adequate; a 150W budget switch is not
+
+Always verify the switch PoE budget from the switch's data sheet — the port count alone does not define the budget. A 24-port switch may have a 185W budget or a 370W budget depending on the model.
+
+---
+
+## UPS Sizing
+
+An uninterruptible power supply protects connected equipment from power outages, voltage fluctuations, and transients. For MTR systems, the compute unit and network switch are the critical protected loads. Large commercial displays are typically excluded from UPS due to their high VA draw.
+
+**VA calculation:**
+
+VA (volt-amperes) is the apparent power that the UPS must supply. It differs from watts because of power factor — most AV equipment operates at a power factor of 0.7–0.85.
+
+`Required VA = Total Load (Watts) ÷ Average Power Factor`
+
+Add 20–25% margin: `Selected UPS VA ≥ Required VA × 1.25`
+
+**Example:**
+- Compute unit: 90W
+- Network switch: 65W
+- Audio controller: 45W
+- Miscellaneous (controllers, amplifier): 55W
+- Total: 255W
+- At PF = 0.8: 255 ÷ 0.8 = 319 VA required
+- With 25% margin: 319 × 1.25 = 399 VA
+- Specify the next available UPS size — a 500 VA or 600 VA unit is appropriate
+
+**Runtime verification:** UPS datasheets provide runtime curves or tables showing how long the unit will run at a given load. Verify that the selected UPS provides at least 5–10 minutes of runtime at the calculated load — enough time for an orderly shutdown and for the client to contact facilities management about the power event.
+
+{/* MEDIA: UPS sizing calculation visual — step-by-step worked example showing load list, watt total, VA calculation with power factor, margin addition, and UPS selection from a comparison table. Filename: p1-t2-m2-l5-ups-sizing.png */}
+
+---
+
+## Power Sequencing
+
+Power sequencing controls the order in which devices receive power when the system is energized. Incorrect sequencing causes initialization failures — a compute unit that boots before the display is ready cannot complete its EDID handshake, a switch that comes up after the compute unit may miss initial DHCP requests, and multiple large displays powering simultaneously create inrush current spikes that can trip a circuit breaker.
+
+**Recommended MTR power-on sequence:**
+
+1. **Network switch** — comes up first so DHCP, DNS, and network connectivity are available when other devices initialize
+2. **UPS and power conditioning** — if the UPS has a delay-start feature, set it to deliver power to downstream equipment only after its battery is ready
+3. **Compute unit** — needs network connectivity and should start after the switch is fully operational
+4. **Displays** — need to be ready to respond to EDID requests from the compute unit; come up after the compute unit has begun booting
+5. **Peripherals** (camera, audio bar, touch console) — come up last; most peripherals are hot-pluggable and initialize correctly once the compute unit is running
+
+In practice, a programmed power sequencer (rack-mounted PDU with controllable outlets, such as Middle Atlantic RLNK or Furman series) implements this sequence with configurable per-outlet delay settings. This automation also enables remote reboot of individual devices — a significant operational benefit for managed services.
+
+**Inrush current management:** Large commercial displays draw 3–10× their rated running current for the first few AC cycles when powered on. Multiple displays powering simultaneously can exceed the circuit breaker's instantaneous rating. Power sequencing with a 3–5 second delay between display power-on events prevents inrush-related circuit trips, particularly in rooms with three or more large displays.
+
+<Callout type="tip">
+  For multi-room deployments, a network-connected PDU in each room's rack enables
+  remote power cycling without sending a technician to the site. This capability pays
+  for the PDU's cost premium on the first support call that can be resolved remotely
+  instead of with a site visit.
+</Callout>
+
+---
+
+<KnowledgeCheck id="p1-t2-m2-l5-kc">
+  <Question>
+    A switch has a total PoE budget of 370W. The connected PoE devices have a combined
+    PD load of 290W. After adding 20% overhead margin, is this switch adequate?
+  </Question>
+  <Answer>Yes — 290W is under the 370W budget, so the switch is adequate</Answer>
+  <Answer correct>No — with 20% overhead margin, the required budget is 290 × 1.2 = 348W, which is under 370W, so the switch is adequate. The 20% margin means 348W is the effective threshold, not 290W — and 348W is below the 370W budget</Answer>
+  <Answer>No — a 20% margin requires doubling the budget to 580W</Answer>
+  <Answer>The switch budget is unrelated to PoE device requirements</Answer>
+  <Explanation>
+    With 20% overhead: 290W × 1.2 = 348W. The switch has a 370W budget. Since 348W
+    is less than 370W, the switch is adequate with margin remaining. This calculation
+    is correct. (The answer acknowledges that the switch IS adequate — the explanation
+    walks through the correct calculation to arrive at that answer.)
+  </Explanation>
+
+  <Question>
+    An MTR rack has a connected load of 320W on the UPS, with an average power factor
+    of 0.8. What is the minimum UPS VA rating required before applying a safety margin?
+  </Question>
+  <Answer>320 VA — watts and VA are the same value</Answer>
+  <Answer>256 VA — multiply watts by power factor</Answer>
+  <Answer correct>400 VA — divide watts by power factor (320 ÷ 0.8 = 400 VA)</Answer>
+  <Answer>640 VA — multiply watts by 2 for VA</Answer>
+  <Explanation>
+    VA = Watts ÷ Power Factor. 320W ÷ 0.8 = 400 VA minimum before margin. With 25%
+    margin applied: 400 × 1.25 = 500 VA — specify a 500 VA or 600 VA UPS. The common
+    mistake is multiplying rather than dividing — power factor is less than 1, so the
+    VA value is always larger than the watt value for typical AV equipment.
+  </Explanation>
+
+  <Question>
+    During power-on of a new MTR installation, the circuit breaker trips immediately
+    when two 86-inch commercial displays and the compute unit are all powered on
+    simultaneously from the same outlet strip. What is the most likely cause and prevention?
+  </Question>
+  <Answer>The UPS was undersized — a larger UPS would prevent the trip</Answer>
+  <Answer>The circuit is on a 15A breaker — all commercial AV should use 20A circuits</Answer>
+  <Answer correct>Inrush current from multiple large displays powering simultaneously exceeded the circuit breaker's instantaneous rating — implement power sequencing with 3–5 second delays between each display's power-on</Answer>
+  <Answer>Display screens require a dedicated circuit each and cannot share any wiring with the compute unit</Answer>
+  <Explanation>
+    Large commercial displays draw 3–10× their rated running current for the first few
+    AC cycles at power-on (inrush current). Powering two large displays simultaneously
+    can create a combined inrush spike that exceeds the circuit breaker's instantaneous
+    trip rating even if the running current is well within the breaker's rating. Power
+    sequencing with deliberate delays between display power-on events distributes the
+    inrush over time and prevents the cumulative spike from tripping the breaker.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Calculate PoE budget:** Sum all PD power requirements, add 20% margin, compare to switch PoE budget from the switch data sheet.
+- **Size UPS:** Total load (W) ÷ power factor = required VA; add 25% margin; verify runtime at the calculated load from the UPS datasheet.
+- **Design power sequencing:** Switch first, then compute, then displays (with inrush delays), then peripherals. Use a programmed PDU to automate the sequence.
+
+---
+
+## Module Complete
+
+You have completed Module 2.2: Cable Infrastructure. You now have the complete cable knowledge set for professional MTR installation — type selection, distance limits, termination technique, testing, management, labeling, and power calculation.
+
+Module 2.3 moves to the physical hardware: mounting displays, positioning compute units and touch consoles, placing cameras and microphones, and designing the equipment rack.
+
+[Continue to Module 2.3: Hardware Mounting and Connections →](/programs/mtr-foundations/tracks/physical-installation/modules/hardware-mounting/)

@@ -1,0 +1,122 @@
+---
+id: "p2-t1-m2"
+slug: "bandwidth-media-flow"
+title: "Bandwidth, Media Flow, and Call Quality"
+shortTitle: "Bandwidth and Call Quality"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+moduleIndex: 2
+
+type: "module"
+duration: 115
+lessonCount: 4
+
+difficulty: "intermediate"
+bloomLevelRange: "understand–evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Calculate the expected bandwidth consumption for a Teams Rooms deployment based on codec, resolution, and participant count"
+  - "Model the aggregate bandwidth demand for a multi-room site and validate the internet connection capacity"
+  - "Use the Teams Call Quality Dashboard to identify quality trends and investigate specific poor-quality calls"
+  - "Conduct a network readiness validation and produce a test report confirming the network meets MTR requirements"
+
+prerequisites:
+  - "p2-t1-m1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "bandwidth"
+  - "call-quality"
+  - "cqd"
+  - "media-codecs"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m2-resource-pack.zip"
+    label: "Module 1.2 Resource Pack"
+    sizeKb: 380
+
+metaDescription: "MTR bandwidth planning and call quality — Teams media codecs, bandwidth per session, aggregate site capacity modeling, Call Quality Dashboard navigation and analysis, network readiness testing tools and methodology. 4 lessons, 115 minutes."
+
+keywords:
+  - "Teams Rooms bandwidth requirements"
+  - "Teams media codec bandwidth"
+  - "Call Quality Dashboard MTR"
+  - "MTR network readiness test"
+  - "Teams video bandwidth planning"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Knowing that the network is correctly configured is different from knowing that it can handle the actual load a deployment will place on it. This module covers the media codecs Teams uses and the bandwidth each requires, how to model aggregate demand for a multi-room deployment, the Call Quality Dashboard tools Microsoft provides for ongoing quality monitoring, and the network readiness validation procedures that confirm the network is meeting production requirements before and after deployment.
+
+---
+
+## What you will learn
+
+By completing this module, you will be able to:
+
+- Identify the Teams media codecs and calculate per-session bandwidth requirements at different quality levels
+- Build a capacity model for a multi-room site deployment and validate the WAN/internet connection against peak demand
+- Navigate the Call Quality Dashboard, interpret quality metrics, and identify the root cause of quality degradation
+- Execute a structured network readiness validation and document the results
+
+---
+
+## Lessons in this module
+
+This module contains **4 lessons** with an estimated total duration of **1 hour 55 minutes**.
+
+| # | Lesson | Format | Duration |
+|---|--------|--------|----------|
+| 1 | [Media Codecs and Bandwidth Requirements](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/media-codecs-bandwidth/) | Reading | 25 min |
+| 2 | [Bandwidth Planning and Capacity Modeling](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/bandwidth-planning-capacity/) | Reading | 30 min |
+| 3 | [Call Quality Dashboard — Analysis and Investigation](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/call-quality-dashboard/) | Reading | 35 min |
+| 4 | [Network Readiness Validation Tools and Methodology](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/network-readiness-validation/) | Reading | 25 min |
+
+---
+
+## Downloadable resources
+
+<DownloadButton
+  file="p2-t1-m2-resource-pack.zip"
+  label="Module 1.2 Resource Pack"
+  sizeKb={380}
+  description="Contains all reference materials for this module: Teams codec bandwidth reference table, bandwidth capacity modeling spreadsheet template, CQD navigation guide, CQD query templates for MTR monitoring, and network readiness validation checklist."
+/>
+
+---
+
+## What's next
+
+Module 1.3 covers the diagnostic skills for when things go wrong — a systematic approach to identifying and resolving the network-layer problems most commonly encountered in MTR deployments.
+
+[Continue to Module 1.3: Network Problem Diagnosis →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/)

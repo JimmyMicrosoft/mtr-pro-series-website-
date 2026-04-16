@@ -1,0 +1,253 @@
+---
+id: "p2-t2-m2-l2"
+slug: "configuration-profiles"
+title: "Configuration Profiles at Scale"
+shortTitle: "Configuration Profiles"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 2
+moduleSlug: "tac-policies-and-management"
+moduleTitle: "TAC Policies and Fleet Management"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Create TAC configuration profiles for common room type scenarios"
+  - "Assign configuration profiles to devices individually and in bulk using tags"
+  - "Explain the configuration precedence between TAC profiles, Intune XML, and local SkypeSettings.xml"
+
+prerequisites:
+  - "p2-t2-m2-l1"
+  - "p1-t3-m3"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "tac-management"
+  - "configuration-profiles"
+  - "xml-configuration"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m2-l2-config-profile-reference.pdf"
+    label: "TAC Configuration Profile Settings Reference"
+    sizeKb: 45
+
+relatedLessons:
+  - "p1-t3-m3-l3"
+  - "p2-t2-m2-l1"
+
+metaDescription: "TAC configuration profiles for MTR — profile creation, available settings, room-type-specific profiles, bulk assignment via tags, profile compliance monitoring, and precedence over local XML configuration."
+
+keywords:
+  - "TAC configuration profiles MTR"
+  - "Teams Rooms configuration profile"
+  - "Teams Admin Center device configuration"
+  - "MTR TAC profile assignment"
+  - "Teams Rooms remote configuration"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+TAC configuration profiles deliver device settings through the Teams service connection — no physical access, no XML file management, no USB drives. A profile created in TAC is assigned to devices and applied within hours. When settings need to change across 200 rooms, updating the profile changes all 200 devices simultaneously. This is the most scalable configuration management tool available for MTR Windows fleets with Pro licenses.
+
+---
+
+## Profile Availability
+
+TAC configuration profiles are available for **MTR Windows devices with Teams Rooms Pro licenses only.** Devices with Basic licenses or Android devices do not receive TAC configuration profiles. For those devices, Intune XML deployment or local SkypeSettings.xml remain the configuration methods.
+
+---
+
+## Creating a Configuration Profile
+
+In Teams Admin Center:
+1. Navigate to **Teams Devices → Rooms on Windows → Configuration profiles**
+2. Click **+ Add**
+3. Name the profile (use a descriptive name that reflects the room type or setting group)
+4. Configure the available settings
+5. Save the profile
+
+**Profile naming convention:**
+- `Standard Conference - Dual Display` — standard rooms with dual monitors
+- `Boardroom - Pro Features` — boardrooms with Front Row and IntelliFrame
+- `Huddle Room - Single Display` — small rooms with single monitor
+- `All Rooms - QoS Settings` — global settings applied to all rooms
+
+---
+
+## Available Configuration Settings
+
+TAC configuration profiles cover the most commonly needed settings:
+
+**Meeting experience:**
+- Auto-accept proximity meetings
+- Automatically accept room invites
+- Block sending meeting information to guests
+- Join third-party meetings (Zoom, Webex via Direct Guest Join)
+- Front Row default
+
+**Display:**
+- Dual monitor mode
+- Content duplicate on second display
+- Display timeout (minutes)
+
+**Calling:**
+- Enable dialing pad
+- Default dial plan
+
+**Device:**
+- Bluetooth enabled/disabled
+- Location services
+- Capture logs enabled
+
+**Theming:** (Upload is handled separately — the profile references a previously uploaded theme image)
+
+**Cortana / voice activation:** Enable or disable voice activation ("Hey Cortana" wake word)
+
+---
+
+## Room-Type Profile Strategy
+
+Design profiles by room type rather than trying to fit all settings into a single profile:
+
+**Profile: Boardroom**
+```
+Dual monitor mode: On
+Front Row default: On
+Auto-accept proximity: On
+Direct Guest Join (Zoom, Webex): On
+Display timeout: 10 minutes
+```
+
+**Profile: Standard Conference Room**
+```
+Dual monitor mode: On (for rooms with dual displays)
+Front Row default: Off (let users choose)
+Auto-accept proximity: On
+Direct Guest Join: On
+Display timeout: 5 minutes
+```
+
+**Profile: Huddle Room**
+```
+Dual monitor mode: Off
+Auto-accept proximity: On
+Direct Guest Join: On
+Display timeout: 3 minutes
+```
+
+Assign the appropriate profile to each device based on its room type tag. When room type changes (a huddle room is converted to a conference room), update the profile assignment — the new profile is delivered within hours.
+
+---
+
+## Assigning Profiles
+
+**Single device assignment:**
+1. Select the device in the device list
+2. Click the device name to open the device detail view
+3. Under **Configuration**, click **Assign configuration profile**
+4. Select the profile and confirm
+
+**Bulk assignment (filtered list):**
+1. Filter the device list by room type tag (e.g., `type:boardroom`)
+2. Select all filtered devices
+3. **Actions → Assign configuration**
+4. Select the appropriate profile
+
+**Removing a profile:**
+Same workflow — select devices, **Actions → Remove configuration** — removes the profile and reverts to default (or local XML) settings.
+
+---
+
+## Monitoring Profile Compliance
+
+TAC shows configuration profile compliance for each device:
+
+- In the device detail view, the **Configuration** section shows the assigned profile and compliance status
+- `Compliant` — the device's current settings match the assigned profile
+- `Non-compliant` — the device settings do not match the profile (may indicate the device hasn't received the update yet, or a conflicting local configuration is overriding)
+- Profile changes are delivered within 60–120 minutes of assignment or update
+
+If a device shows persistent Non-compliant status after 2 hours, check whether a local SkypeSettings.xml is conflicting (profile takes precedence but only for settings it controls — settings not in the profile fall through to local XML).
+
+<DownloadButton
+  file="p2-t2-m2-l2-config-profile-reference.pdf"
+  label="TAC Configuration Profile Settings Reference"
+  sizeKb={45}
+  description="Complete TAC configuration profile settings reference — all available parameters with descriptions, recommended values per room type, profile naming and assignment strategy, and compliance monitoring guidance."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m2-l2-kc">
+  <Question>
+    A TAC configuration profile sets "Dual monitor mode: On" for 50 conference
+    rooms. 12 of those rooms have a local SkypeSettings.xml that also sets
+    `&lt;DualMonitorMode&gt;true&lt;/DualMonitorMode&gt;`. The other 38 have no local XML.
+    What configuration is in effect on all 50 devices?
+  </Question>
+  <Answer>The 12 devices with local XML use the local XML setting; the 38 without use the TAC profile</Answer>
+  <Answer correct>All 50 devices use the TAC configuration profile setting for dual monitor mode — TAC profiles take the highest precedence and override local SkypeSettings.xml for any settings they control, regardless of whether a local XML file exists</Answer>
+  <Answer>The 12 devices with conflicting XML will show Non-compliant status and must have their local XML removed before the profile can apply</Answer>
+  <Answer>TAC profile and local XML settings are merged — both apply and the most recently changed setting wins</Answer>
+  <Explanation>
+    TAC configuration profiles have the highest precedence in the configuration
+    hierarchy: TAC Profile > Intune XML > Local SkypeSettings.xml. For any
+    setting controlled by a TAC profile, that profile setting is authoritative
+    on all assigned devices — it overrides the equivalent setting in any
+    local XML file. All 50 devices receive "Dual monitor mode: On" from the
+    TAC profile. The local XML on 12 devices is not needed for that setting
+    (though it remains valid for any settings not covered by the TAC profile).
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Pro license required:** TAC configuration profiles are Windows-only, Pro license only.
+- **Profile per room type:** Boardroom, standard conference, huddle — distinct profiles for distinct requirements.
+- **Bulk assignment:** Filter by room type tag → select all → assign profile.
+- **Precedence:** TAC profile > Intune XML > local XML — profile wins for any setting it controls.
+- **Compliance monitoring:** Check assigned profile compliance status in device detail view.
+
+---
+
+## What's Next
+
+[Teams Meeting Policies for MTR Devices →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/lessons/meeting-policies-mtr/)

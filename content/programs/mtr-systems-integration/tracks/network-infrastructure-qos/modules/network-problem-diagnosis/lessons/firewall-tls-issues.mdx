@@ -1,0 +1,237 @@
+---
+id: "p2-t1-m3-l2"
+slug: "firewall-tls-issues"
+title: "Firewall, Certificate Inspection, and TLS Issues"
+shortTitle: "Firewall and TLS Issues"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 3
+moduleSlug: "network-problem-diagnosis"
+moduleTitle: "Network Problem Diagnosis"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify symptoms that indicate a firewall rule is blocking MTR connectivity and determine which rule is missing"
+  - "Diagnose TLS/SSL certificate inspection issues and specify the bypass configuration required"
+  - "Use diagnostic commands to confirm whether specific ports and endpoints are reachable from the MTR device"
+
+prerequisites:
+  - "p2-t1-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "troubleshooting"
+  - "firewall"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-l2-firewall-diagnosis-guide.pdf"
+    label: "MTR Firewall and TLS Diagnosis Guide"
+    sizeKb: 40
+
+relatedLessons:
+  - "p2-t1-m1-l2"
+  - "p2-t1-m3-l1"
+
+metaDescription: "MTR firewall and TLS diagnosis — blocked port symptoms, UDP 3478-3481 testing, SSL inspection certificate errors, MTR certificate chain validation, firewall bypass testing commands, and remediation approach."
+
+keywords:
+  - "Teams Rooms firewall blocked"
+  - "MTR UDP 3478 blocked"
+  - "Teams Rooms TLS certificate error"
+  - "MTR SSL inspection bypass"
+  - "Teams Rooms firewall diagnosis"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Firewall misconfigurations and SSL/TLS certificate inspection are the second most common source of MTR network failures after proxy issues — and they produce similarly misleading symptoms. A blocked UDP port looks like a Teams quality problem. An SSL inspection proxy breaking the certificate chain looks like an Entra ID authentication failure. This lesson provides the diagnostic approach and commands to isolate firewall and TLS issues precisely, so the fix can be communicated to the network team with specificity.
+
+---
+
+## Firewall Symptom Patterns
+
+| Symptom | Likely Firewall Cause |
+|---------|----------------------|
+| Media quality poor; audio choppy; video freezes | UDP 3478–3481 blocked (media falls back to TCP) |
+| Device signs in but meetings have degraded quality from first meeting | UDP blocked; all media on TCP 443 fallback |
+| Sign-in fails completely with network error | TCP 443 to login.microsoftonline.com blocked |
+| Device signs in; calendar shows meetings; cannot join | TCP 443 to *.teams.microsoft.com blocked |
+| Teams app signs in; Teams Admin Center shows device offline | TAC management ports blocked |
+| Device works inside office; fails from specific network segment | Segment-specific firewall rule missing |
+
+---
+
+## Testing Port Reachability from MTR Windows
+
+From a command prompt on the MTR Windows device (sign in as local admin, or use remote access during commissioning):
+
+**Test TCP 443 to a Teams endpoint:**
+```
+Test-NetConnection -ComputerName teams.microsoft.com -Port 443
+```
+Expected output: `TcpTestSucceeded : True`
+
+**Test UDP 3478 to a Teams media relay:**
+```
+# UDP testing requires a different approach — use PowerShell to attempt a UDP connection
+$udp = New-Object System.Net.Sockets.UdpClient
+$udp.Connect("13.107.64.1", 3478)
+$udp.Send([byte[]]@(0,1), 2)
+```
+Alternatively, use the Teams Network Assessment Tool (TNAT) from the previous module — it directly tests UDP media transport and reports whether UDP reached the relay servers.
+
+**Test DNS resolution:**
+```
+Resolve-DnsName teams.microsoft.com
+Resolve-DnsName login.microsoftonline.com
+```
+Both should return valid IP addresses. If they return NXDOMAIN or time out, DNS is the issue (see the DNS lesson).
+
+**Test multiple endpoints quickly:**
+```
+$endpoints = @("teams.microsoft.com", "login.microsoftonline.com", "outlook.office365.com", "graph.microsoft.com")
+foreach ($ep in $endpoints) {
+    $result = Test-NetConnection -ComputerName $ep -Port 443 -WarningAction SilentlyContinue
+    Write-Output "$ep : $($result.TcpTestSucceeded)"
+}
+```
+
+---
+
+## SSL Certificate Inspection Issues
+
+SSL inspection (also called TLS inspection or deep packet inspection) intercepts encrypted HTTPS connections and substitutes the proxy's own certificate. The device connects to the proxy, which presents a proxy certificate; the proxy connects to the actual destination on behalf of the device.
+
+**How to identify SSL inspection is active:**
+
+From a browser on the MTR Windows device, navigate to `login.microsoftonline.com` and view the certificate. If the certificate is issued by the organization's internal CA (rather than by Microsoft or a public CA), SSL inspection is intercepting the connection.
+
+From PowerShell:
+```powershell
+$request = [System.Net.WebRequest]::Create("https://login.microsoftonline.com")
+$response = $request.GetResponse()
+$cert = $request.ServicePoint.Certificate
+Write-Output "Issued by: $($cert.Issuer)"
+Write-Output "Valid until: $($cert.GetExpirationDateString())"
+```
+
+If the `Issued by` field shows an internal CA (e.g., "Corp-CA-01"), SSL inspection is intercepting.
+
+**Why SSL inspection breaks Teams:**
+
+Teams uses certificate pinning and specific TLS handshake extensions for authentication. When the proxy substitutes its own certificate:
+1. The certificate chain breaks — the proxy's certificate is not in the expected Microsoft certificate chain
+2. Teams' TLS validation fails silently or throws an authentication error
+3. The device may successfully open a connection but fails to complete the OAuth authentication handshake
+
+**Symptoms specific to SSL inspection (vs. other TLS issues):**
+- Sign-in attempts fail with generic "something went wrong" errors
+- Sign-in succeeds initially but fails after token refresh (varies by proxy session timeout)
+- Selective failures — some HTTPS destinations work, Teams auth specifically fails
+
+**Resolution:** Configure the SSL inspection appliance to bypass inspection for all M365 Optimize and Allow category endpoints. This is typically done by URL pattern or IP range in the SSL inspection policy. The network/security team must make this change — document the specific URLs and IPs that require bypass (from the M365 endpoint list) and provide it to them as a change request.
+
+<Callout type="warning">
+  Never attempt to work around SSL inspection by disabling certificate
+  validation in Teams or Windows. This would create a genuine security
+  vulnerability. The correct fix is always to configure the SSL inspection
+  appliance to bypass M365 endpoints.
+</Callout>
+
+---
+
+## Diagnosing Missing Firewall Rules
+
+When port connectivity tests fail, the next step is identifying which rule is missing:
+
+1. Run the comprehensive port test above — note which endpoints fail
+2. Map the failed endpoints to their required rules using the M365 firewall rule reference
+3. Confirm whether the failure is outbound (firewall blocks the MTR device's outbound traffic) or return traffic (firewall blocks inbound return packets from Microsoft)
+4. Provide the network team with the specific rule needed: source subnet (MTR VLAN), destination IP/FQDN, protocol, port
+
+**The most common missing rule:** UDP 3478–3481 outbound to the Teams media relay IP ranges. This rule is often missed because many firewall administrators focus on TCP rules and overlook UDP for conferencing.
+
+<DownloadButton
+  file="p2-t1-m3-l2-firewall-diagnosis-guide.pdf"
+  label="MTR Firewall and TLS Diagnosis Guide"
+  sizeKb={40}
+  description="MTR firewall and TLS diagnosis reference — symptom-to-rule mapping, PowerShell test commands, SSL inspection detection procedure, certificate chain verification, and firewall change request template with required rules for MTR deployments."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m3-l2-kc">
+  <Question>
+    An MTR device signs in successfully and calendar integration works, but
+    every meeting has choppy audio and very low-resolution video. `Test-NetConnection`
+    to teams.microsoft.com:443 succeeds. The Teams Network Assessment Tool
+    reports 18% packet loss on UDP transport. What is the firewall issue?
+  </Question>
+  <Answer>TCP 443 is being throttled by the firewall, reducing available bandwidth</Answer>
+  <Answer correct>UDP ports 3478–3481 are blocked — Teams is falling back to TCP 443 for all media transport, which adds latency and increases effective packet loss compared to UDP. The TNAT UDP packet loss confirms UDP media cannot reach the relay servers</Answer>
+  <Answer>The firewall is blocking STUN/TURN on port 3479 but allowing 3478</Answer>
+  <Answer>The MTR device needs a static route added to bypass the firewall for media traffic</Answer>
+  <Explanation>
+    When UDP 3478–3481 is blocked, Teams falls back to relaying media through
+    TCP 443. TCP adds overhead (connection management, retransmission delays)
+    that is incompatible with real-time audio and video. The TNAT result of
+    18% UDP packet loss indicates UDP never reaches the relay servers — it
+    is effectively 100% "loss" from the relay's perspective, confirming the
+    block. TCP 443 succeeding is consistent — sign-in and calendar use TCP
+    and work fine. The fix is a firewall rule permitting UDP 3478–3481
+    outbound from the MTR subnet to the Teams media IP ranges.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Port reachability:** Use `Test-NetConnection` for TCP; TNAT for UDP media paths.
+- **Common missing rule:** UDP 3478–3481 to Teams media IPs — most frequently overlooked.
+- **SSL inspection detection:** Check certificate issuer in browser or PowerShell; internal CA = inspection active.
+- **SSL inspection fix:** Bypass M365 Optimize + Allow endpoints — network team change request with specific URLs/IPs.
+
+---
+
+## What's Next
+
+[DNS and NTP Issues in Enterprise Environments →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/dns-ntp-issues/)

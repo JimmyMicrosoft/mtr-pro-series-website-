@@ -1,0 +1,236 @@
+---
+id: "p2-t2-m2-l4"
+slug: "update-policies"
+title: "Update Policies and Maintenance Windows"
+shortTitle: "Update Policies"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 2
+moduleSlug: "tac-policies-and-management"
+moduleTitle: "TAC Policies and Fleet Management"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Configure TAC update policies with appropriate maintenance windows for MTR Windows devices"
+  - "Design a phased update ring strategy that validates updates before deploying to the full fleet"
+  - "Identify the layers of update management for MTR Windows (Teams app, Windows OS, OEM firmware) and their respective control mechanisms"
+
+prerequisites:
+  - "p2-t2-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+  - "intune"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "tac-management"
+  - "update-management"
+  - "firmware"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m2-l4-update-policy-guide.pdf"
+    label: "MTR Update Policy Design Guide"
+    sizeKb: 45
+
+relatedLessons:
+  - "p2-t2-m2-l3"
+  - "p2-t2-m2-l5"
+
+metaDescription: "MTR update policies and maintenance windows — TAC update policy configuration, maintenance window scheduling, update ring strategy, Teams app vs. Windows OS vs. OEM firmware update control, and update monitoring."
+
+keywords:
+  - "Teams Rooms update policy"
+  - "MTR maintenance window"
+  - "Teams Rooms update ring"
+  - "TAC update management"
+  - "MTR Windows update schedule"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Uncontrolled updates in a conference room fleet create a support liability. Teams app updates that change the UI cause user confusion and support calls. Windows OS updates that restart devices in the middle of the business day interrupt meetings. Firmware updates that introduce regressions affect rooms that were working correctly. Update policies and maintenance windows shift this risk from random to controlled — updates happen when rooms are not in use, with rollout gates that catch problems before they reach the entire fleet.
+
+---
+
+## Update Layers for MTR Windows
+
+MTR Windows devices have three independent update layers, each with its own control mechanism:
+
+| Update Layer | What It Updates | Control Mechanism |
+|-------------|----------------|------------------|
+| **Teams Rooms app** | The Teams Rooms application itself | TAC Update Policy |
+| **Windows OS** | Windows 10/11, Windows Updates | Intune or Windows Update for Business |
+| **OEM firmware** | Device firmware (BIOS, peripheral firmware) | OEM cloud portal (Poly Lens, etc.) |
+
+All three must be managed — ignoring any one of them creates an update gap.
+
+---
+
+## TAC Update Policies (Teams App)
+
+TAC update policies control when and how Teams Rooms app updates are applied to Windows devices.
+
+**Creating an update policy:**
+
+In Teams Admin Center:
+1. Navigate to **Teams Devices → Rooms on Windows → Update policies**
+2. Click **+ Add**
+3. Configure:
+   - **Policy name:** e.g., "Production Room Devices"
+   - **Use Teams public preview features:** Off for production; On for early ring
+   - **Maintenance window:** Days and hours when updates can be applied
+   - **Use Teams admin center to manage updates:** On
+
+**Maintenance window configuration:**
+
+The maintenance window defines when the device will apply available updates. Set this to hours when rooms are reliably empty — typically late night or early morning.
+
+Recommended maintenance windows:
+- Standard corporate hours: 02:00–05:00 on weekdays (2–5am; rooms empty; enough time for update + restart before first morning meeting)
+- 24/7 facilities (hospitals, etc.): Weekend maintenance windows only (Saturday and Sunday 02:00–05:00)
+- Avoid: 18:00–22:00 (post-work meetings common), 06:00–09:00 (early morning meetings)
+
+**Policy assignment:**
+
+Assign the update policy to devices the same way as configuration profiles — filter by device set, select all, **Actions → Assign update policy**.
+
+---
+
+## Update Ring Strategy
+
+For enterprise deployments, a phased update ring approach prevents organization-wide impact from a problematic release:
+
+**Ring 1 — Early (5% of fleet, ~5–10 devices):**
+- Devices in low-visibility locations (server room, IT department)
+- Receive updates 1 week before the standard ring
+- Monitored closely for issues post-update
+- Teams public preview features enabled
+
+**Ring 2 — Standard (75% of fleet):**
+- Most conference rooms
+- Receive updates when Ring 1 has validated the release
+- Standard maintenance window (02:00–05:00)
+
+**Ring 3 — Deferred (20% of fleet):**
+- High-visibility rooms (boardrooms, executive conference rooms)
+- Receive updates 1–2 weeks after Standard ring
+- Only updated after Standard ring stability confirmed
+- Standard or extended maintenance window
+
+**Implementation in TAC:**
+Create three update policies with the appropriate preview settings and staggered rollout timing. Assign devices to rings using TAC tags (`ring:early`, `ring:standard`, `ring:deferred`) and the corresponding update policy.
+
+---
+
+## Windows OS Updates (Intune or Windows Update for Business)
+
+For Windows OS updates on MTR Windows devices enrolled in Intune:
+
+1. Create an Intune **Windows Update Ring** for MTR devices
+2. Configure:
+   - **Feature update deferral:** 30–90 days (defer new Windows versions to allow testing)
+   - **Quality update deferral:** 7–14 days (defer security patches briefly)
+   - **Active hours:** Set to room operating hours (07:00–21:00) — Windows will not automatically restart during active hours
+   - **Maintenance window:** Configure scheduled restart window (02:00–05:00) to align with Teams app update window
+
+3. Assign the Intune update ring to the MTR device group
+
+**Windows Update for Business (non-Intune):**
+For MTR devices on domain-joined deployments without Intune, use Group Policy to configure Windows Update for Business deferral policies and active hours.
+
+---
+
+## OEM Firmware Updates
+
+OEM firmware updates are managed outside of both TAC and Intune:
+
+- **Poly:** Poly Lens portal → firmware update scheduling → target device group → schedule maintenance window
+- **Yealink:** YMCS portal → firmware management → device group → scheduled update
+- **Logitech:** Logitech Sync portal → firmware update → select devices → schedule
+- **Neat:** Neat Pulse portal → firmware management → schedule update
+
+Best practice: align OEM firmware update schedules with the TAC maintenance window (same night, same hours) to consolidate all update activity into a single nightly window. Do not schedule OEM firmware updates and Teams app updates to run simultaneously — if both require a restart, the combined restart time may exceed the maintenance window.
+
+<DownloadButton
+  file="p2-t2-m2-l4-update-policy-guide.pdf"
+  label="MTR Update Policy Design Guide"
+  sizeKb={45}
+  description="MTR update policy design guide — TAC update policy configuration, maintenance window scheduling, three-ring update strategy design, Intune Windows Update ring for MTR, and OEM portal firmware scheduling. Includes update ring assignment worksheet."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m2-l4-kc">
+  <Question>
+    After a Teams app update deployed to all rooms overnight, 15 boardrooms
+    report a display issue in meetings the next morning. The issue was not
+    present in 10 early-ring test rooms the previous week. What update ring
+    failure does this represent, and what should have happened instead?
+  </Question>
+  <Answer>The early ring devices were not representative — the problem only affects boardroom hardware. This is expected and cannot be prevented</Answer>
+  <Answer correct>The Standard ring (which includes boardrooms) received the update before sufficient validation time elapsed since the Early ring update. The deferred ring — high-visibility boardrooms — should not have received the update until the Standard ring validated it over a longer observation period (1–2 weeks, not 1 week)</Answer>
+  <Answer>Update rings only work for Teams app updates, not for display-related issues which are firmware problems</Answer>
+  <Answer>The boardrooms should have been in the Early ring, not the Standard ring, to catch issues first</Answer>
+  <Explanation>
+    The deferred ring is specifically designed to protect high-visibility rooms
+    (boardrooms) from issues that slip past the early ring. In this scenario,
+    the 10 early-ring devices did not surface the issue, but the Standard ring
+    (which should exclude boardrooms, or boardrooms should be in the Deferred
+    ring) caught it. Boardrooms should be in the Deferred ring with a 1–2
+    week delay after Standard ring deployment, providing a longer observation
+    window. When 15 boardrooms are affected the morning after an update, the
+    board-level meeting schedule is disrupted — the exact outcome the Deferred
+    ring is designed to prevent.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Three update layers:** Teams app (TAC update policy), Windows OS (Intune/WUfB), OEM firmware (OEM portals) — all three must be managed.
+- **Maintenance window:** 02:00–05:00 on weekdays; align all update layers to the same window.
+- **Update rings:** Early (5%, IT area, 1 week ahead) → Standard (75%, 1 week observation) → Deferred (20%, boardrooms, 1–2 weeks after Standard).
+- **Intune for Windows OS:** Feature update deferral 30–90 days; quality update deferral 7–14 days; active hours match room operating hours.
+
+---
+
+## What's Next
+
+[Monitoring, Alerting, and Health Dashboards in TAC →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/lessons/monitoring-health-dashboards/)

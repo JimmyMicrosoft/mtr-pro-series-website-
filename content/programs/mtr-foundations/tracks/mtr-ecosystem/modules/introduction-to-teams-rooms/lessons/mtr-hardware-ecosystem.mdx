@@ -1,0 +1,308 @@
+---
+id: "p1-t1-m1-l3"
+slug: "mtr-hardware-ecosystem"
+title: "The MTR Hardware Ecosystem — Certified Compute, Displays, Cameras, and Audio"
+shortTitle: "The Hardware Ecosystem"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 1
+moduleSlug: "introduction-to-teams-rooms"
+moduleTitle: "Introduction to Microsoft Teams Rooms"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 35
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Navigate the Microsoft Teams Rooms certified device catalog and filter by device category and room size recommendation"
+  - "Identify the key hardware categories in an MTR system and explain the function of each in the signal chain"
+  - "Apply Microsoft's room size guidance to match hardware bundles and individual components to small, medium, and large room requirements"
+
+prerequisites:
+  - "p1-t1-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "certified-hardware"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "hardware"
+  - "certified-devices"
+  - "signal-chain"
+
+vendorTags:
+  - "microsoft"
+  - "lenovo"
+  - "poly"
+  - "yealink"
+  - "logitech"
+  - "shure"
+  - "jabra"
+  - "crestron"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m1-l3-bom-starter-template.pdf"
+    label: "BOM Starter Template"
+    sizeKb: 120
+
+relatedLessons:
+  - "p1-t1-m1-l2"
+  - "p1-t1-m1-l4"
+
+metaDescription: "Learn how to navigate the MTR certified device catalog, understand each hardware category in the MTR signal chain, and match hardware to small, medium, and large room requirements."
+
+keywords:
+  - "MTR certified devices"
+  - "Teams Rooms hardware"
+  - "MTR compute unit"
+  - "AV integrator hardware selection"
+  - "MTR camera audio"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Every MTR project starts with a bill of materials. Before you can write a BOM you can stand behind — one you can quote, order, and deliver without surprises — you need to understand what goes into an MTR system, what Microsoft's certification program actually means, and how to use the certified device catalog to find compliant components for any room. This lesson builds that foundation.
+
+The hardware knowledge covered here is not academic. It translates directly into the decisions you make on every project: which compute unit to specify, which camera covers a given room size, which microphone array handles the table length, whether the client's proposed display will work correctly with MTR. These are the daily decisions of an integrator working in the MTR space, and making them accurately — the first time — is what separates professional deployments from costly change orders.
+
+By the end of this lesson you will know the function of each hardware category in the MTR signal chain, how to navigate the certified device catalog, and how to apply room size guidance to match hardware to the actual spaces you are designing.
+
+---
+
+## The Certification Program
+
+Microsoft operates a formal hardware certification program for Teams Rooms. The program tests devices — compute units, cameras, audio devices, touch consoles, and content cameras — against a defined set of compatibility requirements with the Teams Rooms application. A device that passes receives a certified designation and appears in the Microsoft Teams Rooms certified devices catalog at aka.ms/MTRDevices.
+
+The practical meaning of certification is this: if you deploy a device that is on the certified list, Microsoft and the device OEM will support it. If a problem arises, Microsoft's support team will engage on your issue. If you deploy a non-certified device, Microsoft's position is that the configuration is unsupported — their support team will not troubleshoot issues related to the non-certified component, and the OEM may decline to support it under warranty in an MTR context. For integrators, specifying non-certified hardware creates a support gap that becomes your problem.
+
+The catalog is organized by category — Teams Rooms on Windows, Teams Rooms on Android, peripherals — and includes filters for room size (small, medium, large), device type (cameras, audio, consoles), and vendor. Room size ratings are Microsoft's guidance, not hard limits, but they reflect testing done with specific room dimensions and seating configurations. A camera rated for small rooms has been validated for coverage in a space of that type; using it in a large room is an unsupported configuration that may produce inadequate coverage.
+
+<Callout type="warning">
+  Always verify that the devices you specify are on the current certified list at the time you
+  write your proposal. The catalog is updated regularly — new devices are added, older models
+  reach end-of-support, and room size ratings can change with firmware updates. A device that
+  was certified when you wrote the quote may have been superseded by the time you order. Build
+  a catalog verification step into your pre-proposal workflow.
+</Callout>
+
+{/* MEDIA: Annotated screenshot of the Microsoft Teams Rooms certified device catalog interface. Callout labels identify: category filter tabs, room size filter, Windows vs. Android toggle, individual device listing with room size badge and vendor information. Filename: p1-t1-m1-l3-catalog-interface.png */}
+
+---
+
+## Compute Units and Touch Consoles
+
+The compute unit is the central component of an MTR Windows system. It runs Windows IoT Enterprise, runs the Teams Rooms application, and connects to every other device in the room via USB or IP. Every signal in the room flows through it: camera video, microphone audio, display output, content sharing from HDMI input, touch console commands. Its processing power, port count, and form factor determine what you can build around it.
+
+Representative compute units include the Lenovo ThinkSmart Core (a compact unit designed to mount in AV furniture or behind a display), the Crestron UC-MX70-T (a rack-mountable solution that integrates with Crestron's AV control ecosystem), and the HP Presence Compute Module. Some integrators build around Intel NUC-based platforms paired with controllers like the Logitech Tap IP. When selecting a compute unit, consider: how many USB 3.0 ports are available for peripherals, how many display outputs are needed (HDMI or DisplayPort), whether an IP-based or USB-based touch console is appropriate for the room's layout, and whether the form factor fits the furniture or rack space available.
+
+The touch console — the controller — is the room's user interface. It is the 8" or 10" touchscreen device that sits on the conference table and shows the room's calendar, meeting join buttons, call controls, and settings. On MTR Windows, the console connects to the compute unit via USB (for same-room installations with short cable runs) or via Ethernet (for IP-based consoles, which remove cable length constraints and allow the compute unit to be located in a remote rack). On MTR Android, the situation differs: most Android all-in-one devices include a companion touch controller that pairs wirelessly or via a short IP connection, and both devices run coordinated instances of the Teams Rooms app.
+
+{/* MEDIA: MTR Windows signal chain block diagram. Compute unit at center. Connections labeled by type: touch console (USB 3.0 or Ethernet/IP), display 1 (HDMI/DisplayPort), display 2 optional (HDMI/DisplayPort), camera (USB 3.0), audio device (USB 3.0), network (Gigabit Ethernet), HDMI content input (from laptop/other source). All ports labeled with connector type and maximum cable run distances. Filename: p1-t1-m1-l3-signal-chain-diagram.png */}
+
+<Callout type="note">
+  For MTR Android, there is no separate compute unit to specify. The compute function is integrated
+  into the device itself — the MeetingBar, Neat Bar, or similar all-in-one unit. Your BOM for
+  an Android room replaces the compute unit + peripheral combination with a single device entry.
+</Callout>
+
+---
+
+## Displays
+
+Display selection for MTR rooms is not simply a matter of screen size. The displays in a conference room operate for eight to twelve hours a day, five days a week, in a professional environment where image quality and reliability are expected. That is a very different duty cycle than a home television — and it is the primary reason commercial-grade displays are the appropriate specification for MTR rooms.
+
+Commercial displays are rated for extended daily operation (typically 16/7 or 24/7 duty cycles), maintain brightness calibration more consistently over time, often include RS-232 or LAN control interfaces for integration with room control systems, and carry commercial warranties that cover the use case. Consumer televisions are designed for home use — a few hours per evening — and are neither warranted nor optimized for the demands of a commercial conference room. MTR uses CEC (Consumer Electronics Control) to send wake and sleep commands to displays when meetings start and end. CEC support varies across consumer panels and is more reliable and consistently implemented on commercial-grade displays.
+
+Brightness matters more than most integrators account for early in their careers. The standard recommendation is a minimum of 300 nits for a typical conference room with controlled lighting and window blinds. Rooms with significant ambient light — particularly those with south-facing windows or limited shade coverage — benefit from 500 nits or higher. Undersized brightness means the display is visually dominated by ambient light, reducing readability of shared content and video for in-room participants.
+
+Sizing follows a straightforward rule of thumb: the viewing distance should not exceed 1.5 to 2 times the display diagonal. A room with a 20-foot viewing distance calls for at least a 120" image equivalent — achievable with an 85" display at closer range or a projection system for the full depth. For standard boardrooms with 15-foot viewing distances, 75" to 85" displays are appropriate for single-display configurations.
+
+MTR Windows supports up to two displays. The second display typically shows the content being shared in the meeting — a remote participant's screen share or the local HDMI input from a laptop — while the first display shows people video. The display assignment (which is primary, which is secondary) is configurable in the MTR XML settings. For rooms designed with dual displays, this must be specified and configured during commissioning.
+
+<Callout type="tip">
+  When clients ask to use consumer televisions to save cost, the right response is to explain
+  the duty cycle difference, note the warranty gap, and document their choice in writing if they
+  insist. Clients who save $400 on a TV and call for support six months later because the panel
+  is degrading are your ongoing support problem. The commercial display specification is in
+  their interest, not just yours.
+</Callout>
+
+---
+
+## Cameras
+
+Camera selection is driven by room geometry — specifically, the number of seats, the table configuration, and the distance from the camera to the farthest participant. Microsoft's certified camera catalog covers devices from wide-angle fixed cameras appropriate for small rooms to motorized PTZ cameras with tracking capabilities for large spaces.
+
+For small rooms (up to six seats, typical huddle or small conference configuration), fixed wide-angle cameras with a 90-degree or wider field of view provide adequate coverage without mechanical complexity. Devices like the Logitech Rally Bar Mini (with integrated camera and audio), the Jabra PanaCast 20, or the Poly Studio P15 cover these rooms with a single device. The camera field of view at close range captures all participants without PTZ movement.
+
+For medium rooms (six to twelve seats, standard boardroom configuration), smart-tracking cameras that follow the active speaker or provide a wide-field persistent view are appropriate. The Poly Studio E70 uses AI-based framing to automatically track the active speaker or provide a group shot. The Huddly IQ provides wide-field intelligent framing. The Logitech MX Brio and similar 4K cameras offer high resolution for rooms where image quality is a priority. These rooms benefit from cameras positioned at the front wall, centered on the display, at approximately screen height.
+
+For large rooms (twelve or more seats, training rooms, or executive conference rooms with complex geometry), PTZ cameras with preset positions become necessary. The Sony SRG-A12, the Aver CAM540, and similar PTZ units can track speakers, switch between preset views (full table, presenter area, audience view), and provide the flexibility that large-room coverage requires. These rooms may also use multiple cameras — one at the front covering the presenter and display area, one at the rear covering the far end of the table.
+
+{/* MEDIA: Room size camera selection guide. Three room silhouettes (small, medium, large) with camera placement diagram and recommended device category for each. Callouts show field of view coverage for each room type. Filename: p1-t1-m1-l3-camera-selection-guide.png */}
+
+---
+
+## Audio Devices and Content Cameras
+
+Audio is the most technically demanding aspect of MTR room design and the most common source of post-installation issues. A room can have a perfect picture and still be unusable if remote participants cannot hear clearly. The core variables are microphone coverage area (does the pickup pattern reach every seat at the table), echo cancellation quality (does the device adequately suppress the room's speaker output from the microphone feed), and noise rejection (does the device handle HVAC noise, paper shuffling, and room reflections without degrading speech intelligibility).
+
+For small rooms, integrated audio bars — devices that combine camera, microphone array, and speaker in one unit — simplify the design and typically provide adequate coverage for up to six seats. The Jabra PanaCast 50, the Poly Studio R30, and the Yealink UVC40 represent this category. The integrated designs are tested and certified as a complete audio/video solution, which simplifies the certification question.
+
+For medium rooms, dedicated tabletop microphone arrays or ceiling-mounted microphones become appropriate as the table length grows beyond what an integrated bar can cover reliably. Devices like the Shure MXA310 (tabletop array) or the EPOS EXPAND 80T provide focused pickup across a conference table. Ceiling microphone arrays — the Shure MXA910, Biamp Tesira Forte with ceiling array, or Q-SYS-based solutions — become the right architecture for rooms where a clean table surface without microphone devices is a design requirement or where the table is too long for a single tabletop array.
+
+For large rooms, the audio design moves into DSP territory. A ceiling microphone array covering the full table, a DSP processor handling echo cancellation and mixing, and a distributed ceiling or line array speaker system are standard. The MTR compute unit connects to the DSP via USB (using a USB audio interface) or via a certified USB-to-DSP bridge device. Acoustic design — calculating microphone coverage area against table dimensions and seating positions, specifying speaker distribution for even SPL across the room — is a discipline in its own right and is covered in depth in later tracks.
+
+<Callout type="info">
+  Matching microphone coverage area to the physical table is a calculation, not an estimate.
+  A microphone array with a 20-foot diameter coverage radius does not adequately cover a 30-foot
+  conference table. Calculate coverage before specifying. For tables longer than a microphone's
+  rated coverage area, specify supplemental pickup devices or move to a ceiling array
+  architecture that provides zone-based coverage.
+</Callout>
+
+Content cameras are a secondary category relevant to rooms where physical whiteboard use is regular and remote participants need to see whiteboard content clearly. A content camera is a USB camera — separate from the main meeting camera — pointed at the whiteboard. MTR Windows includes AI processing that digitizes the whiteboard image, enhances contrast and readability, and optionally removes the presenter standing in front of the board. Correct positioning is specific: the camera must be perpendicular to the whiteboard surface, positioned 3 to 12 feet away, with the entire whiteboard surface in frame. Content cameras are only effective when the room design accounts for their position from the start.
+
+{/* MEDIA: Room size matrix graphic. Three columns (small, medium, large room). For each: silhouette of room with seating, recommended microphone category, recommended camera category, display configuration notes. Filename: p1-t1-m1-l3-room-size-matrix.png */}
+
+---
+
+## Building a Bill of Materials
+
+The BOM exercise that follows uses a standard medium conference room as the working scenario: a 10-seat room, single display, standard boardroom lighting, no whiteboard requirement. The goal is to walk through each hardware category in sequence — compute, console, display, camera, audio — selecting a certified component for each and validating that the combination is a supported configuration.
+
+Before building any BOM, confirm three things: all components are on the current certified list, the combination of components is a supported configuration (some compute units have USB port limitations that restrict certain peripheral combinations), and the room's physical constraints (cable distances, mounting requirements, furniture type) are compatible with the selected hardware. Component-level certification does not automatically validate a full system combination — verify the system as a configuration, not just as individual parts.
+
+Some manufacturers offer pre-certified bundles — the Lenovo ThinkSmart Bundle, the Logitech Room Solution for Medium Rooms, the Poly Studio Room Kit — that package compute, console, camera, and audio as a validated system. Bundles simplify the certification question for standard room types and can reduce BOM complexity on straightforward deployments. They are not always the best value or the best fit for rooms with specific requirements, but they are a legitimate starting point for common room sizes.
+
+<DownloadButton
+  file="p1-t1-m1-l3-bom-starter-template.pdf"
+  label="BOM Starter Template"
+  sizeKb={120}
+  description="Structured BOM worksheet for a 10-seat medium conference room. One row per hardware category with certification verification checkboxes and room size validation notes."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m1-l3-kc">
+  <Question>
+    A client asks why you specified a commercial-grade display instead of a 75" consumer
+    television that is $400 less expensive. Which response is most accurate?
+  </Question>
+  <Answer>Consumer displays are not compatible with the MTR HDMI output signal</Answer>
+  <Answer correct>Commercial displays are rated for extended daily operation, maintain brightness and color calibration more consistently, and are appropriate for the conference room duty cycle — consumer panels are not designed or warranted for this use</Answer>
+  <Answer>Microsoft only certifies commercial displays for MTR, so consumer panels are technically unsupported</Answer>
+  <Answer>Commercial displays have better CEC support, which is required for MTR auto wake/sleep</Answer>
+  <Explanation>
+    The primary argument for commercial-grade displays is duty cycle and operational durability.
+    Conference room displays operate 8–12 hours daily; consumer panels are designed for a few
+    hours per evening. While CEC support varies and Microsoft does not certify displays (displays
+    are not on the MTR certified peripherals list), the correct professional rationale is
+    duty cycle, warranty coverage, and long-term brightness performance.
+  </Explanation>
+
+  <Question>
+    An integrator is specifying an MTR system for a 14-seat conference room with a 28-foot
+    conference table. The budget favors a tabletop microphone array rated for 20-foot diameter
+    coverage. What is the correct guidance?
+  </Question>
+  <Answer>The 20-foot rating refers to room area, not table length, so coverage is adequate</Answer>
+  <Answer>A 20-foot coverage diameter is sufficient for a 28-foot table because sound propagates beyond the rated radius</Answer>
+  <Answer correct>The coverage diameter is insufficient for the full 28-foot table length — a ceiling microphone array or supplemental tabletop units distributed along the table are required</Answer>
+  <Answer>Tabletop microphone arrays are not certified for rooms with more than 12 seats</Answer>
+  <Explanation>
+    A microphone coverage rating describes the pickup area under tested conditions. A 20-foot
+    diameter coverage area cannot reliably serve a 28-foot conference table — seats at the far
+    ends of the table will have inadequate pickup. The correct specification for this room is
+    either multiple distributed tabletop units, a ceiling microphone array with zoned coverage,
+    or a DSP-based architecture.
+  </Explanation>
+
+  <Question>
+    Which hardware component is unique to MTR Windows deployments and is absent from MTR
+    Android deployments?
+  </Question>
+  <Answer>Touch console (controller)</Answer>
+  <Answer>Display</Answer>
+  <Answer correct>Compute unit</Answer>
+  <Answer>Camera</Answer>
+  <Explanation>
+    MTR Android devices integrate the compute function into the device itself. There is no
+    separate compute unit in an Android MTR deployment — the all-in-one device (MeetingBar,
+    Neat Bar, etc.) contains the processor, runs the Teams Rooms app, and handles all
+    peripheral connections. Touch consoles, displays, and cameras are relevant to both
+    platforms, though specific models differ.
+  </Explanation>
+
+  <Question>
+    An integrator discovers that a camera they specified for an MTR project is not currently
+    listed in the Microsoft certified device catalog. The project has not started. What is
+    the correct next step?
+  </Question>
+  <Answer>Proceed with the specification — the camera will function even without certification</Answer>
+  <Answer>Use the camera but document the unsupported configuration in the SOW to protect the integrator</Answer>
+  <Answer correct>Select a certified camera from the catalog and update the specification before the project is quoted</Answer>
+  <Answer>Contact Microsoft to request emergency certification for the project timeline</Answer>
+  <Explanation>
+    Non-certified hardware creates a support gap — Microsoft will not troubleshoot issues
+    involving non-certified components. The correct action is to select a certified device
+    before the project is quoted or contracted. Documenting an unsupported configuration in
+    a SOW does not make it supported; it only documents that both parties know it is
+    unsupported.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Navigate the certified device catalog:** Access aka.ms/MTRDevices, filter by category and room size, and verify device certification status before specifying any component.
+- **Describe the MTR Windows signal chain:** Compute unit at center, connected to touch console (USB or IP), displays (HDMI/DP), camera (USB 3.0), audio device (USB), and network (Ethernet).
+- **Select hardware by room size:** Small rooms — integrated bars for camera and audio, fixed wide-angle cameras. Medium rooms — dedicated microphone arrays, smart-tracking cameras. Large rooms — ceiling microphone arrays or DSP-based audio, PTZ cameras with presets.
+- **Specify displays correctly:** Commercial-grade panels for duty cycle and warranty coverage. Minimum 300 nits brightness. Appropriately sized for viewing distance. CEC for auto wake/sleep.
+- **Understand content cameras:** Secondary USB camera for whiteboard capture, Windows-only AI processing, specific positioning requirements (3–12 feet, perpendicular, full whiteboard in frame).
+
+---
+
+## What's Next
+
+You now understand the hardware landscape and how to build a BOM for an MTR room. The next lesson shifts from hardware to licensing — the resource account structure, the Teams Rooms Basic and Pro tiers, and the Microsoft 365 licensing implications that affect every MTR deployment.
+
+[MTR Licensing — Basic vs. Pro, Resource Accounts, and E3/E5 Implications →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/introduction-to-teams-rooms/lessons/mtr-licensing/)

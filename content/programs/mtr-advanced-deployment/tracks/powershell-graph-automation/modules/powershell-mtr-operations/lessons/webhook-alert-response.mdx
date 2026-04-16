@@ -1,0 +1,306 @@
+---
+id: "p3-t3-m1-l5"
+slug: "webhook-alert-response"
+title: "Webhook-Triggered Alert Response Automation"
+shortTitle: "Webhook Alert Response"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 1
+moduleSlug: "powershell-mtr-operations"
+moduleTitle: "PowerShell for MTR Operations"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design an Azure Function App with a PowerShell runtime to receive and process Pro Management webhook payloads"
+  - "Implement automated remediation logic that triggers a remote restart for specific incident types and falls back to ITSM ticket creation"
+  - "Apply rate limiting and duplicate incident prevention to avoid redundant restarts from repeated webhook fires"
+
+prerequisites:
+  - "p3-t3-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "powershell"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l4"
+  - "p3-t3-m2-l1"
+
+metaDescription: "Webhook-triggered MTR alert response automation — Azure Function with PowerShell runtime, Pro Management webhook payload parsing, automated restart logic, ITSM fallback, and duplicate prevention."
+
+keywords:
+  - "MTR webhook automation"
+  - "Teams Rooms Pro Management webhook"
+  - "Azure Function PowerShell MTR"
+  - "MTR automated incident response"
+  - "Teams Rooms alert automation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Polling for incidents on a schedule introduces latency — if a camera disconnect fires at 09:01, a 15-minute polling interval means no automated response until 09:15. Webhooks eliminate that lag: Pro Management posts to your endpoint the moment an incident is created, and your automation responds in seconds. This lesson builds the full webhook-to-remediation pipeline: an Azure Function App receives the webhook, parses the incident payload, decides whether to attempt an automated restart, and either resolves the incident or escalates to your ITSM system.
+
+---
+
+## Architecture Overview
+
+```
+Pro Management Alert
+        │
+        ▼
+Azure Function App (PowerShell)
+  ├── Parse webhook JSON payload
+  ├── Check duplicate incident cache
+  ├── Route by IncidentType + Severity
+  │     ├── Camera not detected (Critical) → TAC remote restart
+  │     │     ├── Restart success → add note to Pro Mgmt incident
+  │     │     └── Restart failed  → create ITSM ticket
+  │     ├── Network issue          → create ITSM ticket (Network Ops)
+  │     └── Informational          → log only
+  └── Log to Application Insights
+```
+
+The Azure Function App runs on a **Consumption plan** (pay-per-execution) and uses a **PowerShell 7.4 runtime**. An HTTP trigger exposes the webhook endpoint URL that you register in Pro Management.
+
+---
+
+## Setting Up the Azure Function
+
+The Azure Function's `run.ps1` receives the HTTP request and returns an HTTP response:
+
+```powershell
+# run.ps1 — Azure Function HTTP trigger for Pro Management webhooks
+using namespace System.Net
+
+param($Request, $TriggerMetadata)
+
+# --- 1. Parse the webhook payload ---
+$body = $Request.Body
+if (-not $body) {
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::BadRequest
+        Body       = "Empty body"
+    })
+    return
+}
+
+try {
+    $incident = $body | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    Write-Error "Failed to parse JSON payload: $($_.Exception.Message)"
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::BadRequest
+        Body       = "Invalid JSON"
+    })
+    return
+}
+
+# Acknowledge receipt immediately (Pro Management expects 200 within 5s)
+Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    StatusCode = [HttpStatusCode]::OK
+    Body       = "Accepted"
+})
+
+# --- 2. Extract key fields ---
+$incidentId   = $incident.incidentId
+$incidentType = $incident.incidentType      # e.g., "Camera not detected"
+$severity     = $incident.severity          # "Critical", "NonUrgent", "Informational"
+$roomName     = $incident.deviceDisplayName
+$resourceUPN  = $incident.resourceAccountUpn
+
+Write-Information "Received: [$severity] $incidentType for $roomName (Incident: $incidentId)"
+```
+
+Returning HTTP 200 immediately is critical — Pro Management will retry the webhook if it does not receive a response quickly, which could trigger duplicate processing. Acknowledge first, then perform the work asynchronously or synchronously after the response binding.
+
+---
+
+## Automated Remediation Logic
+
+```powershell
+# --- 3. Duplicate prevention (use Azure Table Storage or in-memory cache) ---
+$cacheKey      = "$incidentId"
+$recentlyFired = Get-RecentIncidentCache -Key $cacheKey   # custom function — see below
+
+if ($recentlyFired) {
+    Write-Information "[$incidentId] Already processed — skipping duplicate"
+    return
+}
+Set-RecentIncidentCache -Key $cacheKey -ExpiryMinutes 30
+
+# --- 4. Remediation routing ---
+$restartIncidentTypes = @("Camera not detected", "Display not detected", "Speaker not detected")
+
+if ($incidentType -in $restartIncidentTypes -and $severity -eq "Critical") {
+
+    Write-Information "[$roomName] Attempting automated restart for: $incidentType"
+
+    # Get TAC device ID by resource account UPN
+    Connect-MicrosoftTeams -UseDeviceAuthentication
+    $device   = Get-CsTeamsRoomDevice | Where-Object { $_.ResourceAccount -eq $resourceUPN }
+    $deviceId = $device?.DeviceId
+
+    if ($deviceId) {
+        try {
+            Invoke-CsTeamsRoomDeviceRemoteAction -DeviceId $deviceId -Action "Restart" -ErrorAction Stop
+            Write-Information "[$roomName] Restart command sent successfully"
+
+            # Add note to Pro Management incident via API
+            Add-ProManagementIncidentNote -IncidentId $incidentId `
+                -Note "Automated restart triggered at $(Get-Date -Format 'HH:mm') UTC. Monitoring for resolution."
+
+        } catch {
+            Write-Warning "[$roomName] Restart failed: $($_.Exception.Message) — escalating to ITSM"
+            New-ITSMTicket -RoomName $roomName -IncidentType $incidentType `
+                -Severity $severity -Details $_.Exception.Message
+        }
+    } else {
+        Write-Warning "[$roomName] Device not found in TAC for UPN: $resourceUPN — creating ITSM ticket"
+        New-ITSMTicket -RoomName $roomName -IncidentType $incidentType -Severity $severity `
+            -Details "Device not found in TAC — manual investigation required"
+    }
+
+} elseif ($severity -in @("Critical", "NonUrgent") -and $incidentType -like "*network*") {
+    New-ITSMTicket -RoomName $roomName -IncidentType $incidentType -Severity $severity `
+        -AssignmentGroup "Network Operations"
+
+} elseif ($severity -eq "Informational") {
+    Write-Information "[$roomName] Informational incident logged only: $incidentType"
+}
+```
+
+---
+
+## Rate Limiting and Duplicate Prevention
+
+Pro Management may re-fire a webhook if the incident state updates or if it retries after a timeout. A simple cache using Azure Table Storage prevents duplicate processing:
+
+```powershell
+function Get-RecentIncidentCache {
+    param([string]$Key)
+
+    $storageCtx = New-AzStorageContext `
+        -StorageAccountName $env:STORAGE_ACCOUNT `
+        -StorageAccountKey  $env:STORAGE_KEY
+
+    try {
+        $entity = Get-AzTableRow -Table (Get-AzTableTable -Context $storageCtx -TableName "IncidentCache") `
+            -PartitionKey "incidents" -RowKey $Key -ErrorAction SilentlyContinue
+        return ($null -ne $entity)
+    } catch { return $false }
+}
+
+function Set-RecentIncidentCache {
+    param([string]$Key, [int]$ExpiryMinutes = 30)
+
+    $storageCtx = New-AzStorageContext `
+        -StorageAccountName $env:STORAGE_ACCOUNT `
+        -StorageAccountKey  $env:STORAGE_KEY
+
+    $entity = @{
+        PartitionKey = "incidents"
+        RowKey       = $Key
+        ProcessedAt  = (Get-Date -Format "o")
+        ExpiresAt    = (Get-Date).AddMinutes($ExpiryMinutes).ToString("o")
+    }
+
+    Add-AzTableRow -Table (Get-AzTableTable -Context $storageCtx -TableName "IncidentCache") `
+        -Entity $entity | Out-Null
+}
+```
+
+Store sensitive values (`STORAGE_ACCOUNT`, `STORAGE_KEY`, TAC credentials) as **Application Settings** in the Function App — they are exposed as environment variables at runtime and kept out of the code.
+
+---
+
+## Testing the Webhook Integration
+
+During development, use the Azure Function's built-in **Test/Run** tab to POST a simulated payload without needing Pro Management to be configured:
+
+```json
+{
+  "incidentId": "TEST-001",
+  "incidentType": "Camera not detected",
+  "severity": "Critical",
+  "deviceDisplayName": "Conf-LON-01",
+  "resourceAccountUpn": "conf-lon-01@contoso.com",
+  "createdDateTime": "2026-04-13T09:00:00Z"
+}
+```
+
+For local development and end-to-end testing before registering the URL in Pro Management, **ngrok** creates a public HTTPS tunnel to your local machine:
+
+```bash
+ngrok http 7071   # Azure Functions local runtime default port
+```
+
+The ngrok URL (e.g., `https://abc123.ngrok.io/api/webhook`) can be temporarily registered in Pro Management for integration testing, then replaced with the production Function URL.
+
+---
+
+<KnowledgeCheck id="p3-t3-m1-l5-kc">
+  <Question>
+    Your webhook automation has been running for two weeks. You notice that one room — Conf-LON-12 — has been restarted automatically 14 times in the past 7 days, always for "Camera not detected (Critical)". The camera keeps reconnecting after each restart, briefly clearing the incident, then disconnecting again. What does this pattern indicate and what should the automation do differently for this room?
+  </Question>
+  <Answer>The duplicate prevention cache is not working — fix the Table Storage cache so it blocks repeated restarts for the same incident ID</Answer>
+  <Answer>Pro Management is mis-classifying the incident — change the severity filter so camera incidents only trigger restart at Informational level</Answer>
+  <Answer correct>This pattern indicates a persistent hardware fault — the camera's USB connection, power, or the camera unit itself is intermittently failing, and a restart only masks the symptom temporarily. The automation should implement a per-device restart frequency limit: if a room has been auto-restarted more than 3 times in 7 days for the same incident type, the automation should suppress further restarts and create an ITSM ticket flagged as a recurring hardware issue requiring physical inspection instead</Answer>
+  <Answer>The calendar check is not running before restarts — the room likely has meetings during the day that the restart is interrupting</Answer>
+  <Explanation>
+    Automation that blindly repeats the same remediation action for a recurring fault is worse than no automation — it creates the illusion that the problem is being handled while the root cause goes uninvestigated. A well-designed automated response system tracks remediation history per device and escalates to a human when the same fix has been applied multiple times without lasting resolution. The restart threshold (e.g., 3 restarts in 7 days for the same incident type) is the correct circuit breaker to implement.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Acknowledge immediately:** Return HTTP 200 to Pro Management before performing any work to prevent webhook retries.
+- **Payload parsing:** Extract `incidentType`, `severity`, `deviceDisplayName`, and `resourceAccountUpn` as the minimum routing fields.
+- **Remediation routing:** Match incident type and severity to determine action — restart, ITSM ticket, or log-only.
+- **Duplicate prevention:** Use Azure Table Storage to cache processed incident IDs with a 30-minute TTL, blocking re-processing of the same incident.
+- **Circuit breaker:** Track per-device restart frequency; suppress automation and escalate when a room requires repeated remediation for the same fault.
+- **Testing:** Use the Function App test console or ngrok for end-to-end integration testing before connecting to production Pro Management.
+
+---
+
+## What's Next
+
+[Graph API Fundamentals for Room Management →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/graph-api-mtr/lessons/graph-api-fundamentals/)

@@ -1,0 +1,209 @@
+---
+id: "p4-t3-m1-l2"
+slug: "service-delivery-tooling"
+title: "Service Delivery Tooling and Processes"
+shortTitle: "Service Delivery Tooling"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 3
+trackSlug: "practice-operations"
+trackTitle: "Practice Operations"
+
+module: 1
+moduleSlug: "service-delivery-model"
+moduleTitle: "Managed Service Delivery Model"
+
+lessonIndex: 2
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["practice-manager", "it-administrator"]
+
+objectives:
+  - "Define the tooling stack required to deliver an MTR managed service at scale"
+  - "Configure Pro Management portal alerting and reporting for managed service operation"
+  - "Integrate managed service tooling with the practice's ITSM and ticketing platform"
+  - "Design the standard operating procedures that govern daily managed service operations"
+
+prerequisites:
+  - "p4-t3-m1-l1"
+  - "p3-t1-m2-l2 (ITSM Integration)"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management", "ITSM"]
+roleTags: ["practice-manager", "it-administrator"]
+topicTags: ["managed-service", "tooling", "ITSM", "operations", "processes"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t3-m1-l1"
+  - "p4-t3-m1-l3"
+  - "p3-t1-m2-l2"
+
+metaDescription: "Learn to configure the tooling stack for MTR managed service delivery, including Pro Management alerting, ITSM integration, and standard operating procedures."
+keywords: ["MTR managed service tooling", "Pro Management configuration", "ITSM integration", "managed service operations"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Managed Service Tooling Stack
+
+Delivering a managed service at scale — across multiple clients, hundreds of rooms — requires the right tooling. Relying on individual engineers checking portals manually does not scale and creates coverage gaps. The tooling stack must automate monitoring, alert routing, and reporting.
+
+### Core Tooling Components
+
+| Tool | Purpose | Required |
+|---|---|---|
+| Pro Management portal | MTR fleet monitoring, alerting, utilisation analytics | Yes |
+| Teams Admin Centre | Device configuration, policy management, remote actions | Yes |
+| ITSM / ticketing platform | Incident management, SLA tracking, client communication | Yes |
+| Microsoft Intune | Windows endpoint management, compliance, updates | Yes (for Windows MTR) |
+| RMM tool (optional) | Remote monitoring and management beyond MTR-specific | Optional |
+| Reporting platform | Client-facing reports, usage dashboards | Recommended |
+
+---
+
+## Pro Management Configuration for MSP Operations
+
+Pro Management is designed for both direct IT teams and managed service providers. For MSP operations, configure it for multi-tenant visibility:
+
+### Multi-Tenant Management
+
+Pro Management supports managing rooms across multiple tenants from a single MSP account if your practice has the appropriate partner permissions:
+
+1. Obtain Microsoft partner admin link (GDAP or delegated admin) for each client tenant
+2. Access each client's Pro Management portal via the partner centre or via delegated sign-in
+3. Configure alert notifications to route to the practice's ITSM system (not to the client directly — maintain visibility of all alerts)
+
+**Recommended**: Document each client's Pro Management URL and access method in the ITSM configuration record for that client.
+
+### Alert Configuration
+
+Configure Pro Management alerts for each client tenant:
+
+```
+Recommended alert rules:
+- Device offline for > 15 minutes → P1 alert
+- Peripheral (camera/microphone) failure detected → P2 alert
+- Windows update compliance drifting (device not updated in 21 days) → P3 alert
+- Application (MTR App) out of date by > 2 versions → P3 alert
+- Room utilisation below 10% for 7 consecutive days → Advisory alert
+```
+
+Route alerts via webhook to the ITSM platform. Configure alert de-duplication to avoid flooding the ticketing system if a device generates multiple alerts for the same fault.
+
+### Daily Operations View
+
+Configure a dashboard view in Pro Management or ITSM that shows, for each client:
+- Number of devices online / offline / alerting
+- Open tickets by priority
+- Any devices that have not checked in within 24 hours
+
+This is the morning view for the service desk team. Any red items require investigation before the business day starts.
+
+---
+
+## ITSM Integration
+
+The ITSM platform is the operational backbone of the managed service. It creates tickets, tracks SLA compliance, records all engineer activity, and generates billing data.
+
+### Ticket Lifecycle
+
+```
+Alert triggers in Pro Management → Webhook fires to ITSM → Ticket auto-created
+         ↓                                                        ↓
+   Engineer notified                              SLA clock starts at ticket creation
+         ↓                                                        ↓
+Engineer investigates (notes in ticket)       Client notified of ticket (if P1/P2)
+         ↓                                                        ↓
+  Issue resolved                             Ticket closed; client notification sent
+         ↓
+Monthly SLA report generated from ticket data
+```
+
+### Ticket Fields for MTR Managed Service
+
+Standard fields to capture on every MTR ticket:
+
+| Field | Purpose |
+|---|---|
+| Client name | Multi-tenant routing |
+| Room ID | Ties to device record |
+| Device serial number | For RMA tracking |
+| Fault description | Engineer diagnosis |
+| Priority (P1–P4) | SLA clock selection |
+| Root cause category | Trend analysis (see categories below) |
+| Resolution action | What was done |
+| Time to respond | SLA measurement |
+| Time to resolve | SLA measurement |
+| Billable (Y/N) | For T&M on-site calls or out-of-scope work |
+
+### Root Cause Categories
+
+Tag every ticket with a root cause category for trend analysis:
+
+- Software: Teams Rooms App crash/update
+- Hardware: Device failure (specify component)
+- Network: Connectivity, VLAN, QoS, firewall
+- Account: Resource account expiry, policy change
+- User error: Incorrect operation
+- Client change: Client-initiated change caused fault
+- Microsoft platform: Teams service incident
+- Unknown: Investigation ongoing
+
+Monthly analysis of root cause categories by client identifies systemic issues (e.g., a client whose network team keeps modifying QoS without notifying the practice).
+
+---
+
+## Standard Operating Procedures
+
+Define SOPs for the most frequent managed service tasks. SOPs ensure consistent delivery regardless of which engineer handles a ticket.
+
+### SOP Examples
+
+**SOP-001: MTR Device Offline — Remote Investigation**
+1. Check Pro Management portal: is device showing offline or alert status?
+2. Check Teams Admin Centre: last sign-in time; any policy deployment errors?
+3. Attempt remote restart via Teams Admin Centre (Device > Restart)
+4. If no response within 10 minutes, check network infrastructure for site-wide issues
+5. Check Windows Update status in Intune — recent update may have caused reboot loop
+6. If unable to resolve remotely, escalate to on-site visit (P1 same-day, P2 next available slot)
+7. Update ticket with findings and next action; notify client if P1
+
+**SOP-002: Resource Account Password Expired**
+1. Verify by attempting sign-in to resource account UPN in browser (should fail)
+2. Contact client IT admin contact (from client record in ITSM) with instructions to reset password
+3. Confirm client IT action: new password + PasswordNeverExpires set
+4. Re-test sign-in from browser
+5. Confirm device signs in and shows home screen
+6. Update ticket; document the expiry date in client record; schedule a reminder for 11 months forward
+
+**SOP-003: Monthly Report Generation**
+1. Export Pro Management utilisation data for reporting period
+2. Export ticket summary from ITSM (count by priority; SLA performance; root cause breakdown)
+3. Populate client report template
+4. Review against previous month — identify any trends
+5. Send to client IT lead by 5th of the following month
+
+---
+
+<KnowledgeCheck>
+  <Question text="Pro Management generates 12 offline alerts for a single device in a 30-minute period during a Windows update restart cycle. What configuration prevents these from flooding the ITSM with 12 separate tickets?">
+    <Answer>Disable monitoring during update windows</Answer>
+    <Answer correct>Configure alert de-duplication in the ITSM integration — suppress duplicate alerts for the same device for 60 minutes after the first alert fires; or configure a minimum offline duration (e.g., 15 minutes) before alerting</Answer>
+    <Answer>Increase the alert threshold to 30 minutes offline</Answer>
+    <Answer>Have an engineer manually close duplicate tickets</Answer>
+    <Explanation>Alert de-duplication and minimum duration thresholds are standard ITSM integration features that prevent flood conditions during predictable events (reboots, update cycles). Disabling monitoring creates coverage gaps. Manual ticket management does not scale.</Explanation>
+  </Question>
+</KnowledgeCheck>

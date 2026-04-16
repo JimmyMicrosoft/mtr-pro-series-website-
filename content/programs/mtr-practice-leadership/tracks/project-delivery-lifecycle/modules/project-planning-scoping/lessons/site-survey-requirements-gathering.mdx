@@ -1,0 +1,283 @@
+---
+id: "p4-t1-m1-l1"
+slug: "site-survey-requirements-gathering"
+title: "Site Survey and Requirements Gathering"
+shortTitle: "Site Survey"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 1
+moduleSlug: "project-planning-scoping"
+moduleTitle: "Project Planning and Scoping"
+
+lessonIndex: 1
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 30
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "project-manager", "senior-technician"]
+
+objectives:
+  - "Conduct a structured room-by-room site survey that surfaces technical, environmental, and organisational requirements"
+  - "Use discovery questions to identify hidden constraints and unstated requirements"
+  - "Document survey findings in a format that directly informs proposal and SOW development"
+  - "Identify the red flags that should trigger a pre-proposal risk conversation"
+
+prerequisites:
+  - "p4-t1-m1 module overview"
+
+technologyTags: ["MTR", "Teams Rooms", "Site Survey"]
+roleTags: ["solutions-architect", "project-manager"]
+topicTags: ["project-planning", "requirements-gathering", "site-survey"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Site Survey Template"
+    filename: "mtr-site-survey-template.xlsx"
+  - label: "Discovery Question Bank"
+    filename: "mtr-discovery-question-bank.pdf"
+
+relatedLessons:
+  - "p4-t1-m1-l2"
+  - "p4-t1-m1-l3"
+
+metaDescription: "Learn how to conduct a structured MTR site survey and requirements gathering process that surfaces technical, environmental, and organisational requirements before writing a proposal."
+keywords: ["MTR site survey", "requirements gathering", "room survey", "MTR project planning"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Why the Survey Comes Before the Proposal
+
+The most expensive mistake an MTR practice can make is writing a proposal before completing a thorough site survey. Proposals written from room dimensions and a headcount figure routinely miss:
+
+- Legacy infrastructure that cannot support the planned design (undersized conduit, no cable routes)
+- Acoustic problems that require treatment before technology will perform
+- IT constraints that change the licensing model (shared devices, no Entra ID, hybrid Exchange)
+- Organisational dynamics that affect the change management scope
+- Physical access restrictions that affect installation scheduling and cost
+
+A site survey is not a formality — it is the primary risk mitigation activity for the project. Every hour spent in the survey saves multiple hours in scope change negotiations.
+
+---
+
+## Survey Preparation
+
+### Pre-Visit Research
+
+Before arriving on site, gather as much context as possible from the client:
+
+| Information to Gather | Source | Why It Matters |
+|---|---|---|
+| Floor plans or space layouts | Facilities / Estates | Cable routing, room dimensions, number of spaces |
+| Existing AV/VC inventory | IT or AV team | Reuse opportunities, integration constraints |
+| M365 tenant details | IT admin | License tier, resource account method, hybrid config |
+| Network topology overview | Network team | VLAN strategy, PoE availability, internet egress |
+| Meeting usage data | IT or business stakeholders | Room sizing, feature priorities |
+| Current pain points | End users, IT | What the technology must solve |
+
+Request floor plans as PDFs or DWG files — do not rely on photographs of whiteboards. Even approximate drawings are more reliable than memory.
+
+### Survey Kit
+
+Arrive on site with:
+- Laser distance measure (for accurate room dimensions)
+- Network cable tester with PoE detection
+- HDMI/DP signal tester
+- Torch and mirror (for ceiling voids and under-floor routes)
+- Tablet or laptop with survey form loaded
+- Camera (phone is fine, but take structured photos)
+
+---
+
+## Room Survey Methodology
+
+### Documenting Each Space
+
+Complete a separate survey record for every room in scope. Do not average across rooms or make assumptions about similar-looking spaces — an identical floor plan can have very different acoustic, structural, and network characteristics.
+
+**Physical dimensions**
+
+- Length × width × ceiling height (measure actual, not drawing — discrepancies are common)
+- Ceiling material and construction (acoustic tile, plasterboard, concrete)
+- Wall materials (glass, plasterboard, block — critical for acoustic treatment planning)
+- Window area and orientation (solar gain affects camera white balance and room temperature)
+- Door position and swing direction (affects cable routing and furniture placement)
+
+**Existing infrastructure**
+
+- Cable containment routes and capacity (trunking, conduit, floor boxes)
+- Power outlet positions and spare capacity
+- Existing network outlets — note port IDs if possible
+- Existing AV equipment to be retained or removed
+- Ceiling void access points
+
+**Display wall assessment**
+
+- Mounting surface material and structural capacity
+- Sight lines from all seating positions
+- Ambient light levels at display location (measure with light meter or phone app)
+- HVAC vents near display wall (vibration and airflow affect microphone performance)
+
+**Table and seating configuration**
+
+- Table shape, dimensions, and material
+- Maximum seated capacity
+- Distance from end of table to display wall (camera framing determinant)
+
+<Callout type="tip">
+**Photograph everything.** Take structured photos: looking from the display wall toward seating, from seating toward display, both side walls, ceiling, any existing infrastructure. Label photos with room name/number before leaving site.
+</Callout>
+
+---
+
+## IT and Network Discovery
+
+The IT discovery is as important as the physical survey. Work through these areas systematically with the client's IT representative.
+
+### Microsoft 365 and Teams Environment
+
+```
+Discovery questions:
+□ What is the M365 tenant type? (Commercial, GCC, GCC-High, DoD)
+□ What Teams Rooms license tier is the client expecting? (Basic, Pro)
+□ Are resource accounts created in cloud-only Entra ID or hybrid AD/Entra?
+□ Is the tenant in Islands, SFB Only, or Teams Only coexistence mode?
+□ Are there any Conditional Access policies that affect device sign-in?
+□ Is Teams Phone (PSTN calling) required in any rooms?
+□ Are there meeting room mailboxes already provisioned, or will they be created fresh?
+```
+
+<Callout type="warning">
+If the tenant is in **Islands or SFB Only coexistence mode**, Teams Rooms devices will not be able to join calendar-scheduled meetings reliably. This must be resolved before deployment — not during it. Flag this immediately if discovered.
+</Callout>
+
+### Network Infrastructure
+
+```
+Discovery questions:
+□ Is a dedicated VLAN available for MTR devices?
+□ Is QoS DSCP marking supported end-to-end (switch → firewall → WAN)?
+□ What is the internet egress capacity? Is there a bandwidth budget per site?
+□ Are PoE switches available at each room location? What PoE budget per port?
+□ Is DNS resolution working for *.microsoft.com, *.teams.microsoft.com?
+□ Are any proxy servers or SSL inspection in place for outbound HTTPS?
+□ Are the Microsoft 365 URL/IP ranges allowed through the firewall?
+```
+
+See the network readiness assessment lesson (p4-t1-m1-l3) for the full network validation methodology.
+
+### Security and Compliance
+
+```
+Discovery questions:
+□ Is there an MDM/Intune requirement for device enrolment?
+□ Are there CIS or NIST baseline requirements for Windows devices?
+□ Is BitLocker encryption required?
+□ What is the patching policy — who approves and schedules updates?
+□ Are there physical security requirements (Kensington locks, camera privacy covers)?
+```
+
+---
+
+## Stakeholder Interviews
+
+The physical and IT surveys capture what exists. Stakeholder interviews capture what is needed and what is politically important.
+
+### Who to Interview
+
+| Stakeholder | Key Questions |
+|---|---|
+| IT Director / CIO | Budget, timeline, success metrics, strategic context |
+| End users (sample) | Current pain points, meeting patterns, feature wishlist |
+| Facilities / Estates | Structural constraints, access restrictions, planned refurbs |
+| Network / Security | Policy constraints, change management process, firewall rules |
+| Executive sponsor | Business drivers, political sensitivities, sign-off authority |
+
+### Questions That Surface Hidden Requirements
+
+- "What does a bad meeting look like in your organisation today?"
+- "Have you tried any meeting room technology before? What happened?"
+- "Are there rooms or floors with specific security or access requirements?"
+- "Is there a planned office move or refurbishment in the next 12 months?"
+- "Who needs to approve changes to the network?"
+- "Are any rooms used for sensitive commercial discussions?" (encryption, BYOD policy)
+
+---
+
+## Survey Documentation Standards
+
+Every survey record must be filed immediately after the site visit — not reconstructed from memory later.
+
+### Required Survey Outputs
+
+1. **Room inventory spreadsheet**: One row per room with all physical and infrastructure fields
+2. **Photo library**: Structured, labelled photographs for every room
+3. **Network topology sketch**: Annotated floor plan showing network outlet positions and VLAN assignments
+4. **IT discovery notes**: Answers to the discovery question bank, with the name of the IT contact who provided each answer
+5. **Issues and risks log**: Every identified constraint, gap, or unknown captured with a severity rating
+
+### Severity Classification
+
+| Severity | Definition | Required Action |
+|---|---|---|
+| **Blocker** | Deployment cannot proceed without resolution | Must be resolved before proposal submission |
+| **Major** | Significant cost or scope impact if not addressed | Must be costed into proposal; discussed with client |
+| **Minor** | Manageable within normal project contingency | Noted in risk register |
+| **Watch** | No current impact but requires monitoring | Logged for project team awareness |
+
+<Callout type="tip">
+**Never submit a proposal with unresolved Blockers.** If you discover a Blocker during the survey, arrange a call with the client IT team before writing the proposal. Presenting a Blocker in the proposal itself — especially in front of an executive audience — damages credibility and stalls the sale.
+</Callout>
+
+---
+
+## Red Flags That Require a Pre-Proposal Conversation
+
+These survey findings should trigger a direct conversation with the client before any proposal is written:
+
+- M365 tenant in non-Teams Only coexistence mode
+- No dedicated VLAN available and network team unwilling to create one
+- SSL inspection or proxy that cannot be bypassed for Teams traffic
+- Structural ceiling that cannot support camera/display mounting without significant works
+- More than 20% of rooms requiring remediation work before technology installation
+- Client IT team with no available resource to provision resource accounts
+- Planned office move within project delivery window
+
+These are not automatic deal-killers — but they require explicit agreement on scope, cost allocation, and timeline before the proposal clock starts.
+
+---
+
+<KnowledgeCheck>
+  <Question text="During a site survey, you discover that the client's M365 tenant is configured in 'Islands' coexistence mode. How should you handle this?">
+    <Answer>Note it in the survey record and include it as a line item in the proposal</Answer>
+    <Answer>Ignore it — Teams Rooms can work in any coexistence mode</Answer>
+    <Answer correct>Flag it as a Blocker, arrange a pre-proposal call with the client IT team to discuss remediation, and do not submit the proposal until the resolution path is agreed</Answer>
+    <Answer>Recommend Zoom Rooms instead</Answer>
+    <Explanation>Islands mode prevents Teams Rooms from reliably joining calendar-scheduled meetings. This is a Blocker that must be resolved before any deployment proceeds. Presenting it in a proposal without prior discussion damages trust and stalls the project.</Explanation>
+  </Question>
+  <Question text="Which physical measurement is the most critical determinant of camera framing and display sizing in a conference room?">
+    <Answer>Ceiling height</Answer>
+    <Answer>Room width</Answer>
+    <Answer correct>Distance from the end of the table to the display wall</Answer>
+    <Answer>Window area</Answer>
+    <Explanation>The table-to-display distance determines the farthest seated participant's distance from the camera and display. This drives camera selection (field of view), display sizing (AVIXA viewing distance formula), and front-of-room layout decisions.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Site Survey Template" filename="mtr-site-survey-template.xlsx" />
+<DownloadButton label="Discovery Question Bank" filename="mtr-discovery-question-bank.pdf" />

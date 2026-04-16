@@ -1,0 +1,206 @@
+---
+id: "p2-t2-m3-l3"
+slug: "remote-device-management"
+title: "Remote Device Management"
+shortTitle: "Remote Management"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 3
+moduleSlug: "teams-rooms-pro-management"
+moduleTitle: "Teams Rooms Pro Management"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Perform remote restart, log collection, and configuration actions from the Pro Management portal"
+  - "Identify which remote operations are available in Pro Management vs. TAC and when to use each"
+  - "Document remote management actions in the incident timeline for audit and continuity"
+
+prerequisites:
+  - "p2-t2-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "pro-management"
+  - "remote-management"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p2-t2-m3-l2"
+  - "p2-t2-m3-l4"
+
+metaDescription: "Remote device management from Teams Rooms Pro Management — remote restart, log collection, app restart, sign out, and configuration actions. Comparison with TAC remote actions and documentation in incident timeline."
+
+keywords:
+  - "Teams Rooms Pro Management remote restart"
+  - "MTR remote device management"
+  - "Pro Management log collection"
+  - "Teams Rooms remote troubleshooting"
+  - "MTR remote support"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Remote device management reduces the site visits required to maintain a room fleet. Before remote management was available, a camera that stopped detecting after a routine update required dispatching a technician to physically restart the device. That same resolution now takes two minutes from the Pro Management portal with no travel cost. Understanding the available remote actions — and their appropriate use cases — is essential for efficient managed services delivery.
+
+---
+
+## Available Remote Actions in Pro Management
+
+Access remote actions from the room detail view in Pro Management → Rooms → select room → **Remote actions** panel.
+
+**Remote Restart:**
+Sends a restart command to the device. The device restarts the Teams Rooms application and Windows OS. Available for both Windows and Android MTR devices.
+
+*Use for:* Camera not detected, Teams app frozen, audio routing issues after a peripheral reconnect, software glitches that a restart typically clears.
+
+*Duration:* Windows device restart takes 3–5 minutes to complete and reconnect. Android devices restart in 2–3 minutes.
+
+*Confirmation:* The device shows Offline in Pro Management during restart, then returns to Online with updated health status.
+
+**App Restart (Windows only):**
+Restarts only the Teams Rooms application process, not the Windows OS. Faster than a full restart (~60 seconds) and less disruptive.
+
+*Use for:* Teams app crashed or frozen; display rendering issues; minor glitches that don't require a full OS restart.
+
+**Sign Out / Sign In:**
+Signs the device out of its resource account (or triggers a sign-in attempt if currently signed out).
+
+*Use for:* Authentication token expiry requiring fresh sign-in; testing after account credential changes.
+
+**Log Collection:**
+Queues a log collection request. The device packages its diagnostic logs (Teams app logs, Windows event logs, peripheral detection logs) and uploads them to Pro Management for download.
+
+*Use for:* Investigating an incident where the AI analysis was inconclusive; escalating to Microsoft Support (log bundles can be attached to Microsoft support cases).
+
+*Duration:* Log collection typically takes 5–15 minutes; download is available in the Pro Management incident detail once complete.
+
+**Send a message (Windows):**
+Displays a text message on the room's Teams Rooms home screen. Visible to anyone who enters the room.
+
+*Use for:* Notifying room occupants of planned maintenance ("This room will be restarted at 21:00 tonight for maintenance."); communicating a known issue to room users without requiring physical signage.
+
+---
+
+## Remote Actions vs. TAC
+
+Both Pro Management and TAC offer some remote actions. Key differences:
+
+| Action | TAC | Pro Management |
+|--------|-----|----------------|
+| Restart device | ✓ | ✓ |
+| App restart | ✗ | ✓ (Windows) |
+| Sign out | ✓ | ✓ |
+| Log collection | ✓ | ✓ |
+| Send message | ✗ | ✓ |
+| Action tied to incident | ✗ | ✓ |
+| Action logged in timeline | ✗ | ✓ |
+
+The key advantage of Pro Management's remote actions is context — actions are performed within the incident workflow, logged in the incident timeline, and the result (device health change after restart) is captured in the same incident record. This creates an audit trail for managed services accountability.
+
+---
+
+## Documenting Actions in the Incident Timeline
+
+Every remote action taken from Pro Management is automatically logged in the incident timeline. This provides a self-documenting record:
+
+```
+06:32 — Incident detected: Camera not detected — USB connection lost
+06:33 — Support Engineer (alex.tech@mspco.com): Remote restart initiated
+06:38 — Device reconnected; health status: Healthy
+06:39 — Camera peripheral: Detected
+06:40 — Support Engineer: Remote restart resolved camera detection. Incident closed.
+```
+
+Add manual notes to the timeline to record findings and context:
+- What you checked before taking action
+- What the result was and why
+- Whether a physical follow-up is needed
+
+This timeline serves as the incident history if the issue recurs, and as evidence of service delivery for managed service SLA reporting.
+
+---
+
+## Remote Management for Android Devices
+
+Android MTR devices support remote restart from both TAC and Pro Management. Additional OEM-specific remote actions are available in the OEM management portals (Poly Lens, Logitech Sync, YMCS, Neat Pulse) — these supplement Pro Management's capabilities for Android devices:
+
+- **OEM portal remote reboot:** Same effect as Pro Management restart, but triggered from the OEM portal
+- **OEM portal log download:** OEM-specific logs (firmware, hardware sensors) not available in Pro Management
+- **OEM firmware push:** Available from OEM portals; not available from TAC or Pro Management
+
+For managed services covering Android rooms, both Pro Management and the relevant OEM portal should be accessible to the support team.
+
+---
+
+<KnowledgeCheck id="p2-t2-m3-l3-kc">
+  <Question>
+    While investigating a Critical incident for a Teams app crash, a support
+    engineer triggers a remote App Restart from Pro Management. The Teams app
+    restarts and the device returns to Healthy. What should happen next in
+    the Pro Management workflow?
+  </Question>
+  <Answer>Close the incident immediately — the device is Healthy and the issue is resolved</Answer>
+  <Answer correct>Add a note to the incident timeline documenting what was found, what action was taken (remote app restart), and the result (device returned to Healthy), then close the incident. If this is the second app crash in a short period, note that as a trend requiring further investigation rather than closing without follow-up</Answer>
+  <Answer>Restart the full OS to confirm the app restart was sufficient</Answer>
+  <Answer>Collect logs before closing — log collection is always required for Critical incidents</Answer>
+  <Explanation>
+    Incidents should be documented before closing. Adding a note explains what
+    happened (app crash), what was done (remote app restart), and the outcome
+    (Healthy). This creates a record that is valuable if the issue recurs.
+    If the device has crashed twice in the past week, that pattern is worth
+    noting and may warrant log collection even though the device is currently
+    Healthy — recurring crashes could indicate a firmware or software issue
+    requiring escalation. Simply closing without documentation loses the
+    context for any future occurrence.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Remote actions:** Restart (full OS), App Restart (Windows only), Sign Out, Log Collection, Send Message.
+- **Use cases:** Restart resolves most camera/audio/app glitches; App Restart for app-layer issues; Log Collection for inconclusive incidents.
+- **vs. TAC:** Pro Management actions are tied to incidents with auto-logged timeline — better accountability for managed services.
+- **Documentation:** Always add a manual note before closing; document finding, action, result, and any follow-up required.
+
+---
+
+## What's Next
+
+[Analytics, Utilization Data, and Reporting →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/teams-rooms-pro-management/lessons/analytics-utilization-reporting/)

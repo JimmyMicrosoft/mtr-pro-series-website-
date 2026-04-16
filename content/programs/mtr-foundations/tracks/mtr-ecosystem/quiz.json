@@ -1,0 +1,128 @@
+{
+  "trackSlug": "mtr-ecosystem",
+  "trackTitle": "The MTR Ecosystem",
+  "programSlug": "mtr-foundations",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What is the correct chronological order of Microsoft's room system product names?",
+      "answers": [
+        "Skype Room Systems → Lync Room Systems → Microsoft Teams Rooms",
+        "Lync Room Systems → Skype Room Systems → Microsoft Teams Rooms",
+        "Microsoft Teams Rooms → Skype Room Systems → Lync Room Systems",
+        "Lync Room Systems → Microsoft Teams Rooms → Skype Room Systems"
+      ],
+      "correct": 1,
+      "explanation": "The product evolved from Lync Room Systems (LRS), rebranded to Skype Room Systems (SRS) with the Skype for Business era, and then to Microsoft Teams Rooms (MTR) as Teams became the primary platform."
+    },
+    {
+      "id": 2,
+      "text": "A customer asks why their MTR on Android cannot join a Zoom meeting natively without switching apps. What is the correct explanation?",
+      "answers": [
+        "Android MTR devices do not support Direct Guest Join for any third-party platform.",
+        "Direct Guest Join for Zoom is only available on MTR for Windows, not Android.",
+        "Direct Guest Join requires a separate Zoom Rooms licence on all MTR devices.",
+        "Direct Guest Join for Zoom is supported on Android but must be enabled per device in Teams Admin Center."
+      ],
+      "correct": 3,
+      "explanation": "Direct Guest Join (one-touch join for third-party meetings) is supported on both MTR Windows and MTR Android, but it must be enabled in Teams Admin Center at the device or configuration profile level for each platform."
+    },
+    {
+      "id": 3,
+      "text": "Which licence is required for a Microsoft Teams Rooms device to access advanced features such as the Teams Rooms Pro Management portal and intelligent speaker capabilities?",
+      "answers": [
+        "Microsoft 365 E3",
+        "Teams Rooms Basic",
+        "Teams Rooms Pro",
+        "Teams Essentials"
+      ],
+      "correct": 2,
+      "explanation": "Teams Rooms Pro provides access to advanced management capabilities including the Teams Rooms Pro Management portal, intelligent speaker with voice recognition, and enhanced analytics. Teams Rooms Basic is free but limited to core meeting functionality for up to 25 rooms."
+    },
+    {
+      "id": 4,
+      "text": "A resource account is created for an MTR device. Which two licences are typically assigned to it to allow room calendar functionality and Teams meeting participation?",
+      "answers": [
+        "Microsoft 365 E5 + Teams Phone Standard",
+        "Exchange Online Plan 1 (or Exchange Online included in M365) + Teams Rooms Basic or Pro",
+        "Teams Rooms Basic or Pro + SharePoint Online Plan 2",
+        "Exchange Online Plan 2 + Microsoft 365 F3"
+      ],
+      "correct": 1,
+      "explanation": "A resource account needs an Exchange Online licence (to host the room mailbox and calendar) and a Teams Rooms licence (Basic or Pro) to authenticate the MTR app and join Teams meetings. SharePoint and Phone Standard are not required for standard room operation."
+    },
+    {
+      "id": 5,
+      "text": "An organisation has deployed both MTR for Windows and MTR for Android devices. Which statement accurately describes a key operational difference between the two platforms?",
+      "answers": [
+        "MTR for Android supports SkypeSettings.xml for configuration deployment; MTR for Windows does not.",
+        "MTR for Windows runs the Teams Rooms app inside a locked-down Windows IoT or Windows 11 environment; MTR for Android runs the Teams Rooms app as a launcher on an Android OS.",
+        "MTR for Android can be enrolled in Microsoft Intune for device compliance; MTR for Windows cannot.",
+        "MTR for Windows requires a separate OEM management console and cannot be managed from Teams Admin Center."
+      ],
+      "correct": 1,
+      "explanation": "MTR for Windows runs on Windows IoT Enterprise or Windows 11 IoT with the Teams Rooms app as the shell. MTR for Android runs a stripped-down Android OS with the Teams Rooms app acting as the device launcher. Both can appear in Teams Admin Center, but management depth varies."
+    },
+    {
+      "id": 6,
+      "text": "In Teams Admin Center, an administrator wants to apply a consistent configuration (such as enabling Bluetooth beaconing and setting the default microphone) to a fleet of 40 MTR devices. What is the most efficient method?",
+      "answers": [
+        "Configure each device individually using the device detail page.",
+        "Use a Configuration Profile and assign it to the group of devices.",
+        "Push a PowerShell script via Task Scheduler on each device.",
+        "Edit SkypeSettings.xml and manually copy it to each device over the network."
+      ],
+      "correct": 1,
+      "explanation": "Configuration Profiles in Teams Admin Center allow administrators to define a set of settings once and assign them to multiple devices or device groups simultaneously, which is the correct at-scale approach."
+    },
+    {
+      "id": 7,
+      "text": "A customer wants their MTR devices to boot directly into a single-purpose video conferencing interface with no ability for users to exit to the Windows desktop. Which feature or configuration achieves this on MTR for Windows?",
+      "answers": [
+        "Conditional Access App Control",
+        "Windows Assigned Access (kiosk mode) configured to run the Teams Rooms app as the shell",
+        "Microsoft Defender Application Guard",
+        "Intune App Protection Policy"
+      ],
+      "correct": 1,
+      "explanation": "MTR for Windows uses Windows Assigned Access (single-app kiosk mode) to lock the device so that the Teams Rooms app is the only accessible interface, preventing users from reaching the Windows desktop or other applications."
+    },
+    {
+      "id": 8,
+      "text": "Compared to Cisco Webex Rooms, which of the following is a distinctive advantage of Microsoft Teams Rooms for an organisation already standardised on Microsoft 365?",
+      "answers": [
+        "MTR supports a wider range of third-party USB peripherals than Cisco Webex devices.",
+        "MTR natively integrates with the Microsoft 365 ecosystem including Exchange calendaring, Teams meetings, and Intune device management without additional middleware.",
+        "MTR provides better video quality due to proprietary codec optimisations unavailable in Cisco products.",
+        "MTR devices are always less expensive than equivalent Cisco Webex Room devices on a per-unit basis."
+      ],
+      "correct": 1,
+      "explanation": "For Microsoft 365 customers, MTR's native integration with Exchange Online calendaring, Teams meetings, Intune, and Teams Admin Center eliminates middleware and provides a unified management experience — a clear differentiator over Cisco Webex."
+    },
+    {
+      "id": 9,
+      "text": "After completing the physical setup of an MTR device, a technician needs to verify the device is communicating correctly with the Microsoft 365 tenant before handing over to the customer. Which step is part of the commissioning endpoint process?",
+      "answers": [
+        "Assigning the device a static IP address and registering it in DNS manually.",
+        "Signing into the resource account on the MTR console and confirming the calendar and meeting join tile appear correctly.",
+        "Installing a third-party network monitoring agent on the MTR Windows device.",
+        "Generating a device certificate from the on-premises PKI and importing it into the Teams app."
+      ],
+      "correct": 1,
+      "explanation": "Commissioning an MTR endpoint includes signing in with the resource account credentials and verifying that the device displays the room calendar, can see upcoming meetings, and presents the correct join tile — confirming end-to-end connectivity with Microsoft 365."
+    },
+    {
+      "id": 10,
+      "text": "A Teams Rooms Basic licence covers up to how many rooms per tenant before Microsoft requires Teams Rooms Pro licences?",
+      "answers": [
+        "10 rooms",
+        "15 rooms",
+        "25 rooms",
+        "50 rooms"
+      ],
+      "correct": 2,
+      "explanation": "Microsoft allows up to 25 Teams Rooms Basic licences per tenant at no additional cost. Beyond 25 rooms, or when advanced management and analytics features are required, Teams Rooms Pro licences must be purchased."
+    }
+  ]
+}

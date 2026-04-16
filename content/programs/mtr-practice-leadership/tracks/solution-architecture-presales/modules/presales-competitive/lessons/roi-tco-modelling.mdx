@@ -1,0 +1,228 @@
+---
+id: "p4-t2-m2-l3"
+slug: "roi-tco-modelling"
+title: "ROI and TCO Modelling"
+shortTitle: "ROI and TCO"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 2
+moduleSlug: "presales-competitive"
+moduleTitle: "Pre-Sales and Competitive Positioning"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "presales-engineer", "account-manager"]
+
+objectives:
+  - "Build a total cost of ownership model for an MTR deployment across a 3–5 year lifecycle"
+  - "Quantify the ROI of an MTR investment using hard and soft benefit categories"
+  - "Present the financial case in language that resonates with CFO and CIO audiences"
+  - "Use TCO modelling to differentiate MTR from competitors on a like-for-like basis"
+
+prerequisites:
+  - "p4-t2-m2-l1"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["solutions-architect", "presales-engineer", "account-manager"]
+topicTags: ["ROI", "TCO", "business-case", "financial-modelling", "presales"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "MTR ROI/TCO Model Template"
+    filename: "mtr-roi-tco-model.xlsx"
+
+relatedLessons:
+  - "p4-t2-m2-l1"
+  - "p4-t2-m2-l4"
+  - "p4-t2-m3-l3"
+
+metaDescription: "Learn to build ROI and TCO models for MTR deployments, quantify hard and soft benefits, and present a financial case that resonates with CFO and CIO audiences."
+keywords: ["MTR ROI", "Teams Rooms TCO", "business case", "meeting room ROI", "total cost of ownership"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Why Financial Models Matter in MTR Sales
+
+IT managers evaluate technology on features and specs. CFOs and CIOs evaluate it on returns and costs. If the economic buyer in an MTR sale is a CIO or CFO, the conversation must include numbers.
+
+A credible ROI model does two things: it justifies the investment to the person approving the budget, and it differentiates the solution architect from competitors who only show product brochures.
+
+You do not need to be a financial analyst to build a usable ROI model. You need to understand the cost structure of the deployment and the value categories that the investment generates.
+
+---
+
+## Total Cost of Ownership
+
+The TCO model captures all costs across a 3–5 year lifecycle, not just the initial capital expenditure.
+
+### Cost Categories
+
+**Year 0: Capital Expenditure (CapEx)**
+
+| Cost Item | Typical Range | Notes |
+|---|---|---|
+| Hardware (per room) | £2,000–£25,000 | Depends on room type; use design pattern BOM |
+| Installation labour (per room) | £500–£2,500 | Includes physical install + commissioning |
+| Cabling and infrastructure (per room) | £200–£1,500 | Conduit, containment, patch cabling |
+| Project management | £3,000–£15,000 | % of project value; typically 8–12% |
+| Documentation | £1,000–£5,000 | As-builts, configuration guides |
+
+**Annual: Operating Expenditure (OpEx)**
+
+| Cost Item | Typical Range | Notes |
+|---|---|---|
+| Teams Rooms Pro license (per device/year) | £400–£500 | Microsoft published pricing; volume discounts available |
+| Managed service support (per room/year) | £500–£1,500 | Varies by SLA tier; contractor-defined |
+| Hardware warranty extension (per device/year) | £100–£300 | OEM extended warranty programmes |
+| IT staff time (per room/year) | £50–£200 | Estimated management time × IT cost rate |
+
+### 3-Year TCO Example (20-room standard deployment)
+
+```
+Capital costs:
+  Hardware (20 × £3,500):           £70,000
+  Installation (20 × £1,000):       £20,000
+  Infrastructure (20 × £500):       £10,000
+  Project management:               £10,000
+  Total CapEx:                      £110,000
+
+Annual operating costs:
+  Teams Rooms Pro licenses (20 × £450): £9,000/year
+  Managed service support (20 × £800):  £16,000/year
+  Total OpEx per year:               £25,000/year
+
+3-Year TCO:
+  CapEx:                            £110,000
+  OpEx (3 years):                   £75,000
+  Total 3-year TCO:                 £185,000
+  Per room per year:                £3,083
+```
+
+Present this as a per-room-per-year cost — it makes the number accessible and comparable.
+
+---
+
+## Return on Investment
+
+### Hard Benefits (Quantifiable)
+
+**Productivity: Meeting time recovered**
+
+The most commonly cited and most credible hard benefit is time recovered from failed meetings.
+
+Research benchmark: average meeting start delay = 8–10 minutes when technology fails. With reliable technology, this falls to 1–2 minutes. Conservative assumption: 5 minutes saved per meeting.
+
+```
+Rooms: 20
+Meetings per room per day: 5
+Working days per year: 220
+Minutes saved per meeting: 5
+
+Total minutes saved per year: 20 × 5 × 220 × 5 = 110,000 minutes = 1,833 hours
+Average employee hourly cost: £40
+Annual productivity value: 1,833 × £40 = £73,320
+```
+
+**Travel cost avoidance**
+
+For organisations replacing travel to meeting with video conferencing:
+
+```
+Meetings that would previously have required travel: 200/year
+Average travel cost per meeting (train, hotel, expenses): £300
+Annual travel saving: 200 × £300 = £60,000
+```
+
+**IT helpdesk cost reduction**
+
+AV/meeting room issues typically represent 10–15% of helpdesk volume in organisations with legacy systems.
+
+```
+Current helpdesk volume: 2,000 tickets/year
+AV/room issues: 15% = 300 tickets/year
+Cost per ticket (staff time): £25
+Annual helpdesk cost reduction: 300 × £25 = £7,500
+(After deployment: assume 50% reduction → saving £3,750/year)
+```
+
+### Soft Benefits (Directional)
+
+These cannot be precisely quantified but are relevant to the business case narrative:
+
+- **Improved hybrid inclusion**: Remote employees participate more effectively; decision quality improves
+- **Client impression**: Professional meeting technology for client-facing meetings
+- **Employee experience**: Reduced technology frustration; better meeting experience scores
+- **Talent attraction/retention**: Modern meeting technology is a visible signal of workplace investment
+
+Present soft benefits as directional — "we believe this will contribute to X, but we haven't quantified it because it depends on your specific context."
+
+---
+
+## ROI Calculation
+
+```
+Total benefits (Year 1–3):
+  Productivity: £73,320 × 3 =        £219,960
+  Travel avoidance: £60,000 × 3 =    £180,000
+  Helpdesk saving: £3,750 × 3 =      £11,250
+  Total benefits:                     £411,210
+
+Total costs (3-year TCO):            £185,000
+
+Net benefit:                          £226,210
+ROI: £226,210 / £185,000 = 122%
+Payback period: 185,000 / (411,210/3) = ~16 months
+```
+
+<Callout type="tip">
+**Never present an ROI model as a precise figure without client data.** The correct approach is: "Using industry benchmarks as assumptions, here's what the return looks like. When you give us your actual meeting volumes, average employee cost, and current helpdesk data, we can refine this model to be more specific to your organisation."
+</Callout>
+
+---
+
+## TCO Comparison: MTR vs Zoom Rooms vs Legacy
+
+When competing against Zoom Rooms, build a like-for-like comparison:
+
+| Cost Item | MTR (Logitech) | Zoom Rooms (Poly) | Legacy VC (Cisco) |
+|---|---|---|---|
+| Hardware per room | £3,500 | £3,200 | £6,000 |
+| License per room/year | £450 | £250 | £800 |
+| MDM cost/year | £0 (uses Intune already) | £80 | £0 (proprietary) |
+| IT management time/room/year | £50 | £120 (separate ZDM) | £200 |
+| 3-yr TCO per room | £4,850 | £4,550 | £8,800 |
+
+**Note**: If the client does not have Intune, the MDM cost for MTR is not zero. Model honestly.
+
+---
+
+<KnowledgeCheck>
+  <Question text="A CFO asks 'What's the payback period on this investment?' You've calculated a 3-year TCO of £185,000 and annual benefits of £137,000. What is the payback period?">
+    <Answer>About 2.5 years</Answer>
+    <Answer correct>About 16 months (£185,000 ÷ £137,000 × 12 = ~16 months)</Answer>
+    <Answer>About 6 months</Answer>
+    <Answer>3 years</Answer>
+    <Explanation>Payback period = Total investment ÷ Annual benefit. £185,000 ÷ £137,000 = 1.35 years ≈ 16 months. This is a commercially attractive payback period that is likely to resonate with a CFO audience.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="MTR ROI/TCO Model Template" filename="mtr-roi-tco-model.xlsx" />

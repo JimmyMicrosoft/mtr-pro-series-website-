@@ -1,0 +1,294 @@
+---
+id: "p1-t1-m1-l4"
+slug: "mtr-licensing"
+title: "MTR Licensing — Basic vs. Pro, Resource Account Licensing, and E3/E5 Implications"
+shortTitle: "MTR Licensing"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 1
+moduleSlug: "introduction-to-teams-rooms"
+moduleTitle: "Introduction to Microsoft Teams Rooms"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+  - "casey"
+
+objectives:
+  - "Differentiate between the Microsoft Teams Rooms Basic and Teams Rooms Pro license tiers and identify the feature capabilities exclusive to each"
+  - "Explain the role of the resource account in MTR licensing and describe the correct account and license configuration required for a functional deployment"
+  - "Advise a client on licensing implications when their organization uses Microsoft 365 E3 vs. E5 and when Teams Phone or Teams Audio Conferencing add-ons are involved"
+
+prerequisites:
+  - "p1-t1-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "programmer"
+  - "support"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "licensing"
+  - "resource-accounts"
+  - "microsoft-365"
+
+vendorTags:
+  - "microsoft"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m1-l4-licensing-scenario-worksheet.pdf"
+    label: "Licensing Scenario Worksheet"
+    sizeKb: 140
+
+relatedLessons:
+  - "p1-t1-m1-l3"
+  - "p1-t1-m1-l5"
+
+metaDescription: "Understand MTR license tiers (Basic vs. Pro), the resource account licensing model, and how Microsoft 365 E3/E5 and Teams Phone add-ons affect MTR deployments."
+
+keywords:
+  - "Teams Rooms Basic"
+  - "Teams Rooms Pro"
+  - "MTR licensing"
+  - "resource account license"
+  - "Teams Phone MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Licensing is not the AV integrator's job to sell or administer — that responsibility belongs to the client's IT team and their Microsoft licensing agreement. But it is very much the integrator's job to understand licensing well enough to scope projects correctly, avoid deployment blockers, and answer client questions with authority. Every MTR deployment has licensing prerequisites. Show up on installation day with an incorrectly licensed resource account and the room will not work, regardless of how perfectly the hardware was installed.
+
+This lesson covers the two MTR license tiers, the resource account model that underpins every MTR deployment, the relationship between those licenses and the organization's broader Microsoft 365 subscription, and the most common licensing confusions that generate support calls and project delays. You will not leave this lesson able to administer a Microsoft 365 tenant — that is IT's domain — but you will leave able to identify whether the prerequisites are correctly in place before you pick up a drill.
+
+---
+
+## Teams Rooms Basic vs. Teams Rooms Pro
+
+Microsoft offers two license tiers for MTR devices: Teams Rooms Basic and Teams Rooms Pro.
+
+<GlossaryTerm slug="teams-rooms-basic">Teams Rooms Basic</GlossaryTerm> is a free license available to Microsoft 365 tenants for up to 25 rooms. It provides the core Teams Rooms feature set: one-touch meeting join, calendar-based meeting display, content sharing via HDMI input, basic device health monitoring in the Teams Admin Center, and standard meeting join controls on the touch console. For small organizations deploying a handful of rooms where advanced management, analytics, and premium AV features are not requirements, Teams Rooms Basic is a legitimate choice. It is also a useful starting point for pilot deployments where the organization wants to validate room behavior before committing to paid licenses at scale.
+
+<GlossaryTerm slug="teams-rooms-pro">Teams Rooms Pro</GlossaryTerm> is a paid subscription license, priced per room per month (approximately $40/room/month as of 2025 pricing — verify current pricing at microsoft.com before quoting). Pro unlocks a significant set of capabilities that Basic does not provide: Intelligent Speaker (voice-based participant identification), Front Row layout, intelligent camera framing and active speaker tracking, expanded Teams Admin Center remote management (remote restart, diagnostics log collection, configuration profiles pushed to devices), detailed meeting quality analytics and reporting, and Microsoft-assisted device enrollment through Autopilot. For commercial AV integrator deployments — where clients have IT management requirements, SLA accountability, and expectations around premium AV features — Teams Rooms Pro is the correct license tier. Assume Pro unless there is a specific reason to use Basic.
+
+{/* MEDIA: License tier comparison table. Two-column comparison of Teams Rooms Basic and Teams Rooms Pro. Rows for: one-touch join, calendar integration, content sharing, Intelligent Speaker, Front Row layout, intelligent camera framing, remote management (TAC), configuration profiles, analytics and reporting, Autopilot enrollment, PSTN calling support, price. Color-coded cells indicating included vs. not included. Filename: p1-t1-m1-l4-license-tier-comparison.png */}
+
+<Callout type="note">
+  For most commercial deployments, default to Teams Rooms Pro. The $40/room/month cost is
+  justified by management capability alone — the ability to remotely restart devices, collect
+  diagnostic logs, and push configuration profiles is essential for any IT team managing more
+  than a handful of rooms. The premium AV features are a further justification for executive
+  rooms. Clients on enterprise Microsoft agreements often receive favorable per-room licensing
+  terms through their existing agreement.
+</Callout>
+
+---
+
+## The Resource Account
+
+Every MTR device requires a dedicated <GlossaryTerm slug="resource-account">resource account</GlossaryTerm> — a specific type of account in Azure Active Directory (Microsoft Entra ID) configured as an Exchange Online room mailbox. This account represents the physical room as an entity in the Microsoft 365 ecosystem. It has an identity (a User Principal Name, typically formatted as something like conference.room.a@domain.com), a mailbox (which holds the room's meeting calendar), and a license (Teams Rooms Basic or Pro). When you sign an MTR device into a resource account at commissioning, the device becomes that account's endpoint — it displays that account's calendar, joins meetings that account has been invited to, and appears in the Teams Admin Center under that account's identity.
+
+The resource account is not a person. It should not be assigned user-level Microsoft 365 licenses like E3 or E5 — doing so wastes a per-user license, creates a licensing conflict, and can produce unexpected behavior. Assign only the Teams Rooms license. The one exception is PSTN calling capability: if the room needs to dial out to external phone numbers, a Teams Phone license must be added to the resource account alongside the Teams Rooms license.
+
+When building your pre-installation checklist, the resource account should appear with several verification items: the account exists and is enabled in Entra ID, an Exchange Online room mailbox is provisioned (not just an Entra ID account without a mailbox), the correct Teams Rooms license is assigned, the account password is set to never expire, and the account UPN and password have been provided to the integrator for device sign-in. All of these must be true before software commissioning can begin.
+
+{/* MEDIA: Resource account configuration flowchart. Step-by-step flow showing: Create Entra ID account → Configure as Exchange Online room mailbox → Set AutomateProcessing = AutoAccept → Set password never expires → Assign Teams Rooms Basic or Pro license → Optional: add Teams Phone license → Optional: exclude from MFA Conditional Access → Assign meeting policy in Teams Admin Center. Decision branches for PSTN calling and MFA policy. Filename: p1-t1-m1-l4-resource-account-flowchart.png */}
+
+<Callout type="warning">
+  Do not assign a Microsoft 365 E3 or E5 user license to a resource account. These are
+  per-user licenses designed for people, not room endpoints. Assign only the Teams Rooms
+  Basic or Pro license. If the room needs PSTN calling, add a Teams Phone license as a
+  specific add-on — not a user bundle.
+</Callout>
+
+---
+
+## The Exchange Online Requirement
+
+The resource account must have an Exchange Online mailbox. This is not optional — it is the mechanism by which calendar-based meeting join works. When a meeting organizer schedules a meeting and adds the room to the invite, the meeting invitation is delivered to the resource account's Exchange Online mailbox. The mailbox accepts the invite automatically (via the AutomateProcessing setting described below) and places the meeting on the room's calendar. The MTR device reads that calendar and displays the meeting on the touch console. Without Exchange Online, the touch console shows nothing.
+
+The most common licensing mistake integrators encounter in the field is this: the IT team creates the Entra ID account and assigns the Teams Rooms Pro license, but forgets that the account also needs an Exchange Online mailbox. The device signs in successfully — because sign-in only requires Entra ID — but shows no meetings and cannot use calendar-based join. This issue presents as "the room works but shows no meetings," and it is resolved by provisioning Exchange Online on the resource account.
+
+Exchange Online is included in most Microsoft 365 subscription bundles: M365 E1, E3, E5, Business Basic, Business Standard, and Business Premium all include Exchange Online. If the organization uses a plan that does not include Exchange — an uncommon scenario but not impossible — Exchange Online Plan 1 can be added as a standalone add-on to the resource account. For organizations with on-premises Exchange Server (not Exchange Online), a hybrid configuration is required, and MTR support requires Exchange Server 2013 or later with modern authentication configured.
+
+One additional Exchange configuration item that integrators must ensure is set correctly: the AutomateProcessing property on the room mailbox must be set to AutoAccept. This setting tells Exchange to automatically accept meeting invitations sent to the room account and place them on the calendar. If AutomateProcessing is set to AutoUpdate or None, meeting invites arrive in the mailbox but are not accepted — the calendar remains empty and one-touch join does not work. This is a configuration item for the IT administrator, and it must be verified before commissioning.
+
+<Callout type="tip">
+  A quick way to verify Exchange Online is correctly provisioned: ask the IT admin to log into
+  Outlook on the web (outlook.office.com) with the resource account credentials. If the Exchange
+  mailbox loads and the calendar is accessible, Exchange is working. If the login fails or
+  redirects to a license error page, Exchange is not provisioned. Add this test to your
+  pre-commissioning verification checklist.
+</Callout>
+
+---
+
+## Microsoft 365 E3/E5 and Teams Phone
+
+Understanding how the Teams Rooms license relates to the organization's broader Microsoft 365 subscription is one of the most common clarification points integrators need to make in client conversations.
+
+Organizations on M365 E3 or E5 do not need to assign those licenses to the room resource account. The Teams Rooms Basic or Pro license is a dedicated room license that covers everything the room needs for standard meeting functionality. E3 and E5 are user licenses — they license a person to use Microsoft 365 services across their devices. Applying an E3 license to a resource account that already has a Teams Rooms Pro license wastes the E3 license and can create policy conflicts because E3 applies a different set of default Teams policies than the Teams Rooms license stack.
+
+PSTN calling from the room — the ability to dial out to external phone numbers from the MTR touch console, or for external callers to dial into a room directly — is a separate capability that requires additional licensing. The Teams Rooms Pro license does not include PSTN calling. To enable it, the resource account needs a Teams Phone license, and the organization must have a PSTN connectivity method in place: Microsoft Calling Plan (Microsoft provides the numbers and minutes), Operator Connect (a licensed telephony provider connects through Microsoft's platform), or Direct Routing (the organization connects an existing telephony infrastructure to Teams via a Session Border Controller). Each of these approaches has different cost and configuration requirements, and scoping PSTN calling on an MTR project involves both licensing and infrastructure questions that go well beyond the Teams Rooms deployment itself.
+
+Clients on M365 E5 should be aware that E5 includes Teams Phone System capability — but Teams Phone System is different from a Calling Plan. Phone System is the PBX capability that enables call routing and management. A Calling Plan (or Operator Connect/Direct Routing) is still needed to provide actual PSTN numbers and minutes. Even with E5, the resource account needs explicit Teams Phone provisioning to enable PSTN calling in a room.
+
+{/* MEDIA: MTR licensing stack graphic. Resource account at center. Three layers shown as stacked blocks: (1) Teams Rooms Pro or Basic — the room license, (2) Exchange Online — required for calendar, included in most M365 plans, (3) Teams Phone — optional, only if PSTN calling is required. Separate callout showing E3/E5 user licenses with an X indicating they are not assigned to the resource account. Filename: p1-t1-m1-l4-licensing-stack.png */}
+
+---
+
+## Audio Conferencing and Common Licensing Confusions
+
+Teams Audio Conferencing is a Microsoft 365 feature that adds PSTN dial-in numbers to Teams meeting invites — allowing remote attendees who cannot use the Teams app to call into a meeting by phone. This is a feature of the meeting organizer's account. When a user who has the Audio Conferencing add-on schedules a Teams meeting, a dial-in phone number and conference ID are automatically included in the meeting invite. Attendees can call that number and join by audio.
+
+The room's resource account does not need an Audio Conferencing license for this to work. The dial-in capability is attached to the meeting organizer, not to the room. Clients who ask whether their conference rooms need Audio Conferencing licensing are asking the wrong question — they need to ensure that the meeting organizers in their organization have the feature enabled. This is one of the most frequent licensing confusions integrators encounter, and being able to explain it clearly and correctly builds significant credibility with IT teams.
+
+To summarize the complete licensing picture for a typical commercial MTR deployment: each room resource account needs a Teams Rooms Pro license. Exchange Online is required and is typically included in the organization's M365 subscription. If PSTN outbound calling from the room is required, a Teams Phone license and a PSTN connectivity method must be added to the resource account. Audio Conferencing is for meeting organizers who want PSTN dial-in in their meeting invites — it is not assigned to room resource accounts.
+
+---
+
+## Hands-On Exercise
+
+The Licensing Scenario Worksheet presents three client scenarios that require you to determine the correct licensing configuration for each situation. The scenarios cover: a startup with five rooms on M365 Business Premium; a 200-room enterprise on M365 E3 that wants Intelligent Speaker and full remote management across its board rooms; and a law firm on E3 whose conference rooms must be able to dial out to external client phone numbers. For each scenario, identify the correct Teams Rooms license tier, any additional licenses required on the resource account, and whether the organization's base M365 license is relevant to the room configuration.
+
+The worksheet also includes a resource account pre-deployment checklist — a structured verification form covering the seven configuration items that must be confirmed before device sign-in can succeed.
+
+<DownloadButton
+  file="p1-t1-m1-l4-licensing-scenario-worksheet.pdf"
+  label="Licensing Scenario Worksheet"
+  sizeKb={140}
+  description="Three client licensing scenarios with answer key. Includes a resource account pre-deployment verification checklist."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m1-l4-kc">
+  <Question>
+    What is the maximum number of rooms that can use the free Teams Rooms Basic license
+    per Microsoft 365 tenant?
+  </Question>
+  <Answer>10</Answer>
+  <Answer correct>25</Answer>
+  <Answer>50</Answer>
+  <Answer>Unlimited</Answer>
+  <Explanation>
+    Teams Rooms Basic is available at no additional cost for up to 25 rooms per tenant.
+    Beyond 25 rooms, or when premium features are required, Teams Rooms Pro is the appropriate
+    license.
+  </Explanation>
+
+  <Question>
+    A client on M365 E3 wants their 15 conference rooms to have Intelligent Speaker and full
+    remote management via the Teams Admin Center. Which license should be assigned to each
+    room's resource account?
+  </Question>
+  <Answer>Microsoft 365 E3 — the room inherits the organizational license</Answer>
+  <Answer>Teams Rooms Basic — it provides core functionality at no cost</Answer>
+  <Answer correct>Teams Rooms Pro — it is the only tier that includes Intelligent Speaker and full TAC remote management</Answer>
+  <Answer>Teams Phone — it enables advanced room features alongside E3</Answer>
+  <Explanation>
+    Intelligent Speaker and full Teams Admin Center remote management (configuration profiles,
+    remote restart, detailed analytics) require Teams Rooms Pro. Teams Rooms Basic does not
+    include these features. M365 E3 is a per-user license and should not be assigned to room
+    resource accounts.
+  </Explanation>
+
+  <Question>
+    An MTR device successfully signs in with the resource account but shows no meetings on the
+    touch console, even though meetings have been scheduled and the room was included in invites.
+    What is the most likely cause?
+  </Question>
+  <Answer>The Teams Rooms Pro license has not been assigned to the resource account</Answer>
+  <Answer correct>The resource account does not have an Exchange Online mailbox provisioned, or AutomateProcessing is not set to AutoAccept</Answer>
+  <Answer>The MTR device needs to be restarted after initial sign-in</Answer>
+  <Answer>The meeting organizer did not enable room calendar sync</Answer>
+  <Explanation>
+    A successful device sign-in only requires a valid Entra ID account. Calendar-based meeting
+    join additionally requires an Exchange Online room mailbox with AutomateProcessing set to
+    AutoAccept. If sign-in succeeds but no meetings appear, the Exchange configuration is the
+    first thing to verify. The Teams Rooms license tier does not affect calendar display.
+  </Explanation>
+
+  <Question>
+    A client wants remote meeting attendees to be able to dial into Teams meetings by phone
+    (PSTN dial-in). Which account needs the Teams Audio Conferencing license?
+  </Question>
+  <Answer>The room resource account</Answer>
+  <Answer>Every meeting attendee's account</Answer>
+  <Answer correct>The meeting organizer's account</Answer>
+  <Answer>The Teams Admin Center administrator's account</Answer>
+  <Explanation>
+    Teams Audio Conferencing is a feature of the meeting organizer's account. When an organizer
+    with Audio Conferencing creates a meeting, PSTN dial-in numbers are automatically included
+    in the invite. The room's resource account does not require Audio Conferencing licensing
+    for participants to dial in — the capability comes from the organizer.
+  </Explanation>
+
+  <Question>
+    A room resource account needs both standard meeting join capability and the ability to
+    make outbound calls to external phone numbers. What license configuration is required?
+  </Question>
+  <Answer>Teams Rooms Pro only — it includes PSTN calling</Answer>
+  <Answer>Microsoft 365 E3 plus Teams Rooms Basic</Answer>
+  <Answer correct>Teams Rooms Pro plus a Teams Phone license and a PSTN connectivity method (Calling Plan, Operator Connect, or Direct Routing)</Answer>
+  <Answer>Teams Rooms Basic plus Audio Conferencing</Answer>
+  <Explanation>
+    Teams Rooms Pro provides the room meeting functionality but does not include PSTN calling.
+    Outbound calling to external phone numbers requires a Teams Phone license on the resource
+    account, plus a PSTN connectivity method. Microsoft Calling Plan, Operator Connect, and
+    Direct Routing each provide PSTN connectivity through different commercial and technical
+    arrangements.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Distinguish the license tiers:** Teams Rooms Basic is free for up to 25 rooms and covers core meeting join. Teams Rooms Pro is the paid tier that unlocks Intelligent Speaker, Front Row, full remote management, analytics, and configuration profiles — and is the default for commercial deployments.
+- **Explain the resource account:** Every MTR device requires a dedicated Entra ID account configured as an Exchange Online room mailbox. The account holds the calendar, enables one-touch join, and carries the Teams Rooms license. It should not be assigned user licenses like E3.
+- **Describe the Exchange Online requirement:** The resource account needs Exchange Online and AutomateProcessing = AutoAccept for calendar-based join to work. This is the most common missing configuration that causes "no meetings showing" issues.
+- **Navigate E3/E5 and PSTN licensing:** User licenses are not assigned to resource accounts. PSTN calling requires a Teams Phone license plus a connectivity method. Audio Conferencing belongs to meeting organizers, not room accounts.
+
+---
+
+## What's Next
+
+You now understand what licenses an MTR room needs and why. The final lesson of Module 1.1 takes a step back from the technology and focuses on the integrator's role in the broader project ecosystem — where your scope ends, where IT's begins, and how to write the SOW language that protects everyone.
+
+[The AV Integrator's Role — Scope, SOW Boundaries, and Handoff →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/introduction-to-teams-rooms/lessons/the-av-integrators-role/)

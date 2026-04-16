@@ -1,0 +1,228 @@
+---
+id: "p2-t2-m2-l5"
+slug: "monitoring-health-dashboards"
+title: "Monitoring, Alerting, and Health Dashboards in TAC"
+shortTitle: "TAC Health Monitoring"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 2
+moduleSlug: "tac-policies-and-management"
+moduleTitle: "TAC Policies and Fleet Management"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Interpret TAC device health status categories and identify the conditions that trigger each"
+  - "Configure TAC notification rules to alert on specific device health events"
+  - "Build a daily monitoring workflow using TAC health dashboards for fleet oversight"
+
+prerequisites:
+  - "p2-t2-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "tac-management"
+  - "monitoring"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m2-l5-tac-monitoring-guide.pdf"
+    label: "TAC Health Monitoring Guide"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t2-m2-l1"
+  - "p2-t2-m3-l1"
+
+metaDescription: "TAC health monitoring for MTR — device health status categories (Healthy, Non-urgent, Critical, Offline), peripheral health, notification rules, daily monitoring workflow, and escalation from TAC to Pro Management."
+
+keywords:
+  - "Teams Admin Center health monitoring"
+  - "MTR device health TAC"
+  - "Teams Rooms health status"
+  - "TAC notifications MTR"
+  - "Teams Rooms monitoring workflow"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+TAC health monitoring is the minimum viable monitoring layer for any MTR deployment. It does not require Pro licenses, and it provides the basic device health visibility that answers the most common question in a managed room fleet: "Is this room ready for its next meeting?" Building a daily monitoring workflow around TAC health dashboards — and configuring notifications for critical events — converts reactive support ("the room is broken, can you fix it?") into proactive management ("we noticed the room has a peripheral issue and fixed it before your meeting").
+
+---
+
+## Device Health Status Categories
+
+TAC reports each device's health status using four categories:
+
+**Healthy (green):** All monitored components are functioning correctly. The device is signed in, the Teams app is running, all peripherals are detected and responding, and recent call quality data is within acceptable ranges.
+
+**Non-urgent (yellow):** One or more components have a condition that requires attention but is not currently preventing the room from functioning for meetings. Examples:
+- A peripheral (display, microphone, camera) is reporting a sub-optimal status
+- The Teams app version is behind the current release
+- The device is not enrolled in a configuration profile when one is expected
+
+**Critical (red):** A condition that is preventing or likely to prevent the room from being used for meetings. Examples:
+- The camera is not detected
+- The microphone array is not responding
+- The Teams app has crashed and is not running
+- The display is disconnected
+
+**Offline:** The device is not communicating with TAC. This could indicate:
+- The device is powered off
+- The network connectivity from the device to Microsoft is broken
+- The device is in an update/restart cycle
+- A hardware failure
+
+<Callout type="tip">
+  Offline status alone does not confirm a failure. Devices briefly show
+  Offline during scheduled restarts and update cycles. An Offline device
+  that returns to Healthy after a maintenance window is not an incident.
+  An Offline device that remains Offline after the maintenance window
+  requires investigation.
+</Callout>
+
+---
+
+## Peripheral Health Reporting
+
+TAC reports the health of peripherals connected to or integrated with the MTR device:
+
+- **Display(s):** Connected and detected
+- **Camera:** Detected and providing video signal
+- **Microphone:** Detected and responding
+- **Speaker:** Detected and configured
+- **HDMI ingest:** Detected (if the device supports HDMI ingest)
+
+**Peripheral health display:** In the device detail view, the **Peripherals** section shows each component with a green/red/yellow indicator. A red camera or microphone indicator while the device itself shows Healthy indicates a specific hardware issue — the Teams app is running but a specific peripheral has failed.
+
+**Android MTR peripheral reporting:** For all-in-one Android bar devices, peripheral health is typically reported at the device level rather than per-component, since camera, microphone, and speaker are all integrated. A healthy Android device status implies all integrated components are functioning.
+
+---
+
+## Configuring TAC Notifications
+
+TAC can send email notifications when device health events occur:
+
+**Setting up notifications:**
+1. In TAC, navigate to **Notifications & alerts → Rules**
+2. Click **+ Add**
+3. Configure:
+   - **Rule name:** e.g., "Critical Device Health Alert"
+   - **Condition:** Device health status changes to Critical (or Offline)
+   - **Scope:** All devices, or filtered by tag (e.g., `service:managed`)
+   - **Action:** Send email notification to specified recipients
+
+**Recommended notification rules:**
+
+| Rule | Condition | Recipients |
+|------|-----------|-----------|
+| Critical Health Alert | Health → Critical | IT support team, on-call |
+| Extended Offline Alert | Device offline for > 60 minutes | IT support team |
+| Camera Failure | Camera peripheral → Non-healthy | AV support team |
+| App Version Alert | App version > 2 releases behind | IT operations |
+
+**Alert fatigue management:** Do not create notifications for Non-urgent status changes to the entire fleet — this generates high volume with low actionability. Reserve email notifications for Critical and extended Offline conditions. Check Non-urgent status during the daily monitoring review.
+
+---
+
+## Daily Monitoring Workflow
+
+A disciplined daily health check takes 5–10 minutes and catches most issues before they affect scheduled meetings:
+
+**Morning check (before 08:00):**
+1. Open TAC → Teams Devices → Rooms on Windows (and Rooms on Android)
+2. Apply filter: **Health: Critical** — should be zero. Any critical device requires immediate action before the business day begins
+3. Apply filter: **Health: Offline** AND cross-reference against maintenance window schedule — devices that should have completed overnight updates and are still offline require investigation
+4. Apply filter: **Health: Non-urgent** — review list; triage against today's meeting schedule; prioritize rooms with meetings scheduled before the end of day
+
+**Weekly review (Monday):**
+1. Check app version distribution — filter to devices more than one version behind current release
+2. Review update policy compliance — confirm maintenance windows ran successfully over the weekend
+3. Check any open Non-urgent items from the previous week — confirm resolution or escalate
+
+**Export and documentation:**
+For managed service accounts, export the health status to CSV weekly and include in client reporting. The trend of Healthy/Non-urgent/Critical counts over time demonstrates the effectiveness of proactive management.
+
+<DownloadButton
+  file="p2-t2-m2-l5-tac-monitoring-guide.pdf"
+  label="TAC Health Monitoring Guide"
+  sizeKb={35}
+  description="TAC health monitoring guide for MTR managed services — health status category definitions, peripheral health interpretation, notification rule configuration, daily and weekly monitoring workflow, and escalation path from TAC to Teams Rooms Pro Management."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m2-l5-kc">
+  <Question>
+    During the morning monitoring check at 07:45, a conference room shows
+    Critical health status with the note "Camera peripheral not detected."
+    The room has a 09:00 meeting scheduled. What is the appropriate response?
+  </Question>
+  <Answer>Wait until after the 09:00 meeting to investigate — the room may still function for audio-only</Answer>
+  <Answer>Restart the device remotely from TAC — camera detection issues are always resolved by restart</Answer>
+  <Answer correct>Immediately attempt a remote restart from TAC (camera detection can fail after a glitch) and monitor whether the camera health recovers. If the camera health does not recover after restart, notify the meeting organizer of the issue and dispatch physical support before the 09:00 meeting — there is sufficient time to assess and respond before the meeting begins</Answer>
+  <Answer>Delete the resource account and re-provision it to restore camera detection</Answer>
+  <Explanation>
+    Critical camera health with a scheduled meeting in 75 minutes requires
+    immediate, structured action. Remote restart is the first step — camera
+    detection failures are often resolved by a restart (device driver reload,
+    USB re-enumeration). If the camera health returns to Healthy after restart,
+    the incident is resolved. If the camera remains unhealthy after restart,
+    this is a hardware issue requiring physical intervention. Notify the
+    organizer now (before the meeting, not during) and dispatch support.
+    Early detection via morning monitoring is what makes this response
+    possible — the same issue discovered at 08:58 would have no viable response.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Health categories:** Healthy (green), Non-urgent (yellow), Critical (red), Offline — check Critical and extended Offline daily.
+- **Peripheral health:** Camera, microphone, speaker, display — each reported separately in device detail.
+- **Notifications:** Configure email alerts for Critical and extended Offline; avoid Non-urgent fleet-wide alerts.
+- **Daily workflow:** Morning check (Critical → Offline → Non-urgent vs. today's schedule); weekly review (version compliance, open items).
+
+---
+
+## Module Complete
+
+You have completed Module 2.2: TAC Policies and Fleet Management. Module 2.3 extends monitoring and management capability to the Teams Rooms Pro Management platform.
+
+[Continue to Module 2.3: Teams Rooms Pro Management →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/teams-rooms-pro-management/)

@@ -1,0 +1,259 @@
+---
+id: "p1-t3-m2-l2"
+slug: "oem-specific-variations"
+title: "OEM-Specific Variations — Poly, Yealink, Logitech, Neat, DTEN"
+shortTitle: "Android OEM Platforms"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 2
+moduleSlug: "mtr-android-initial-setup"
+moduleTitle: "MTR Android — Initial Setup"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "analyze"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Describe the key hardware and software characteristics of the five major MTR Android OEMs"
+  - "Identify OEM-specific setup and configuration differences integrators must account for"
+  - "Select the most appropriate OEM platform for a given room scenario based on size, features, and client environment"
+
+prerequisites:
+  - "p1-t3-m2-l1"
+
+technologyTags:
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "android-oem"
+  - "platform-selection"
+
+vendorTags:
+  - "poly"
+  - "yealink"
+  - "logitech"
+  - "neat"
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m2-l2-oem-comparison.pdf"
+    label: "Android MTR OEM Comparison Reference"
+    sizeKb: 70
+
+relatedLessons:
+  - "p1-t3-m2-l1"
+  - "p1-t3-m2-l3"
+
+metaDescription: "MTR Android OEM platform guide — Poly Studio X, Yealink MeetingBar, Logitech Rally Bar, Neat Bar, and DTEN compared for room size, features, management portals, and OEM-specific setup differences."
+
+keywords:
+  - "Poly Studio X Teams Rooms"
+  - "Yealink MeetingBar MTR"
+  - "Logitech Rally Bar Android"
+  - "Neat Bar Teams Rooms"
+  - "DTEN MTR Android"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+There is no single "right" Android MTR OEM — each manufacturer has strengths, target room sizes, and ecosystem characteristics that make them appropriate for different project contexts. An integrator who knows only one OEM platform is limited to projects where that platform is the right choice. An integrator who understands the full landscape can match the best platform to each project requirement, make informed recommendations to clients, and win projects where a multi-OEM deployment requires fluency across platforms.
+
+This lesson covers the five major MTR Android OEMs: Poly, Yealink, Logitech, Neat, and DTEN.
+
+---
+
+## Poly (HP Poly)
+
+**Product line:** Poly Studio X series (X30 for small rooms, X52 for medium rooms, X70 for large rooms) and G7500 for large and premium spaces. All-in-one bar form factor with integrated camera, microphone array, and speakers.
+
+**Key strengths:** Poly's camera technology (often using Sony image sensors) is widely regarded as industry-leading for image quality. Poly's NoiseBlock AI noise suppression is effective in acoustically challenging environments. The Poly Studio X70 supports dual cameras and is one of the strongest single-device options for large conference rooms.
+
+**OEM ecosystem:** Poly uses a custom RTOS-based firmware layer beneath the Teams app. Admin settings are accessed through the Poly Web Interface (browser-accessible via the device IP) — a well-designed interface with detailed audio DSP access. Cloud management is through Poly Lens, which provides device monitoring, firmware management, and configuration deployment. Poly also integrates with Poly's broader room control ecosystem for organizations using Poly-based video and audio infrastructure.
+
+**OEM admin access:** Default credentials for the Poly Web Interface are documented on a label on the device or in the setup guide. Username is typically "admin"; password is device-specific. Change during initial setup.
+
+**Best for:** Premium-quality single-device bar rooms (small to large), clients with existing HP Poly infrastructure, demanding acoustic environments where Poly's audio processing quality matters.
+
+---
+
+## Yealink
+
+**Product line:** MeetingBar series (A10 for huddle rooms, A20 for small rooms, A30 for medium rooms, A40 for medium-large rooms) and MeetingBoard (interactive display + camera + audio all-in-one). Yealink also produces the MeetingVision for larger display-centric deployments.
+
+**Key strengths:** Strong value proposition — Yealink delivers competitive performance at a lower price point than Poly or Neat, making it popular in cost-sensitive mid-market deployments. Broad compatibility with the certified hardware list. Strong presence in APAC and EMEA markets as well as North America. The MeetingBoard is a compelling all-in-one option for rooms that need a primary display with integrated video bar functionality.
+
+**OEM ecosystem:** Admin settings via the Yealink Web Interface (browser-accessible). Cloud management through Yealink Management Cloud Service (YMCS) — provides fleet management, remote configuration, and firmware updates. YMCS is particularly strong for organizations deploying large numbers of Yealink devices across multiple sites.
+
+**OEM admin access:** Default Web Interface credentials are admin/admin — must be changed during initial setup. YMCS registration is done through the device's admin menu after OOBE.
+
+**Best for:** Cost-effective deployments in mid-market and enterprise organizations, multi-site deployments leveraging YMCS, rooms where value-to-performance ratio is the primary criterion.
+
+---
+
+## Logitech
+
+**Product line:** Rally Bar (medium to large rooms) and Rally Bar Mini (small to medium rooms) running MTR Android. Logitech also offers the Zone True Wireless earbuds and other peripheral ecosystem devices.
+
+**Key strengths:** RightSight AI auto-framing is among the best-performing and most reliable in the market — consistent tracking behavior and clean framing even in challenging room geometries. RightSound audio processing provides strong voice pickup. Logitech's ecosystem integration (particularly with the Logitech Tap and Tap Scheduler) is well-designed for clean, professional installations. Wide enterprise recognition — Logitech is a trusted brand in many IT organizations.
+
+**OEM ecosystem:** Cloud management through Logitech Sync — a clean, well-designed portal with device health monitoring, firmware updates, and configuration management. Logitech Sync is straightforward to onboard clients to, making it a good choice for organizations where IT will manage the portal ongoing.
+
+**Important note:** Logitech offers both an Android MTR platform (Rally Bar, Rally Bar Mini running Android Teams) and Windows-based MTR bundles (Rally Bar + Lenovo ThinkSmart Core). Be clear about which Logitech product line is being specified — the setup and management paths are completely different.
+
+**OEM admin access:** Rally Bar local web UI via device IP; Logitech Sync registration via the admin menu.
+
+**Best for:** Deployments where auto-framing reliability is a priority, organizations with existing Logitech peripheral ecosystems, clients where Logitech Sync's simplicity aligns with IT's management capabilities.
+
+---
+
+## Neat
+
+**Product line:** Neat Bar (medium rooms), Neat Bar Pro (large rooms), Neat Board (interactive display + video bar), Neat Pad (touch console for scheduling display at room entrance).
+
+**Key strengths:** Neat devices have the cleanest industrial design of any MTR Android OEM — minimalist aesthetics that complement premium architectural interiors. Deep Teams integration (Neat is a Microsoft partner with close engineering alignment). Neat Pulse cloud management is well-designed. Ease of setup is notable — Neat devices have fewer configurable options than Poly or Yealink (by design), which simplifies deployment but limits customization.
+
+**OEM philosophy:** Neat explicitly designs for simplicity — fewer settings to configure, cleaner defaults, less technical depth in the admin interface. This is a deliberate product philosophy, not a limitation. For clients who want a "just works" experience with minimal IT configuration burden, Neat is the right fit. For clients who need detailed audio DSP tuning, extensive configuration options, or complex room control integration, Neat's simplified approach may be limiting.
+
+**Cloud management:** Neat Pulse provides device monitoring, remote management, and firmware deployment.
+
+**OEM admin access:** Via the Neat device touchscreen admin menu (PIN-protected). No local web UI — configuration is primarily through the Neat Pulse portal.
+
+**Best for:** Premium design-forward installations, executive offices and boardrooms, clients who prioritize ease of use and minimal IT management overhead.
+
+---
+
+## DTEN
+
+**Product line:** DTEN ONboard (27" and 55" all-in-one interactive whiteboard/Teams device), DTEN ME and ME Pro (personal desk devices).
+
+**Key strengths:** The DTEN ONboard is distinctive — it is a single device that combines a large touch-enabled display, integrated camera, microphone array, and speaker into an interactive whiteboard surface running Teams Rooms. It eliminates the need for a separate display, camera, and audio device in small to medium rooms where an interactive surface is valued. Positioned for small conference rooms and personal office use cases where a traditional bar-plus-display system would be over-engineered.
+
+**Limitations for traditional conference rooms:** DTEN's all-in-one form factor is not appropriate for large conference rooms requiring high-quality far-end camera reach, large display sizes, or complex audio coverage. For anything larger than a small conference room or small boardroom, DTEN is not the right choice.
+
+**Cloud management:** DTEN Device Management platform.
+
+**Best for:** Small conference rooms, personal offices, rooms where interactive whiteboard functionality is a primary requirement alongside Teams Rooms.
+
+---
+
+## OEM Selection Framework
+
+When selecting an OEM for a project:
+
+1. **Room size compatibility:** Verify the specific model's maximum room size rating from the spec sheet
+2. **Required features:** Confirm HDMI ingest capability (for external content sources), BYOD support, content camera support if needed
+3. **Client IT environment:** Does the client's IT team have a preference or existing relationship with an OEM? Match management portal to IT's existing tooling where possible
+4. **Budget:** Yealink is typically most cost-competitive; Neat and Poly are typically at premium price points
+5. **Availability and lead time:** Check current availability — OEM availability varies by region and supply conditions
+
+<DownloadButton
+  file="p1-t3-m2-l2-oem-comparison.pdf"
+  label="Android MTR OEM Comparison Reference"
+  sizeKb={70}
+  description="Quick-reference comparison table for all five major Android MTR OEMs — product lines, room size ratings, management portals, key differentiators, and selection criteria."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m2-l2-kc">
+  <Question>
+    A client is deploying 12 small-to-medium conference rooms across a single office.
+    Their IT team is experienced with cloud device management portals and wants to manage
+    all rooms from a single portal. Budget is a primary concern. Which OEM is most
+    appropriate and why?
+  </Question>
+  <Answer>Neat — its simplified setup minimizes IT burden</Answer>
+  <Answer>Poly — its audio quality justifies the premium cost</Answer>
+  <Answer correct>Yealink — competitive price point for a 12-room deployment combined with YMCS as a capable fleet management portal aligns with both the budget and the IT management requirements</Answer>
+  <Answer>DTEN — the all-in-one form factor minimizes per-room equipment count</Answer>
+  <Explanation>
+    Yealink offers strong value (important for a 12-room deployment where per-room cost
+    compounds), and YMCS provides a capable cloud management portal for fleet monitoring
+    and firmware updates. Neat is comparable in capability but at a higher price point.
+    Poly is premium-priced and better justified for individual high-priority rooms. DTEN
+    is not the right fit for standard conference rooms — it is optimized for small interactive
+    whiteboard use cases.
+  </Explanation>
+
+  <Question>
+    A client asks whether the Logitech Rally Bar they just purchased for their conference
+    room runs MTR Windows or MTR Android. How do you determine this?
+  </Question>
+  <Answer>The Rally Bar always runs MTR Android — Logitech is an Android-only MTR OEM</Answer>
+  <Answer correct>Check the specific product SKU — the Logitech Rally Bar can run either MTR Android (Rally Bar native) or MTR Windows (when paired with a Lenovo ThinkSmart Core or similar compute unit). The packaging and product part number identify which configuration was purchased</Answer>
+  <Answer>The Rally Bar runs both operating systems simultaneously and the client can switch between them</Answer>
+  <Answer>All bar-form-factor devices run MTR Android; only box-form-factor compute units run Windows</Answer>
+  <Explanation>
+    Logitech offers the Rally Bar as a standalone Android MTR device AND as a peripheral
+    bundle with Windows-based compute units. The two configurations look similar but have
+    completely different setup, management, and configuration paths. Verify the actual
+    product SKU and confirm whether the device runs Android natively or requires a separate
+    Windows compute unit. This distinction is critical for planning the correct commissioning
+    approach.
+  </Explanation>
+
+  <Question>
+    A client's executive suite requires a Teams Rooms deployment with premium aesthetics
+    and minimal visible hardware. The IT team values simplicity over configurability.
+    Which OEM best fits this requirement?
+  </Question>
+  <Answer>Poly — the Studio X series has the best image quality for executive use</Answer>
+  <Answer>Yealink — the MeetingBar A40 has the smallest physical footprint</Answer>
+  <Answer correct>Neat — their minimalist industrial design and simplified management philosophy (Neat Pulse) directly align with the premium aesthetics and minimal IT overhead requirements</Answer>
+  <Answer>DTEN — the interactive whiteboard format eliminates visible hardware</Answer>
+  <Explanation>
+    Neat's product philosophy prioritizes premium industrial design and simplified operation
+    over deep configurability. For an executive suite where the room must look premium and
+    the IT team wants a "just works" experience with minimal configuration overhead, Neat
+    is the natural choice. Neat Pulse provides straightforward management. The trade-off
+    is fewer configuration options than Poly or Yealink — acceptable in this context where
+    simplicity is the priority.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Characterize each OEM:** Poly (premium quality, strong audio DSP, Poly Lens), Yealink (best value, YMCS fleet management), Logitech (RightSight auto-framing, Logitech Sync), Neat (premium design, simplified management, Neat Pulse), DTEN (interactive whiteboard/display hybrid for small rooms).
+- **Apply selection criteria:** Room size, required features, IT management portal preferences, budget, and availability.
+- **Distinguish Logitech's dual product lines:** Android Rally Bar vs. Windows Rally Bar bundle — verify the SKU before commissioning.
+
+---
+
+## What's Next
+
+With OEM platform knowledge established, the next lesson covers how to access and use the OEM admin interfaces and cloud management portals — the tools that extend beyond the Teams application settings.
+
+[OEM Admin Interfaces and Device Management Portals →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-android-initial-setup/lessons/oem-admin-interfaces/)

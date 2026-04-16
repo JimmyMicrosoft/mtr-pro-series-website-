@@ -1,0 +1,228 @@
+---
+id: "p1-t2-m2-l4"
+slug: "cable-management-labeling"
+title: "Cable Management and Labeling Conventions"
+shortTitle: "Cable Management"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 2
+moduleSlug: "cable-infrastructure"
+moduleTitle: "Cable Infrastructure"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Apply a consistent cable labeling convention that meets ANSI/TIA-606-C standards for commercial AV installations"
+  - "Implement cable management best practices in rack, wall, and ceiling environments"
+  - "Produce a cable schedule that correlates physical labels to system documentation"
+
+prerequisites:
+  - "p1-t2-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "cable-management"
+  - "labeling"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m2-l4-label-convention-worksheet.pdf"
+    label: "Cable Label Convention Worksheet"
+    sizeKb: 50
+
+relatedLessons:
+  - "p1-t2-m2-l3"
+  - "p1-t2-m2-l5"
+
+metaDescription: "Professional cable management and labeling for MTR installations — TIA-606-C standards, bend radius, bundling rules, rack cable dressing, and a labeling convention design exercise."
+
+keywords:
+  - "AV cable labeling convention"
+  - "TIA-606-C commercial AV"
+  - "cable management bend radius"
+  - "rack cable dressing"
+  - "conference room cable management"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Cable management and labeling are the difference between an installation that serves a client professionally for years and one that becomes unmanageable the moment a change is needed. Good cable management is not cosmetic — bend radius violations cause real performance failures, unlabeled cables make troubleshooting expensive, and unmanaged bundles become fire hazards and maintenance nightmares. The additional time invested in correct cable management during installation pays dividends on every service call and change order for the life of the system.
+
+---
+
+## Labeling Standards — ANSI/TIA-606-C
+
+ANSI/TIA-606-C defines administration standards for telecommunications infrastructure, and its principles apply directly to AV cable installations. The key requirements:
+
+- **Every cable must have a unique identifier.** No two cables in the installation can share the same label.
+- **Labels must be applied at both ends of each cable.** A cable labeled at one end only is not fully labeled — during troubleshooting, either end may be the starting point, and finding the cable from either direction must be possible.
+- **Labels must be legible and durable.** Self-laminating cable labels with printed text (from a thermal label printer like a Brady BMP61 or Dymo) are the professional standard. Handwritten labels on masking tape are not acceptable for commercial installations — they peel, fade, and become illegible within months.
+- **Rack panel ports must be labeled.** Every occupied port on a patch panel, keystone module, or equipment front panel must have a label identifying what is connected.
+
+---
+
+## Labeling Convention Design
+
+A cable labeling convention defines the format and content of each label. A good convention is short enough to fit on a label, descriptive enough to be useful without looking it up, and consistent enough that anyone on the team produces the same label format.
+
+A recommended format for commercial AV installations:
+
+**[SIGNAL TYPE]-[ORIGIN CODE]-[DESTINATION CODE]-[PORT ID]**
+
+Example: `CAT-CR1-IDF1-P12`
+- `CAT` = Category cable (signal type)
+- `CR1` = Conference Room 1 (origin location)
+- `IDF1` = IDF Closet 1 (destination location)
+- `P12` = Patch panel port 12 (termination point)
+
+Define your signal type abbreviations at the project level and document them in the project record. Common abbreviations: CAT (Cat6/6A network), HDMI, USB, AUD (audio), SPK (speaker), CTL (control). Apply them consistently across the project.
+
+{/* MEDIA: Annotated label format diagram — example cable label showing each field (signal type, origin, destination, port) with the meaning of each component labeled. Example labels shown for network, HDMI, and audio cables. Filename: p1-t2-m2-l4-label-format.png */}
+
+---
+
+## Bend Radius Requirements
+
+Every cable type has a minimum bend radius — the tightest arc the cable can follow without degrading performance or damaging conductors. Exceeding the bend radius limit causes attenuation increases, pair separation in balanced cables, and in severe cases, conductor fracture.
+
+| Cable Type | Minimum Bend Radius |
+|-----------|-------------------|
+| Cat6A (unshielded) | 8× cable diameter (~16mm typical) |
+| Cat6A (shielded) | 8× cable diameter (~20mm typical) |
+| HDMI | Manufacturer-specified, typically 30–50mm |
+| USB 3.x | ~15mm minimum |
+| DisplayPort | ~30mm minimum |
+| Speakon (NL4FC) | ~25mm minimum |
+
+Bend radius violations are most common at wall penetrations (where cable makes a 90° turn from conduit to horizontal), at conduit entry points (where the cable bends from the conduit to the device), and behind rack equipment (where cables are forced into tight bends to reach rear-panel connectors). When routing through these points, use bend radius guides or leave generous cable slack to allow smooth curves rather than sharp bends.
+
+---
+
+## Bundling and Separation Rules
+
+**Do not over-bundle network cables.** Excessive compression from tight cable ties deforms the pair geometry in Cat6/6A, increasing crosstalk and degrading 10G performance. For Cat6A bundles, use hook-and-loop (Velcro) straps rather than cable ties. Hook-and-loop straps allow adjustment and removal without cutting, apply gentle compression, and remain adjustable throughout the project.
+
+**Separate power from signal.** NEC requires at least 2 inches of separation between power conductors and signal cables running parallel. In a rack, route power cables on one vertical side and signal cables on the other. In a ceiling pathway, use a separate J-hook array for power-limited AV cables if power conductors share the same ceiling space.
+
+**Do not over-pack conduit.** Conduit fill limits (per NEC Chapter 9) define the maximum cable fill as a percentage of the conduit's interior cross-sectional area. For multiple cables of the same type, the fill limit is 40% of conduit interior area. Over-packed conduit generates heat, makes future cable pulls difficult, and can exceed NEC fill limits, creating a code violation.
+
+---
+
+## Rack Cable Management
+
+Rack installations require structured cable management to maintain airflow, enable servicing, and look professional. Key practices:
+
+**Use horizontal and vertical cable management panels.** Horizontal cable management panels (0.5U or 1U panels with D-rings or cable management fingers) should be installed above and below dense connection points — above and below the patch panel, above and below the switch. Vertical cable management (vertical D-ring arrays on the side rail) routes cables cleanly up and down the rack sides.
+
+**Route power and signal on opposite sides.** Power cables (from the PDU) on the right side of the rack; signal cables (network, audio, control, video) on the left. This separation is maintained at every cable management point.
+
+**Use hook-and-loop straps, not cable ties.** Cable ties cannot be removed without cutting and create permanent bundles that resist modification. Hook-and-loop straps allow cable additions and removals throughout the system life.
+
+**Dress cables before terminating.** Route all cables from the rear of the rack to their termination points, leaving appropriate slack coiled at the management point before terminating. Do not terminate first and then try to dress — working backward creates unmanageable tangles.
+
+---
+
+<KnowledgeCheck id="p1-t2-m2-l4-kc">
+  <Question>
+    During a rack installation inspection, you notice that Cat6A cables are bundled
+    tightly with plastic cable ties cinched as tight as possible. What is the problem
+    with this approach?
+  </Question>
+  <Answer>There is no problem — cable ties are the standard method for bundling network cables in racks</Answer>
+  <Answer correct>Tight cable ties deform the pair geometry in Cat6/6A cables, increasing crosstalk and potentially causing 10G performance failures — hook-and-loop straps should be used instead</Answer>
+  <Answer>Cable ties are a fire hazard in racks and are prohibited by NEC</Answer>
+  <Answer>Cable ties cause bend radius violations that will show up as NEXT failures on the certifier</Answer>
+  <Explanation>
+    Excessive compression on Cat6/6A pairs from tight cable ties deforms the cable
+    geometry that maintains the pair twist and spacing specifications. This increases
+    crosstalk between pairs and can cause failures on 10G links that would otherwise
+    be marginal. Hook-and-loop straps apply gentle, adjustable compression and are the
+    professional standard for rack network cable management.
+  </Explanation>
+
+  <Question>
+    A TIA-606-C compliant cable labeling approach requires labels at:
+  </Question>
+  <Answer>Only at the patch panel end, since that is where the cable schedule is referenced</Answer>
+  <Answer>At the device end only, since the device location identifies the cable</Answer>
+  <Answer correct>Both ends of every cable, with a unique identifier on each label</Answer>
+  <Answer>Labels are optional if the cable schedule is complete and accessible</Answer>
+  <Explanation>
+    TIA-606-C requires labels at both ends of every cable with a unique identifier.
+    Troubleshooting often starts from the device end (e.g., "which network port in the
+    IDF connects to this room?") — without a label at the device end, the cable cannot
+    be identified from that starting point. Both-ends labeling with unique IDs is the
+    non-negotiable professional standard.
+  </Explanation>
+
+  <Question>
+    Why should cables be dressed (routed and secured) in a rack before they are
+    terminated at the rear-panel connections?
+  </Question>
+  <Answer>Terminating before dressing is more accurate because the final cable position is known</Answer>
+  <Answer correct>Dressing before terminating allows cables to be routed cleanly with appropriate slack to the management points, preventing the tangled bundles that result from trying to dress cables that are already connected</Answer>
+  <Answer>Terminating first is fine — dressing order does not affect the final result</Answer>
+  <Answer>Cables must be terminated before dressing because the termination tool cannot reach dressed cables</Answer>
+  <Explanation>
+    When cables are terminated before dressing, excess cable length is already committed
+    to the connection point and must be managed wherever it falls. This creates bundles
+    that are difficult to organize retroactively. Dressing first — routing from the entry
+    point to the termination, leaving planned slack at each management point — results
+    in a clean, organized installation where slack is where it is needed and cables are
+    routed in orderly bundles.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Apply TIA-606-C principles:** Unique ID per cable, labels at both ends, legible printed labels, rack panel ports labeled.
+- **Design a labeling convention:** [SIGNAL]-[ORIGIN]-[DESTINATION]-[PORT] format; define signal type abbreviations; apply consistently across the project.
+- **Maintain bend radius:** Know the minimum bend for each cable type; protect bend points at wall penetrations, conduit entries, and rack equipment.
+- **Manage bundles correctly:** Hook-and-loop for network cables; 2-inch separation from power; 40% maximum conduit fill; dress racks before terminating.
+
+---
+
+## What's Next
+
+The final lesson in Module 2.2 covers the power side of the cable infrastructure: calculating PoE budgets, sizing UPS systems, and designing power sequencing for MTR equipment.
+
+[Power Requirements — PoE, UPS Sizing, Power Sequencing →](/programs/mtr-foundations/tracks/physical-installation/modules/cable-infrastructure/lessons/power-requirements/)

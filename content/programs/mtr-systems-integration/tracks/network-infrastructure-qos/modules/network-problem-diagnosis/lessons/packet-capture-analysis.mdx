@@ -1,0 +1,238 @@
+---
+id: "p2-t1-m3-l4"
+slug: "packet-capture-analysis"
+title: "Packet Capture and Network Analysis for MTR"
+shortTitle: "Packet Capture"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 3
+moduleSlug: "network-problem-diagnosis"
+moduleTitle: "Network Problem Diagnosis"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Capture network traffic from an MTR Windows device using Wireshark or built-in Windows tools"
+  - "Apply Wireshark filters relevant to MTR traffic analysis and interpret the results"
+  - "Identify blocked ports, DNS failures, TLS certificate substitution, and media traffic patterns in a packet capture"
+
+prerequisites:
+  - "p2-t1-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "troubleshooting"
+  - "packet-capture"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m3-l4-wireshark-filter-cheatsheet.pdf"
+    label: "Wireshark Filter Cheat Sheet for MTR"
+    sizeKb: 30
+
+relatedLessons:
+  - "p2-t1-m3-l3"
+  - "p2-t1-m3-l5"
+
+metaDescription: "Packet capture for MTR network diagnosis — Wireshark on MTR Windows, netsh trace, relevant display filters, DSCP verification, blocked port identification, DNS failure patterns, TLS certificate analysis, and media stream identification."
+
+keywords:
+  - "MTR Wireshark packet capture"
+  - "Teams Rooms network analysis"
+  - "MTR netsh trace"
+  - "Teams Rooms DSCP verification"
+  - "MTR packet capture troubleshooting"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Packet capture is the ground truth of network diagnosis. When diagnostic commands and symptoms point in multiple directions, a packet capture from the MTR device shows exactly what is being transmitted, what is being blocked, and what the network is doing to the traffic. This lesson covers how to capture traffic on an MTR Windows device and the specific Wireshark filters that surface the most common MTR network issues quickly.
+
+---
+
+## Capture Methods on MTR Windows
+
+**Method 1 — Wireshark (preferred for analysis):**
+
+Install Wireshark on the MTR Windows device using a USB drive or remote deployment. Wireshark provides the richest analysis capabilities but requires installation.
+
+1. Connect to the MTR Windows device as local admin
+2. Install Wireshark (`winpcap` or `npcap` driver required — included in the Wireshark installer)
+3. Open Wireshark and select the network adapter connected to the MTR VLAN
+4. Start capture before reproducing the issue
+5. Stop capture after the issue is reproduced or sufficient data is collected
+6. Save the capture file (.pcap) for analysis
+
+**Method 2 — netsh trace (no installation required):**
+
+Windows includes `netsh trace` as a built-in packet capture tool. It produces ETL (Event Tracing for Windows) files that can be converted to .pcap format using Microsoft Message Analyzer or etl2pcap tools.
+
+```cmd
+# Start trace
+netsh trace start capture=yes tracefile=C:\Temp\mtr-capture.etl maxsize=500
+
+# Reproduce the issue...
+
+# Stop trace
+netsh trace stop
+```
+
+Convert to .pcap format for Wireshark analysis using `etl2pcapng` or Microsoft Network Monitor.
+
+**Method 3 — Switch port mirroring (SPAN):**
+
+For captures that need to run without software installed on the device, configure a SPAN (Switched Port Analyzer) session on the switch to mirror the MTR device's port traffic to a monitoring port. Connect a laptop with Wireshark to the monitoring port and capture from there.
+
+---
+
+## Essential Wireshark Filters for MTR
+
+**Filter 1 — DNS queries and responses:**
+```
+dns
+```
+Shows all DNS traffic. Look for failed queries (NXDOMAIN responses) to M365 endpoints, or no queries at all (indicating the DNS server is not reachable).
+
+**Filter 2 — Teams media UDP traffic:**
+```
+udp.port >= 3478 && udp.port <= 3481
+```
+Shows Teams STUN/TURN media relay traffic. If no packets appear when a meeting is active, UDP media is being blocked before it leaves the device or the network is dropping the traffic.
+
+**Filter 3 — Outbound traffic to Teams endpoints:**
+```
+tcp.dstport == 443 && ip.dst == 13.107.64.0/18
+```
+Shows TCP traffic to the Teams media IP range on port 443 — this appears as the TCP fallback path when UDP is blocked.
+
+**Filter 4 — DSCP value verification:**
+```
+ip.dsfield.dscp == 46
+```
+Shows packets marked with DSCP 46 (EF — audio). Verify these appear for audio traffic from the device. Change 46 to 34 for video and 18 for content sharing.
+
+**Filter 5 — TLS certificate information:**
+```
+tls.handshake.type == 11
+```
+Shows TLS Certificate messages in the TLS handshake. Expand the certificate details in the packet to inspect the issuer — if the issuer is an internal CA, SSL inspection is active.
+
+**Filter 6 — TCP RST (connection rejected):**
+```
+tcp.flags.reset == 1
+```
+Shows TCP RST packets, which indicate the destination actively rejected the connection. If RST packets appear for Teams endpoints on port 443, the firewall is actively rejecting those connections (as opposed to silently dropping them).
+
+**Filter 7 — All traffic from the MTR device:**
+```
+ip.src == [MTR-device-IP]
+```
+Show all traffic originating from the MTR device. Useful as a starting point to see what the device is actually sending.
+
+---
+
+## Reading a Capture for Common Issues
+
+**DNS failure pattern:**
+- Look for DNS query packets (Wireshark shows query name in info column)
+- If queries for `login.microsoftonline.com` appear but no response follows, the DNS server is not responding
+- If response appears with "No such name" (NXDOMAIN), the DNS resolver is returning NXDOMAIN — check for split-horizon misconfiguration
+
+**Blocked UDP media pattern:**
+- Filter for UDP 3478–3481 — no packets means the OS or firewall is blocking before transmission
+- If UDP packets appear but no response packets, the firewall is dropping outbound UDP or blocking return traffic
+- If UDP is absent but TCP 443 to Teams IPs is present, confirm this is fallback path (Teams is working over TCP)
+
+**SSL inspection pattern:**
+- Filter for TLS Certificate messages during sign-in attempt
+- Expand the certificate tree — issuer should be Microsoft or a public CA
+- Internal CA issuer confirms SSL inspection is active
+
+**DSCP verification:**
+- Filter for DSCP 46 during an active meeting (while audio is flowing)
+- If DSCP 46 packets are absent, the Windows QoS policy is not marking audio correctly
+- If DSCP 46 is present on the device output but the network team reports they are receiving DSCP 0, the switch is stripping markings (DSCP trust not configured)
+
+<DownloadButton
+  file="p2-t1-m3-l4-wireshark-filter-cheatsheet.pdf"
+  label="Wireshark Filter Cheat Sheet for MTR"
+  sizeKb={30}
+  description="Wireshark filter reference for MTR network analysis — DNS, UDP media, DSCP verification, TLS certificate inspection, TCP RST, and Teams IP range filters. Includes capture setup instructions for Wireshark and netsh trace."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m3-l4-kc">
+  <Question>
+    During a packet capture of an MTR device during sign-in, the filter
+    `tls.handshake.type == 11` shows TLS certificate messages. The certificate
+    issuer field shows "CORP-PKI-CA-01" instead of a Microsoft or public CA.
+    What does this confirm?
+  </Question>
+  <Answer>The resource account certificate has been issued correctly by the domain PKI</Answer>
+  <Answer>The MTR device is using certificate-based authentication, which is not supported</Answer>
+  <Answer correct>SSL inspection is active on this network path — a proxy is intercepting the TLS connection and substituting a certificate from the organization's internal CA. This will break Teams authentication and should be resolved by configuring SSL inspection bypass for M365 endpoints</Answer>
+  <Answer>The firewall is using TLS inspection to verify the Teams app signature</Answer>
+  <Explanation>
+    When TLS Certificate messages show an internal CA as the issuer (rather
+    than Microsoft or a public certificate authority), it confirms that an
+    SSL inspection proxy is terminating the TLS connection and presenting
+    its own certificate signed by the internal PKI. This breaks Teams
+    authentication because Teams expects Microsoft certificates in the
+    chain. The resolution is to configure the SSL inspection appliance to
+    bypass M365 endpoints — the certificate capture provides definitive
+    evidence to present to the network/security team as justification
+    for the bypass configuration.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Capture methods:** Wireshark (best analysis), netsh trace (no install), switch SPAN (non-invasive).
+- **Key filters:** `dns` (resolution); `udp.port >= 3478 && udp.port <= 3481` (media); `ip.dsfield.dscp == 46` (QoS); `tls.handshake.type == 11` (SSL inspection); `tcp.flags.reset == 1` (blocked connections).
+- **Read the evidence:** No UDP packets = UDP blocked; internal CA in certificate = SSL inspection; NXDOMAIN = DNS failure.
+
+---
+
+## What's Next
+
+The final lesson in this module and track assembles the network validation framework into a complete sign-off procedure.
+
+[Network Validation Checklist and Sign-Off →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/network-problem-diagnosis/lessons/network-validation-signoff/)

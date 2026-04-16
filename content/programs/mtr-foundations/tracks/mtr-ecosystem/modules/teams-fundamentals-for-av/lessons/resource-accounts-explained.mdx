@@ -1,0 +1,342 @@
+---
+id: "p1-t1-m2-l4"
+slug: "resource-accounts-explained"
+title: "Resource Accounts Explained — Mailbox Configuration and Policy Assignment"
+shortTitle: "Resource Accounts Explained"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 2
+moduleSlug: "teams-fundamentals-for-av"
+moduleTitle: "Microsoft Teams Fundamentals for AV Professionals"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Explain the dual identity of a resource account — an Entra ID user object and an Exchange Online room mailbox — and why both must be correctly configured"
+  - "Identify the five most common resource account misconfigurations and describe how each prevents MTR device functionality"
+  - "Use PowerShell commands to verify that a resource account is correctly configured prior to device sign-in"
+
+prerequisites:
+  - "p1-t1-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+  - "exchange-online"
+  - "entra-id"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+
+topicTags:
+  - "resource-accounts"
+  - "exchange-online"
+  - "powershell"
+  - "meeting-policies"
+
+vendorTags:
+  - "microsoft"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m2-l4-resource-account-checklist.pdf"
+    label: "Resource Account Pre-Deployment Checklist"
+    sizeKb: 80
+
+relatedLessons:
+  - "p1-t1-m2-l3"
+
+metaDescription: "Understand the Exchange Online room mailbox configuration behind MTR resource accounts — AutomateProcessing, calendar permissions, password policy, MFA exclusion, and PowerShell verification commands."
+
+keywords:
+  - "MTR resource account configuration"
+  - "Exchange Online room mailbox AutoAccept"
+  - "Teams Rooms resource account PowerShell"
+  - "AutomateProcessing AutoAccept MTR"
+  - "resource account misconfiguration Teams Rooms"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A resource account is the identity that an MTR device signs into, and it is more complex than it appears. Under the hood, a resource account is two things simultaneously: an Entra ID (formerly Azure AD) user object that holds the Teams license and authentication identity, and an Exchange Online room mailbox that handles meeting invites. Both halves must be correctly configured before the device will function. When one half is misconfigured, the device may sign in successfully but still not show meetings, fail to join calls, or appear offline in the Teams Admin Center — leaving integrators chasing hardware problems that are actually account problems.
+
+This lesson covers what a resource account actually is at the platform level, the five most common misconfigurations encountered in real deployments, and how to verify account health using PowerShell before you ever touch the device. The PowerShell commands here are the same ones used by Microsoft support engineers when diagnosing MTR deployment issues — knowing them puts you in a position to diagnose problems and communicate precisely with IT.
+
+---
+
+## What a Resource Account Actually Is
+
+When IT creates a resource account for an MTR room, two objects are created in the Microsoft 365 environment. The first is an Entra ID user account — the same type of object as any employee account — with an assigned Teams Rooms license. This is the identity the MTR device uses to authenticate with Microsoft's cloud services, the account that appears in Teams Admin Center under Devices, and the identity that Teams uses to identify which room is in a meeting.
+
+The second object is an Exchange Online room mailbox. This is what enables calendar-based meeting join. When a meeting organizer invites the room, Exchange Online receives the invite at the room mailbox and — if AutomateProcessing is correctly configured — automatically accepts it. The accepted invite then appears in the mailbox calendar, which the MTR device reads to display upcoming meetings on the touch console.
+
+Both objects share the same UPN (user principal name — the account's email address) and are linked at creation. But they can be misconfigured independently. An integrator who sees that the Entra ID account is licensed correctly but meetings are not appearing on the console should immediately look at the Exchange Online room mailbox configuration — the two layers have separate settings and separate failure modes.
+
+{/* MEDIA: Two-layer diagram showing resource account architecture. Top layer: Entra ID user object with Teams Rooms license, connects to MTR device (authentication) and Teams Admin Center (device management). Bottom layer: Exchange Online room mailbox, receives meeting invites from organizers, calendar accepted invites feed back up to MTR device display. Both layers connected by shared UPN. Filename: p1-t1-m2-l4-resource-account-architecture.png */}
+
+---
+
+## The Five Common Misconfigurations
+
+These five issues account for the overwhelming majority of resource account problems encountered during MTR commissioning. Each one is specific, verifiable, and correctable — but only if you know what to look for.
+
+**1. AutomateProcessing not set to AutoAccept**
+
+This is the single most common cause of rooms not showing calendar meetings. Exchange Online room mailboxes default to AutomateProcessing set to AutoUpdate (or sometimes AutoNone, depending on how the tenant was provisioned). AutoUpdate processes invites but does not automatically accept them. The mailbox must be set to AutoAccept for incoming meeting invites to be automatically accepted and added to the calendar.
+
+The PowerShell command to check this:
+
+```powershell
+Get-CalendarProcessing -Identity "room@contoso.com" | Select AutomateProcessing
+```
+
+The correct value is `AutoAccept`. If it shows `AutoUpdate` or `AutoNone`, the IT administrator needs to run:
+
+```powershell
+Set-CalendarProcessing -Identity "room@contoso.com" -AutomateProcessing AutoAccept
+```
+
+After setting AutoAccept, future meeting invites will be automatically accepted. Meetings already sent to the room mailbox before this change may need to be resent to appear on the console.
+
+**2. License not assigned or wrong license type**
+
+An MTR device will sign in with the resource account credentials but will not function as a Teams Room device without the correct license. The Teams Rooms Basic or Teams Rooms Pro license must be assigned to the Entra ID user object. Without it, the device may appear to sign in but will not display in the TAC Devices section correctly and will not have access to Teams Rooms-specific features.
+
+To verify license assignment in PowerShell:
+
+```powershell
+Get-MsolUser -UserPrincipalName "room@contoso.com" | Select Licenses
+```
+
+This requires the MSOnline module. Alternatively, the license can be verified in the Microsoft 365 admin center or the TAC Users section. Confirm that one of the assigned licenses is a Teams Rooms SKU — not a standard Teams user license or a Teams Essentials license, neither of which activates the Teams Rooms application correctly.
+
+**3. Account disabled or blocked from sign-in**
+
+Resource accounts can be created with sign-in blocked by default, particularly in organizations with strict provisioning policies. A blocked account will appear to exist in Entra ID but the MTR device will receive an authentication error when attempting to sign in. This is often misdiagnosed as a password issue.
+
+To check sign-in status:
+
+```powershell
+Get-MsolUser -UserPrincipalName "room@contoso.com" | Select BlockCredential
+```
+
+A value of `True` means the account is blocked from signing in. The IT administrator needs to unblock it:
+
+```powershell
+Set-MsolUser -UserPrincipalName "room@contoso.com" -BlockCredential $false
+```
+
+**4. Password expiry**
+
+Resource accounts often get missed during routine password expiry enforcement because they are not associated with a named employee. A resource account whose password has expired will cause the MTR device to be kicked out of its signed-in session and display a sign-in prompt on the touch console — often mistaken for a device fault.
+
+Resource account passwords should be set to never expire. To verify and set this:
+
+```powershell
+Get-MsolUser -UserPrincipalName "room@contoso.com" | Select PasswordNeverExpires
+Set-MsolUser -UserPrincipalName "room@contoso.com" -PasswordNeverExpires $true
+```
+
+Confirm with the IT administrator that password expiry policy for the resource account is set to never expire at the tenant level or that the account is excluded from password expiry enforcement.
+
+**5. Multi-Factor Authentication not excluded**
+
+MFA conditional access policies — if applied tenant-wide — will require the resource account to complete an MFA challenge during sign-in. An MTR device cannot complete an MFA challenge because there is no human present to approve it. MFA applied to a resource account will prevent the device from signing in or will result in token refresh failures that knock the device offline every time the authentication token expires.
+
+Resource accounts must be excluded from MFA conditional access policies. This is an IT administrator task — it requires editing the Conditional Access policy in Entra ID to add the resource account or a security group containing room accounts to the exclusion list. To check whether the account is covered by MFA policies requires examining the Conditional Access policies in Entra ID admin center — this is not accessible via a single PowerShell command but the IT administrator can use the "What If" tool in Conditional Access to simulate which policies would apply to the resource account.
+
+<Callout type="warning">
+  MFA exclusion for resource accounts is a deliberate security trade-off that the IT
+  administrator must authorize and document. Some organizations use dedicated Conditional
+  Access policies for room accounts with location-based restrictions (corporate network
+  only) as a compensating control. Never advise an IT administrator to simply "turn off MFA"
+  — the correct action is a targeted exclusion for room accounts, not a tenant-wide change.
+</Callout>
+
+---
+
+## Verifying the Full Account Configuration
+
+Before signing a device in for the first time, a complete verification of the resource account covers all five potential issues. The following PowerShell sequence (requiring the MSOnline and ExchangeOnlineManagement modules) checks the critical properties:
+
+```powershell
+# Connect to Exchange Online
+Connect-ExchangeOnline -UserPrincipalName "admin@contoso.com"
+
+# Check calendar processing (AutomateProcessing must be AutoAccept)
+Get-CalendarProcessing -Identity "room@contoso.com" | Select AutomateProcessing, AllowConflicts, DeleteComments, DeleteSubject
+
+# Connect to MSOnline
+Connect-MsolService
+
+# Check account status and license
+Get-MsolUser -UserPrincipalName "room@contoso.com" | Select DisplayName, BlockCredential, PasswordNeverExpires, Licenses, IsLicensed
+
+# Check Teams-specific settings (requires Teams PowerShell module)
+Get-CsOnlineUser -Identity "room@contoso.com" | Select DisplayName, TeamsUpgradeEffectiveMode, EnterpriseVoiceEnabled, AssignedPlan
+```
+
+The `Get-CsOnlineUser` command also shows the meeting policy assigned to the account (`TeamsMeetingPolicy` property). Cross-reference this with the policy verification covered in the previous lesson.
+
+A resource account ready for device sign-in should show: `AutomateProcessing = AutoAccept`, `BlockCredential = False`, `PasswordNeverExpires = True`, `IsLicensed = True` with a Teams Rooms SKU in the Licenses list, and the `TeamsUpgradeEffectiveMode` set to `TeamsOnly`.
+
+<Callout type="info">
+  The MSOnline module (Get-MsolUser, Set-MsolUser) is deprecated by Microsoft but remains
+  widely used and functional as of this writing. The replacement is the Microsoft Graph
+  PowerShell SDK. Your organization may already use Graph SDK commands — the properties
+  verified are the same; only the command syntax differs. If the IT team uses Graph SDK,
+  ask for their equivalent verification commands rather than assuming MSOnline is available.
+</Callout>
+
+---
+
+## Calendar Permissions and Meeting Invite Behavior
+
+Two Exchange Online settings beyond AutomateProcessing can affect how meeting invites are processed by the room mailbox.
+
+**DeleteComments and DeleteSubject:** By default, room mailboxes are configured to strip the meeting body text (`DeleteComments = True`) and replace the meeting subject with the organizer's name (`DeleteSubject = False`, `AddOrganizerToSubject = True`). These are calendar privacy settings. For most rooms this is fine. Some clients, however, want the full meeting details preserved on the console — for example, rooms in shared spaces where the agenda details are helpful for ad hoc attendees. These can be adjusted:
+
+```powershell
+Set-CalendarProcessing -Identity "room@contoso.com" -DeleteComments $false -DeleteSubject $false -AddOrganizerToSubject $false
+```
+
+**AllowConflicts:** Room mailboxes default to not accepting overlapping meetings (`AllowConflicts = False`). This means if two organizers both send a meeting invite for the same time slot, only the first accepted invite will be added to the calendar. The second will be declined. This is correct behavior for a physical room. Do not change this setting unless the client has a specific reason — shared virtual rooms used for overflow scheduling are a rare legitimate exception.
+
+---
+
+## Hands-On Exercise
+
+The Resource Account Pre-Deployment Checklist guides you through verifying a resource account using the PowerShell commands in this lesson. Using either a demo tenant or a provided simulated output set, you will identify which of the five common misconfigurations are present in the account configuration, document the current and required values, and write the corrective commands needed to bring the account to a ready state.
+
+<DownloadButton
+  file="p1-t1-m2-l4-resource-account-checklist.pdf"
+  label="Resource Account Pre-Deployment Checklist"
+  sizeKb={80}
+  description="Pre-deployment verification checklist for resource account configuration. Covers AutomateProcessing, license assignment, sign-in status, password expiry, and MFA exclusion."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m2-l4-kc">
+  <Question>
+    A newly installed MTR Windows device signs in with the resource account credentials
+    successfully, but no meeting appears on the touch console even though a Teams meeting
+    with the room invited was scheduled 30 minutes ago. The most likely cause is:
+  </Question>
+  <Answer>The Teams Rooms license was not assigned to the resource account</Answer>
+  <Answer>The resource account password has expired</Answer>
+  <Answer correct>The Exchange Online room mailbox AutomateProcessing is not set to AutoAccept, so meeting invites are not being automatically accepted</Answer>
+  <Answer>The MTR device has not connected to the Teams Admin Center yet</Answer>
+  <Explanation>
+    Successful sign-in confirms the Entra ID account is valid and the license is present.
+    The missing meetings symptom points to the Exchange Online layer — specifically
+    AutomateProcessing. When set to AutoUpdate or AutoNone instead of AutoAccept,
+    meeting invites are not automatically accepted and therefore do not appear on the
+    room's calendar. Run Get-CalendarProcessing to verify and Set-CalendarProcessing
+    to correct it.
+  </Explanation>
+
+  <Question>
+    Which PowerShell command verifies that a resource account's Exchange Online room
+    mailbox is set to automatically accept meeting invites?
+  </Question>
+  <Answer>Get-MsolUser -UserPrincipalName "room@contoso.com" | Select AutomateProcessing</Answer>
+  <Answer correct>Get-CalendarProcessing -Identity "room@contoso.com" | Select AutomateProcessing</Answer>
+  <Answer>Get-CsOnlineUser -Identity "room@contoso.com" | Select CalendarProcessing</Answer>
+  <Answer>Get-MailboxCalendarConfiguration -Identity "room@contoso.com"</Answer>
+  <Explanation>
+    Get-CalendarProcessing is the Exchange Online PowerShell command for checking room
+    mailbox calendar processing settings. AutomateProcessing is a property of the
+    calendar processing configuration, not of the Entra ID user object (Get-MsolUser)
+    or the Teams user object (Get-CsOnlineUser).
+  </Explanation>
+
+  <Question>
+    An MTR device was working correctly for six months and then suddenly displayed a
+    sign-in prompt on the touch console. No hardware changes were made. What should
+    be checked first?
+  </Question>
+  <Answer>The Teams Rooms app version — an update may have reset the sign-in</Answer>
+  <Answer>The network connection — the device may have lost connectivity</Answer>
+  <Answer correct>The resource account password — it may have expired if the account was not configured with PasswordNeverExpires</Answer>
+  <Answer>The Teams Rooms Pro license — it may need renewal</Answer>
+  <Explanation>
+    A device that was working and then shows a sign-in prompt after several months is
+    a classic password expiry symptom. If the resource account password was not set to
+    never expire, it will expire on the tenant's standard password policy schedule.
+    Check PasswordNeverExpires with Get-MsolUser and set it to True. Verify the current
+    password and re-enter it on the device if the password has already expired and been
+    reset.
+  </Explanation>
+
+  <Question>
+    A client's IT team applies a new tenant-wide MFA Conditional Access policy. The
+    following morning, all MTR devices in the building show sign-in errors. What is
+    the correct resolution?
+  </Question>
+  <Answer>Disable MFA for the entire tenant to restore device sign-in</Answer>
+  <Answer>Enroll each MTR device in an MFA-compatible authentication method</Answer>
+  <Answer correct>Exclude the room resource accounts (or a security group containing them) from the MFA Conditional Access policy</Answer>
+  <Answer>Downgrade the MTR app to a version that does not require MFA compliance</Answer>
+  <Explanation>
+    MTR devices cannot complete interactive MFA challenges. The correct solution is a
+    targeted Conditional Access policy exclusion for resource accounts — not disabling
+    MFA tenant-wide (which would be a security regression affecting all users). The IT
+    administrator should create a named exclusion for room accounts in the Conditional
+    Access policy, ideally using a dedicated security group for easy ongoing management.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Explain the dual nature of a resource account:** An Entra ID user object (identity, licensing) combined with an Exchange Online room mailbox (calendar processing). Both must be correctly configured.
+- **Identify the five common misconfigurations:** AutomateProcessing not set to AutoAccept, missing or wrong license, sign-in blocked, password expires, MFA not excluded. Each has a specific symptom and a specific fix.
+- **Use PowerShell to verify before you commission:** `Get-CalendarProcessing`, `Get-MsolUser`, and `Get-CsOnlineUser` together cover all critical verification points. Run these before signing in the device.
+- **Know what to escalate to IT:** MFA exclusions and Conditional Access changes require IT administrator authority. Your role is to identify the issue, document it precisely, and communicate it — not to make tenant-level policy changes.
+
+---
+
+## Module Complete
+
+You have completed Module 1.2: Microsoft Teams Fundamentals for AV Professionals. You now have the Teams-side platform knowledge to complement the hardware foundation from Module 1.1 — meeting types, join methods, the Teams Admin Center, and resource account configuration.
+
+Track 1 is complete. Track 2 moves into the physical work: site surveys, infrastructure design, cable pathways, mounting, and the hands-on skills required to build a professional MTR room installation from the ground up.
+
+[Continue to Track 2: Physical Installation →](/programs/mtr-foundations/tracks/physical-installation/)

@@ -1,0 +1,413 @@
+---
+id: "p3-t1-m2-l5"
+slug: "custom-reporting-data-export"
+title: "Custom Reporting and Data Export"
+shortTitle: "Custom Reporting"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 2
+moduleSlug: "pro-management-enterprise"
+moduleTitle: "Pro Management at Enterprise Scale"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 28
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Configure scheduled Pro Management CSV and PDF exports and combine them with Intune and TAC data exports to produce a unified MTR fleet health report in Excel or Power BI"
+  - "Build a Power BI dashboard for MTR fleet health using Pro Management, Intune, and TAC as data sources, including key visuals for fleet readiness, incident volume, and utilization by building"
+  - "Automate monthly client or management report delivery using Power Automate connected to Pro Management scheduled exports, and explain the current data export limitations and Graph API workarounds"
+
+prerequisites:
+  - "p3-t1-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "pro-management"
+  - "reporting"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m2-l4"
+  - "p3-t3-m1-l1"
+
+metaDescription: "Build custom MTR fleet reports: Pro Management CSV/PDF exports, Power BI dashboards combining Pro Management, Intune, and TAC data, Power Automate scheduling, and Graph API workarounds."
+
+keywords:
+  - "Teams Rooms Pro Management reporting export"
+  - "MTR fleet Power BI dashboard"
+  - "Pro Management CSV export Power BI"
+  - "Teams Rooms monthly report automation"
+  - "MTR reporting Power Automate"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Pro Management provides built-in analytics views within the portal, but most enterprise organizations need reporting that goes beyond what the portal renders natively — monthly PDF reports for management, Power BI dashboards shared with stakeholders who do not have Pro Management access, or combined fleet health reports that draw from Pro Management, Intune, and the Teams Admin Center simultaneously. This lesson covers the full reporting workflow: exporting data from each source, combining it into a unified view, building a Power BI dashboard for ongoing fleet health monitoring, and automating monthly report delivery using Power Automate. The lesson also addresses the significant gap in Pro Management's current export capabilities — what data is not available via export and how Graph API fills part of that gap.
+
+---
+
+## Pro Management Export Capabilities
+
+Pro Management supports two export formats from the Analytics section of the portal:
+
+**CSV export:**
+- Available for: Room health summary, incident history, utilization by room, meeting quality by room
+- Navigate: Pro Management → Analytics → select view → Export → CSV
+- Output: One row per room (for health/utilization views) or one row per incident (for incident history)
+- Date range: Configurable; up to 180 days per export
+- Refresh: Manual trigger only (no scheduled export from within the portal UI)
+
+**PDF export:**
+- Available for: Summary analytics views (fleet health overview, utilization summary, building-level summary)
+- Navigate: Pro Management → Analytics → select view → Export → PDF
+- Output: Point-in-time snapshot of the current view — what is rendered in the portal is what is exported
+- Use case: Board-ready summary documents, quick status snapshots for management review
+
+**Scheduled exports via the portal:**
+Pro Management does not currently support fully automated scheduled exports from within the portal UI itself. Scheduling is achieved by combining Power Automate (to trigger the export action) with the Pro Management portal's export function, or by using the Teams Rooms Graph API (covered later in this lesson) for programmatic data extraction on a schedule.
+
+<Callout type="warning">
+PDF exports from Pro Management capture the current date range shown in the portal view. If a stakeholder requests a PDF for "last month" and the portal is showing "last 30 days," verify that the date range in the portal matches the desired reporting period before exporting. Date range mismatches are a common source of reporting errors.
+</Callout>
+
+**Key CSV export fields by report type:**
+
+| Report | Key Fields in Export |
+|--------|---------------------|
+| Room health summary | Room name, building, health status, last online, incident count (30-day), meeting quality rate |
+| Incident history | Incident ID, room name, building, alert type, severity, created timestamp, resolved timestamp, resolution type (auto/manual) |
+| Utilization by room | Room name, building, utilization rate, meeting count, average duration, peak hour |
+| Meeting quality by room | Room name, building, quality rate (%), good meetings count, poor meetings count, top quality issue |
+
+---
+
+## Combining Pro Management, Intune, and TAC Data in Excel
+
+A unified MTR fleet health report requires data from three sources that do not natively integrate at the export level:
+
+| Source | Export Method | Key Identifier for Join |
+|--------|--------------|------------------------|
+| Pro Management | CSV via portal Analytics | Room display name / resource account UPN |
+| Intune | CSV via Devices → Windows → Export | Device name (maps to room name if naming convention is consistent) |
+| Teams Admin Center (TAC) | CSV via Devices → Teams Rooms on Windows/Android → Export | Device name |
+
+**Excel consolidation workflow:**
+
+**Step 1: Standardize the join key**
+The join key across all three exports is the device/room name. Before joining, verify name consistency:
+- Pro Management uses the resource account display name (e.g., "London CW - Conf Room 4B")
+- Intune uses the Windows computer name (e.g., "MTR-LDNCW-4B" if your naming convention is different)
+- TAC uses the Teams display name (same as resource account display name)
+
+If Pro Management and TAC share the resource account display name but Intune uses a different computer name, maintain a mapping table (resource account UPN → computer name) to enable the join. This mapping can be maintained in a simple Excel lookup table or generated via PowerShell using Graph API.
+
+**Step 2: Import all three CSV exports into Excel**
+Use Power Query (Data → Get Data → From File → From CSV) to import each export as a separate query. Power Query preserves the import pipeline so that refreshing with new exports requires only file replacement, not re-importing.
+
+**Step 3: Create the unified join**
+In Power Query, merge the three queries on the standardized join key. Use a left outer join from the Pro Management export (as the authoritative room list) to Intune and TAC data.
+
+**Step 4: Add calculated columns**
+
+```
+Fleet readiness:    =IF(AND([Health Status]="Healthy",
+                           [Compliance Status]="Compliant",
+                           [Teams Health]="Healthy"),
+                       "Ready", "Needs Attention")
+
+Days since update:  =TODAY() - [Last Patch Date]
+
+At-risk flag:       =IF(OR([Days since update]>45,
+                          [Compliance Status]="Not compliant",
+                          [Meeting Quality Rate]<0.70),
+                       "At Risk", "OK")
+```
+
+**Target unified report columns:**
+
+| Column | Source |
+|--------|--------|
+| Room name | Pro Management |
+| Building | Pro Management |
+| Health status | Pro Management |
+| Incident count (30-day) | Pro Management |
+| Meeting quality rate | Pro Management |
+| Utilization rate | Pro Management |
+| OS version | Intune |
+| Compliance status | Intune |
+| Last Intune check-in | Intune |
+| Teams app version | TAC |
+| TAC health status | TAC |
+| Last TAC sign-in | TAC |
+| Fleet readiness (calculated) | Calculated |
+| At-risk flag (calculated) | Calculated |
+
+---
+
+## Building a Power BI Dashboard for MTR Fleet Health
+
+Power BI provides the visualization layer that transforms the combined data into an interactive dashboard accessible to stakeholders who do not have Pro Management, Intune, or TAC access. The MTR fleet health dashboard should serve two audiences: IT operations (daily monitoring) and management/stakeholders (monthly review).
+
+**Data source setup in Power BI Desktop:**
+
+**Option A — From Excel (simplest, refresh manually):**
+Connect Power BI to the consolidated Excel file built in the previous section. When new exports are available, replace the source CSVs and refresh the Power BI dataset.
+
+**Option B — SharePoint-hosted CSVs (scheduled refresh):**
+Store the CSV exports in a SharePoint folder. Use Power Automate to schedule monthly export downloads and upload to SharePoint. Power BI connects to SharePoint as the data source and can be configured to refresh on a schedule (Power BI Service → Dataset → Scheduled Refresh).
+
+**Key visuals for the MTR fleet health dashboard:**
+
+**Page 1: Fleet Readiness Overview**
+
+| Visual | Type | Data |
+|--------|------|------|
+| Fleet readiness % | Card | Count of "Ready" rooms / total rooms |
+| Rooms needing attention | Card | Count of "Needs Attention" |
+| Readiness trend (90 days) | Line chart | Weekly fleet readiness % over time |
+| At-risk rooms table | Table | Room, Building, Risk reason, Days since last seen |
+| Compliance rate | Donut chart | Compliant vs. Non-compliant vs. Not evaluated |
+
+**Page 2: Incident Volume by Site**
+
+| Visual | Type | Data |
+|--------|------|------|
+| Incidents by building | Bar chart (horizontal) | Building name vs. incident count |
+| Incident severity breakdown | Stacked bar | Building vs. Critical/Important/Warning split |
+| Top 10 incident-generating rooms | Table | Room, Building, Incident count, Top alert type |
+| MTTR trend | Line chart | Weekly average MTTR (hours) over 90 days |
+| Incidents by day of week | Column chart | Day vs. incident count |
+
+**Page 3: Utilization by Building**
+
+| Visual | Type | Data |
+|--------|------|------|
+| Utilization heatmap | Matrix | Building (rows) vs. Week (columns), utilization rate as color |
+| Building utilization ranking | Bar chart | Building vs. average utilization (sorted descending) |
+| Utilization vs. capacity scatter | Scatter plot | X = utilization rate, Y = meeting quality rate; bubble = room count |
+| Peak hour analysis | Column chart | Hour of day vs. % of rooms in use |
+| Room type utilization breakdown | Grouped bar | Room type vs. average utilization (focus, medium, large, boardroom) |
+
+**Page 4: Quality Deep-Dive**
+
+| Visual | Type | Data |
+|--------|------|------|
+| Fleet quality rate trend | Line chart | Weekly average quality rate over 90 days |
+| Quality by building | Bar chart | Building vs. quality rate |
+| Poor quality rooms list | Table | Room, Building, Quality rate, Utilization, Top issue |
+| Quality issue breakdown | Donut | Audio / Video / Network / Other distribution |
+
+**Power BI DAX measures for fleet health:**
+
+```dax
+Fleet Readiness % =
+DIVIDE(
+    COUNTROWS(FILTER('RoomHealth', 'RoomHealth'[FleetReadiness] = "Ready")),
+    COUNTROWS('RoomHealth'),
+    0
+)
+
+MTTR Hours =
+AVERAGEX(
+    'Incidents',
+    DATEDIFF('Incidents'[CreatedTimestamp], 'Incidents'[ResolvedTimestamp], HOUR)
+)
+
+Rooms At Risk =
+COUNTROWS(FILTER('RoomHealth', 'RoomHealth'[AtRiskFlag] = "At Risk"))
+
+Building Peak Utilization =
+MAXX(
+    FILTER('Utilization', 'Utilization'[Building] = SELECTEDVALUE('Buildings'[Building])),
+    'Utilization'[PeakUtilization]
+)
+```
+
+---
+
+## Automating Monthly Reports with Power Automate
+
+A monthly report workflow that requires manual CSV downloads, Excel joins, and Power BI refreshes will eventually break down under operational pressure. Power Automate can automate the mechanical steps, ensuring reports are delivered consistently even when the IT team is busy with incidents.
+
+**Recommended monthly report automation flow:**
+
+```
+Trigger: Scheduled recurrence — 1st of each month at 06:00
+
+Step 1: Notify Pro Management export is due
+  → Send Teams message to AV team channel: "Monthly export reminder —
+    please export Pro Management CSV for last month and upload to
+    SharePoint/MTR-Reports/[Year-Month]/"
+
+Step 2: Wait for upload (or use HTTP action to Pro Management if API available)
+  → Condition: Check SharePoint folder for new files (poll every 2 hours)
+
+Step 3: Trigger Power BI dataset refresh
+  → Power BI connector → Refresh dataset → "MTR Fleet Health"
+
+Step 4: Wait for refresh completion
+  → Power BI connector → Get refresh history → check status = "Completed"
+
+Step 5: Export Power BI report as PDF
+  → Power BI connector → Export report to file (PDF format)
+  → Store PDF in SharePoint/MTR-Reports/[Year-Month]/
+
+Step 6: Distribute report
+  → Send email with PDF attachment to: [management distribution list]
+  → Post summary card in Teams channel with link to interactive dashboard
+```
+
+<Callout type="tip">
+The Power BI "Export report to file" connector action generates a static PDF snapshot of the Power BI report at the time of export. This is suitable for management email distribution. For stakeholders who want to interact with filters and drill-downs, share the Power BI Service link to the live dashboard instead of the PDF.
+</Callout>
+
+**For MSP organizations delivering monthly client reports:**
+
+Use a separate Power Automate flow per client tenant, parameterized by tenant name and distribution list. Store client-specific report templates in a SharePoint folder per client. The flow structure is identical; only the data source (client-specific SharePoint folder) and distribution list change per client.
+
+<DownloadButton file="mtr-monthly-report-template.xlsx" label="Download MTR Monthly Report Template" sizeKb={48} description="Excel template with Power Query connections pre-configured for Pro Management, Intune, and TAC CSV imports and unified fleet health joins" />
+
+---
+
+## Data Export Limitations and Graph API Workarounds
+
+Pro Management's export capabilities have meaningful gaps that affect organizations needing programmatic, real-time, or high-frequency data access:
+
+**What is NOT available via Pro Management export:**
+
+| Data Type | Limitation |
+|-----------|-----------|
+| Real-time room status | Export is point-in-time; no streaming or live API for current health status |
+| Granular meeting quality data | Export provides room-level averages; individual meeting call quality records are not in the CSV |
+| Historical data beyond 180 days | Pro Management analytics view and export max out at 180 days; no archive export |
+| Peripheral health history | Current peripheral status is visible in the portal; historical peripheral incident trends are not in the utilization export |
+| Custom alert rule audit log | Alert rule change history is not exportable |
+
+**Graph API workarounds for common gaps:**
+
+The Microsoft Graph API provides access to Teams Rooms device data through the `/beta/teamwork/devices` endpoint. While this is not Pro Management data specifically, it provides complementary device health and peripheral status data that Pro Management exports do not include.
+
+```
+GET https://graph.microsoft.com/beta/teamwork/devices
+    ?$filter=deviceType eq 'teamsRoom'
+    &$select=id,displayName,hardwareDetail,health,notes,companyAssetTag
+
+Response includes:
+- currentHealth: healthStatus, connectedPeripherals (with health per peripheral)
+- softwareVersions: teamsClientVersion, firmwareVersion, operatingSystemSoftware
+- hardwareDetail: serialNumber, manufacturer, model
+```
+
+For granular per-meeting call quality data, the Graph Communications API (`/beta/communications/callRecords`) provides individual call quality records including audio/video metrics per participant. This data can be filtered by the room's resource account UPN as the organizer or participant.
+
+<Callout type="warning">
+The `/beta/teamwork/devices` and `/beta/communications/callRecords` Graph API endpoints are in beta — Microsoft may change their schema without the standard deprecation notice that applies to v1.0 endpoints. If you build production reporting pipelines on these endpoints, implement schema validation and version tracking in your pipeline, and subscribe to Microsoft Graph changelog notifications. Full PowerShell and Graph API automation coverage is provided in Track 3 of this program.
+</Callout>
+
+**Practical hybrid reporting approach:**
+
+For most enterprise organizations, the right architecture combines both approaches:
+
+```
+Monthly management report:
+  Pro Management CSV export (180-day window)
+  + Intune CSV export
+  + TAC CSV export
+  → Combined in Power BI (scheduled monthly)
+  → Distributed via Power Automate
+
+Weekly operational report (where real-time gap matters):
+  Graph API /beta/teamwork/devices query
+  → PowerShell script (scheduled via Task Scheduler or Azure Automation)
+  → Excel or HTML email output
+  → Distributed to on-call team weekly
+
+Individual call quality investigation:
+  Graph /beta/communications/callRecords
+  → Query by room UPN for specific date range
+  → Used reactively, not for scheduled reporting
+```
+
+---
+
+<KnowledgeCheck id="p3-t1-m2-l5-kc">
+  <Question>
+    Your management team requests a Power BI dashboard showing real-time
+    Teams Rooms fleet health — specifically, they want the dashboard to
+    always show the current status of every room, updating throughout the
+    workday without requiring manual CSV exports. After reviewing Pro
+    Management's export capabilities, which of the following is the most
+    accurate assessment of how to achieve this requirement?
+  </Question>
+  <Answer>Configure Pro Management to push CSV exports to SharePoint every 15 minutes using the built-in scheduled export feature, then connect Power BI to the SharePoint folder with a 15-minute refresh interval</Answer>
+  <Answer>Pro Management's CSV export supports real-time streaming to Power BI via DirectQuery mode — connect Power BI Desktop directly to the Pro Management export endpoint as a live data source</Answer>
+  <Answer correct>Pro Management does not support real-time or scheduled automated exports — exports are manually triggered point-in-time snapshots. To achieve near-real-time fleet health in Power BI, use the Microsoft Graph API beta endpoint (/beta/teamwork/devices) as the Power BI data source via a custom connector or scheduled Power Query refresh. This provides current device health status including peripheral connectivity. For a true real-time view, a custom Azure Function or Power Automate flow can query the Graph API on a schedule (e.g., every 30 minutes) and push results to a dataset that Power BI reads. This is covered in depth in Track 3</Answer>
+  <Answer>Use Pro Management's webhook integration to push health state changes to a Power BI streaming dataset — Pro Management natively supports Power BI as a webhook destination</Answer>
+  <Explanation>
+    Pro Management exports are manually triggered from the portal UI and
+    produce a point-in-time snapshot — there is no built-in scheduled
+    export or real-time streaming capability. Power BI DirectQuery mode
+    requires a supported data source with a live query interface; Pro
+    Management does not expose such an interface. Pro Management webhooks
+    deliver alert notifications, not continuous health state — and Pro
+    Management does not have a native Power BI webhook destination.
+    The correct approach is to use the Microsoft Graph API
+    /beta/teamwork/devices endpoint, which does provide current device
+    health data programmatically, and build a scheduled refresh pipeline
+    (Azure Function, Power Automate, or PowerShell) that feeds a Power BI
+    dataset on a frequent schedule. This architecture is covered in Track 3's
+    PowerShell and Graph API automation module.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Pro Management exports:** CSV (room health, incidents, utilization, quality) and PDF (summary views) — both are manually triggered; no built-in scheduled export.
+- **Unified fleet report:** join Pro Management + Intune + TAC CSV exports on device/room name in Excel Power Query; add calculated columns for fleet readiness and at-risk flags.
+- **Power BI dashboard:** four key pages — Fleet Readiness, Incident Volume by Site, Utilization by Building, Quality Deep-Dive; use DAX measures for key KPIs.
+- **Power Automate monthly delivery:** schedule export reminder → trigger Power BI refresh → export PDF → distribute to management; separate flows per client for MSP use.
+- **Export limitations:** no real-time API, no >180-day history, no granular per-meeting quality data in CSV; use Graph API `/beta/teamwork/devices` for current health and `/beta/communications/callRecords` for individual call quality — both in beta, schema may change.
+- **Track 3 preview:** full PowerShell and Graph API automation for MTR reporting — real-time dashboards, automated weekly reports, and fleet-wide scripted management.
+
+---
+
+## What's Next
+
+This lesson completes the Pro Management at Enterprise Scale module. The next module in this track moves into network infrastructure and QoS considerations for large MTR deployments.
+
+[Network Infrastructure and QoS for MTR →](/programs/mtr-advanced-deployment/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/network-requirements-mtr/)

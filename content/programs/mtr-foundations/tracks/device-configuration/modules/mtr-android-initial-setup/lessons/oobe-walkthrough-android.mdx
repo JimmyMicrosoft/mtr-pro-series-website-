@@ -1,0 +1,222 @@
+---
+id: "p1-t3-m2-l1"
+slug: "oobe-walkthrough-android"
+title: "OOBE Walkthrough on Android-Based MTR Devices"
+shortTitle: "Android OOBE"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 2
+moduleSlug: "mtr-android-initial-setup"
+moduleTitle: "MTR Android — Initial Setup"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Complete the OOBE process on an Android-based MTR device from first power-on through Teams application sign-in"
+  - "Identify the OEM-specific and platform-specific steps that require integrator attention during Android OOBE"
+  - "Troubleshoot common Android MTR OOBE failures related to network connectivity, firmware compatibility, and authentication"
+
+prerequisites:
+  - "p1-t3-m1-l1"
+
+technologyTags:
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "android-oem"
+  - "oobe"
+  - "firmware"
+  - "commissioning"
+
+vendorTags:
+  - "poly"
+  - "yealink"
+  - "logitech"
+  - "neat"
+
+downloads:
+  - file: "p1-t3-m2-l1-android-oobe-guide.pdf"
+    label: "Android MTR OOBE Reference Guide"
+    sizeKb: 60
+
+relatedLessons:
+  - "p1-t3-m1-l1"
+  - "p1-t3-m2-l2"
+
+metaDescription: "Complete the Android MTR OOBE from first power-on — OEM setup screens, network configuration, firmware update handling, Teams sign-in, OEM admin PIN, and post-OOBE verification."
+
+keywords:
+  - "MTR Android OOBE first boot"
+  - "Yealink MeetingBar setup"
+  - "Teams Rooms Android setup"
+  - "Android MTR firmware update"
+  - "MTR Android sign in"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Android MTR OOBE is more OEM-centric and less standardized than the Windows OOBE. Each manufacturer implements their own initial setup sequence — there is no single Android OOBE that applies across all devices. The common thread is: network connection, firmware update, Teams application sign-in. The variations are in the OEM-specific screens, settings, and admin access methods that appear before, between, and after those shared steps. Approach each Android device with the OEM's quick start guide in hand, not with an assumption that it works the same way as the last Android device you configured.
+
+---
+
+## Before First Power-On
+
+**Read the OEM quick start guide.** Unlike MTR Windows (which has a broadly consistent OOBE regardless of OEM hardware), Android MTR devices vary significantly in their initial setup sequences. Attempting OOBE without the OEM guide leads to missed steps, incorrectly skipped screens, or accidental factory resets triggered by holding the wrong button combination. Download the guide for the specific device model before installation begins.
+
+**Prepare network connectivity.** Android MTR devices require internet access during OOBE for firmware updates and Teams authentication. Where possible, provide a wired Ethernet connection — use a USB-C to Ethernet adapter (or OEM-provided adapter) if the device does not have a native Ethernet port. Bar-form-factor Android devices (Poly Studio X, Yealink MeetingBar, Logitech Rally Bar) often have only Wi-Fi built in. For Wi-Fi connections, use the 5 GHz band and ensure the device is within strong signal range.
+
+**Have the OEM admin credentials available.** Most Android MTR devices have a default OEM admin PIN or password documented in the setup guide. Have this ready before first boot — you will need it to access admin settings during OOBE.
+
+---
+
+## The Android OOBE Sequence
+
+The general sequence across most Android MTR devices:
+
+**Step 1 — Power on and OEM initialization:** The device displays the OEM boot screen (logo), runs hardware initialization, and then launches the OEM setup wizard. Some devices display a registration or warranty prompt before the setup wizard begins.
+
+**Step 2 — Language and region:** Select language, country/region, and time zone. These settings affect the Teams application display and calendar time interpretation. Set time zone to the deployment location — incorrect time zone causes meeting start times to display incorrectly on the console.
+
+**Step 3 — Network setup:** For Ethernet-capable devices, the wired connection should be detected automatically. For Wi-Fi devices, select the network SSID and enter credentials. After network connection, the device will typically attempt to check for a firmware update immediately.
+
+**Step 4 — Firmware update.** This is the most critical step in the Android OOBE. Most Android MTR devices ship with firmware that is not the current production version. The device downloads and applies the current firmware from the OEM's cloud servers. This process:
+- Takes 10–30 minutes on a fast connection
+- May require multiple consecutive reboots
+- **Must not be interrupted.** A partially applied firmware update can leave the device in an unrecoverable state requiring OEM recovery procedures. Do not remove power, disconnect the network, or attempt to skip the update. Wait until the device has fully rebooted and returned to the setup wizard before proceeding.
+
+**Step 5 — Teams application sign-in.** After firmware update, the Teams application either launches automatically or must be launched from the Android app launcher (device-dependent). The sign-in process is functionally identical to MTR Windows: enter the resource account UPN and password, authenticate via Entra ID, and the Teams home screen appears on success.
+
+**Step 6 — OEM admin setup.** During or after OOBE, the OEM admin menu is accessible via a PIN or button combination (documented in the OEM guide). Access the admin menu and change the default admin PIN to a secure, documented value. Verify network settings (confirm the IP address, check NTP server configuration).
+
+{/* MEDIA: Android OOBE flow diagram — linear flowchart showing all steps in sequence: OEM boot → language/region → network → firmware update (with warning "do not interrupt" callout) → Teams sign-in → OEM admin setup → post-OOBE verification. Filename: p1-t3-m2-l1-android-oobe-flow.png */}
+
+---
+
+## Key Difference from MTR Windows OOBE
+
+The most important distinction from the Windows path: **Android OOBE firmware updates are mandatory and cannot be deferred.** On MTR Windows, the Teams app update happens in the background and is less disruptive. On Android, the firmware update is part of the OOBE sequence itself and the device will not proceed to Teams sign-in until the update is complete. Plan installation time accordingly — on a new Android device arriving from the warehouse, budget 30–45 minutes for OOBE before the Teams sign-in step.
+
+---
+
+## Post-OOBE Verification
+
+After sign-in, run the same verification sequence as MTR Windows:
+
+- Resource account name appears correctly on the home screen
+- Calendar panel shows pre-scheduled test meetings
+- Integrated camera feed visible in device settings
+- Audio test confirms integrated microphone and speaker function
+- Device appears in TAC Devices within 20 minutes with Healthy status
+
+For Android devices with integrated hardware (camera, microphone, speaker built into the bar), peripheral health in TAC is typically reported at the device level rather than as separate peripheral categories. A healthy device status means all integrated hardware is functioning.
+
+<DownloadButton
+  file="p1-t3-m2-l1-android-oobe-guide.pdf"
+  label="Android MTR OOBE Reference Guide"
+  sizeKb={60}
+  description="Step-by-step Android MTR OOBE reference covering the general sequence, OEM-specific variations for major platforms, firmware update handling, and post-OOBE verification checklist."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m2-l1-kc">
+  <Question>
+    During the Android MTR OOBE firmware update, the device has been updating for
+    25 minutes and the status bar appears frozen at 60%. What should you do?
+  </Question>
+  <Answer>Power off the device and restart — a frozen status bar indicates the update has failed</Answer>
+  <Answer correct>Wait — firmware updates on Android MTR devices can take 30 minutes or longer and the status bar progress may appear to stall during certain update phases. Do not interrupt the process unless the device shows an explicit error message</Answer>
+  <Answer>Disconnect and reconnect the network to restart the download from the current point</Answer>
+  <Answer>Skip the firmware update and proceed to Teams sign-in — the update can be applied later</Answer>
+  <Explanation>
+    Android firmware updates can appear to stall during certain phases (particularly
+    during flash write operations or post-download verification). A status bar at 60%
+    for an extended period does not necessarily indicate failure — the update may be
+    actively processing in a phase that doesn't update the progress bar. Wait for at
+    least 45 minutes before considering intervention. If the device shows an explicit
+    error message or the screen goes completely blank without recovery, consult the OEM's
+    recovery documentation.
+  </Explanation>
+
+  <Question>
+    An Android MTR device completes OOBE and the Teams application launches, but
+    the sign-in fails with a message indicating a conditional access policy requires
+    additional verification. What is the likely cause?
+  </Question>
+  <Answer>The device needs to be registered with the OEM's cloud management portal before Teams sign-in can complete</Answer>
+  <Answer correct>The resource account has not been excluded from an MFA Conditional Access policy — the device cannot complete an interactive MFA challenge, so sign-in fails</Answer>
+  <Answer>Android MTR devices require a different resource account type than Windows MTR devices</Answer>
+  <Answer>The Teams Rooms license needs to be reapplied after Android firmware updates</Answer>
+  <Explanation>
+    Conditional Access MFA requirements apply to Android MTR devices exactly as they
+    do to Windows MTR devices. The resource account must be excluded from MFA Conditional
+    Access policies before the Android device can complete sign-in. The IT administrator
+    must add the resource account to the Conditional Access policy exclusion list. This
+    is the same resource account configuration requirement covered in Module 1.2.4.
+  </Explanation>
+
+  <Question>
+    What is the most important reason to use the OEM quick start guide rather than
+    a generic Android setup procedure when configuring an Android MTR device?
+  </Question>
+  <Answer>Generic Android procedures use different terminology that may not apply to Teams Rooms devices</Answer>
+  <Answer correct>Each Android MTR OEM implements a different OOBE sequence with OEM-specific screens, admin access methods, and setup requirements — attempting a generic approach risks missing required steps or triggering unintended device behavior</Answer>
+  <Answer>The OEM quick start guide provides the resource account credentials for the specific device</Answer>
+  <Answer>OEM guides include hidden steps not documented by Microsoft that are required for Teams Rooms functionality</Answer>
+  <Explanation>
+    Android MTR devices are not running a generic Android OS — each OEM has customized
+    the Android environment for their hardware and Teams Rooms use case. The OOBE sequence,
+    admin access methods, button combinations, and configuration options differ between
+    Poly, Yealink, Logitech, Neat, and DTEN. A generic Android approach will miss OEM-specific
+    required steps and may trigger unintended behavior (like a factory reset) if the wrong
+    button combination is pressed.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Prepare for Android OOBE:** OEM quick start guide in hand, network ready, OEM admin credentials available before first power-on.
+- **Navigate the OOBE sequence:** OEM boot → language/region → network → firmware update (wait, never interrupt) → Teams sign-in → OEM admin setup and PIN change.
+- **Handle firmware update correctly:** Budget 30–45 minutes; never interrupt; wait for explicit error before taking action on a stalled progress indicator.
+- **Run post-OOBE verification:** Same checklist structure as Windows — home screen, calendar, camera/audio, TAC status.
+
+---
+
+## What's Next
+
+With the Android OOBE process understood, the next lesson goes deep on the five major Android MTR OEMs — their hardware, target use cases, management portals, and the OEM-specific differences that affect platform selection.
+
+[OEM-Specific Variations — Poly, Yealink, Logitech, Neat, DTEN →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-android-initial-setup/lessons/oem-specific-variations/)

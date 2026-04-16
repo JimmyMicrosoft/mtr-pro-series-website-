@@ -1,0 +1,253 @@
+---
+id: "p1-t2-m1-l4"
+slug: "safety-compliance-requirements"
+title: "Safety and Compliance Requirements for AV Installation"
+shortTitle: "Safety & Compliance"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 1
+moduleSlug: "site-preparation"
+moduleTitle: "Site Preparation & Pre-Installation Planning"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Identify the primary safety regulations and codes applicable to commercial AV installation, including OSHA requirements, NEC provisions for low-voltage wiring, and permit requirements"
+  - "Apply lockout/tagout procedures correctly for AV installation work near electrical panels and powered equipment"
+  - "Describe the documentation and compliance deliverables required at project completion"
+
+prerequisites:
+  - "p1-t2-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "safety"
+  - "nec"
+  - "osha"
+  - "compliance"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m1-l4-safety-reference.pdf"
+    label: "AV Installation Safety Reference"
+    sizeKb: 90
+
+relatedLessons:
+  - "p1-t2-m2-l1"
+
+metaDescription: "Safety and compliance requirements for commercial AV installation — OSHA regulations, NEC cable ratings, lockout/tagout procedures, display mounting safety factors, and permit requirements."
+
+keywords:
+  - "AV installation safety OSHA"
+  - "NEC Article 725 low voltage"
+  - "plenum cable requirements"
+  - "lockout tagout AV installation"
+  - "display mounting safety factor"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Commercial AV installation is physical work in buildings that have code requirements, safety standards, and legal liability implications. The regulations covered in this lesson are not bureaucratic formalities — they exist because the failure modes they prevent are real: cable fires, falling displays, electrical injuries, and failed building inspections. Integrators who understand and follow these requirements protect themselves, their employees, and their clients. Integrators who ignore them create liability, generate remediation work, and in serious cases face regulatory enforcement.
+
+This lesson is a focused overview of the four compliance domains most directly relevant to MTR installation work: OSHA, the National Electrical Code, lockout/tagout, and permit requirements.
+
+---
+
+## OSHA Requirements
+
+The Occupational Safety and Health Administration (OSHA) establishes safety standards for workers in commercial and industrial environments. For AV integrators, the most relevant OSHA standards are in 29 CFR 1926 (construction safety) and 29 CFR 1910 (general industry).
+
+**Fall Protection:** OSHA requires fall protection for any work performed above four feet in construction environments (29 CFR 1926.502). For AV installation, this applies to ladder work, lift operation, and any overhead work on scaffolding. Use ladders rated for the combined weight of the worker and tools, inspect ladders before each use, maintain three points of contact, and never stand on the top two rungs. For extended overhead work (ceiling cabling, projector mounting), aerial work platforms or scaffolding with guardrails are the compliant choice over extended ladder work.
+
+**PPE:** Personal protective equipment requirements vary by the work environment. In active construction environments (new construction or major renovation), hard hats and safety glasses are typically required at all times by the general contractor. When drilling overhead or into walls, safety glasses are required regardless of environment. When working near electrical panels or on powered equipment, insulated gloves and arc flash awareness apply.
+
+**OSHA 10 and OSHA 30:** Many general contractors now require workers to hold OSHA 10-hour (OSHA 10) or OSHA 30-hour (OSHA 30) certification before allowing them on commercial construction sites. OSHA 10 is the baseline requirement for field technicians; OSHA 30 is the standard for site supervisors. These certifications are increasingly a contractual requirement, not just a best practice.
+
+---
+
+## National Electrical Code (NEC) Requirements
+
+The NEC governs electrical work in commercial buildings in the United States. Low-voltage AV cabling falls primarily under NEC Article 725 (power-limited circuits) and Article 800 (communications circuits). The most practically important NEC requirements for AV integrators:
+
+**Cable Ratings:** The NEC requires that cable installed in specific building environments be rated for those environments:
+
+- **Plenum spaces** (air-handling ceilings and raised floors used for HVAC return air): **CMP (Communications Plenum)** rated cable is required. CMP cable uses a jacket compound with lower smoke and flame spread characteristics to prevent the spread of fire through air-handling spaces.
+- **Riser shafts** (vertical cable runs through floor penetrations): **CMR (Communications Riser)** rated cable is required.
+- **General use** (horizontal runs in wall conduit or enclosed spaces that are not plenum or riser): **CM or CMG** rated cable is acceptable.
+
+Using non-plenum cable in a plenum space is a code violation. It will fail inspection and may require complete cable removal and replacement — one of the most costly remediation scenarios in commercial AV. Before pulling any cable, confirm the installation environment and verify the cable jacket rating matches.
+
+{/* MEDIA: Cable rating environment diagram — cross-section of a commercial building showing plenum ceiling, riser shaft, and general conduit path. Cable rating requirements labeled in each zone (CMP, CMR, CM/CMG). Filename: p1-t2-m1-l4-cable-rating-diagram.png */}
+
+**Separation from Power Wiring:** NEC Article 725 requires that Class 2 and Class 3 power-limited circuits (AV signal cables) maintain at least 2 inches of separation from 120V or higher power conductors when running parallel. Greater separation is required when running parallel for extended distances. Do not route AV signal cables in the same conduit as power wiring. The separation requirement prevents electromagnetic interference and reduces the risk of insulation damage from power conductor heat.
+
+**Firestopping:** Every penetration of a fire-rated wall, floor, or ceiling assembly must be sealed with a listed firestop system. This applies to all cable penetrations, conduit penetrations, and conduit terminations at fire-rated assemblies. The specific firestop product must be appropriate for the opening size, wall construction, and cable fill — not all firestop products are rated for all applications. Use firestop products from manufacturers with tested and listed assemblies (e.g., 3M Fire Barrier, Hilti CP or CFS products).
+
+---
+
+## Lockout/Tagout (LOTO)
+
+OSHA standard 29 CFR 1910.147 governs the control of hazardous energy — including electrical energy — during maintenance and installation work. For AV integrators, LOTO applies when:
+
+- Installing equipment in electrical rooms or near distribution panels
+- Swapping or adding equipment in energized rack systems
+- Drilling or cutting near electrical conduit or wiring
+
+The LOTO sequence:
+
+1. **Identify the energy source** — determine the circuit or panel supplying power to the equipment area
+2. **Notify affected personnel** — inform the facility of the planned de-energization
+3. **De-energize** — shut off the circuit breaker or disconnect
+4. **Apply lockout device** — place a physical lock on the circuit breaker or disconnect, preventing re-energization by others while work is in progress
+5. **Tag** — attach a tag to the lock identifying who placed it and when
+6. **Verify de-energization** — test with a non-contact voltage tester before touching any conductors
+7. **Perform the work**
+8. **Remove lockout device** — after confirming the work area is clear, remove the lock and restore power
+
+{/* MEDIA: LOTO procedure infographic — step-by-step illustrated guide to lockout/tagout, showing each step with icon and description. Filename: p1-t2-m1-l4-loto-procedure.png */}
+
+In facilities with their own LOTO program, follow the facility's program — it supersedes OSHA's default procedure in terms of specific steps and required documentation.
+
+---
+
+## Display Mounting Safety
+
+Display mounting carries specific structural safety requirements. The mounting hardware must be rated for the display's weight. The structural attachment point must be capable of supporting the mounting load. These are not suggestions — an improperly mounted commercial display (typically 80–120 lbs for large commercial models) can cause serious injury if it fails.
+
+**Safety factor:** OSHA and structural engineering best practice require a minimum 4:1 safety factor on mount load ratings — the mount must be rated for at least four times the actual display weight. Most commercial mounting hardware from reputable manufacturers (Chief, Peerless-AV, Vogels) is rated with appropriate safety margins for the specified load, but verify the specific mount model's rating against the display weight before purchase.
+
+**Structural backing:** In standard commercial drywall construction (metal stud, 5/8" Type X drywall), the drywall itself cannot support display weight — the fasteners must reach the metal studs. For large displays spanning multiple studs, a horizontal backing board (typically 3/4" plywood or 12-gauge steel backing plate) is installed between the studs, and the mount attaches to the backing. This distributes the load across multiple studs and provides a solid attachment plane. For masonry walls, wedge anchors appropriate for the masonry type and rated load are used.
+
+---
+
+## Permit Requirements
+
+Many jurisdictions require low-voltage electrical permits for new cable infrastructure installation. The permit requirement and the party responsible for obtaining the permit (typically the general contractor or building owner) varies by jurisdiction. Confirm permit status before starting cabling work — proceeding without a required permit can result in forced demolition, inspection holds, and mandatory reinstallation.
+
+At project completion, compliance deliverables typically include: permit closeout (final inspection sign-off), as-built drawings showing actual cable routing and equipment placement (not the design drawings), warranty registration for all major components, and a project closeout package delivered to the client containing all of the above plus the serial number log from staging and the cable test results.
+
+---
+
+<KnowledgeCheck id="p1-t2-m1-l4-kc">
+  <Question>
+    A cable run is specified to be routed through a ceiling plenum space. The cable
+    specified in the BOM is CMR-rated. What is the compliance problem and what is
+    the correct resolution?
+  </Question>
+  <Answer>There is no problem — CMR and CMP cables are interchangeable in plenum spaces</Answer>
+  <Answer correct>CMR cable is not rated for plenum spaces — CMP-rated cable is required for installations in air-handling ceiling spaces. The BOM must be corrected before installation</Answer>
+  <Answer>CMR cable can be used in plenum spaces if it is installed in conduit</Answer>
+  <Answer>The plenum space must be converted to a non-plenum space before the CMR cable can be installed</Answer>
+  <Explanation>
+    CMR (Communications Riser) cable is rated for vertical riser shaft applications but
+    not for plenum air-handling spaces. CMP (Communications Plenum) cable is required in
+    plenum spaces due to its lower smoke and flame spread characteristics. Using CMR in
+    a plenum is a NEC code violation that will fail inspection and may require complete
+    cable removal and replacement. The BOM must specify CMP cable for any runs through
+    plenum spaces.
+  </Explanation>
+
+  <Question>
+    During rack equipment installation, you need to add a new device to a rack that is
+    currently energized. What must happen before you begin the installation?
+  </Question>
+  <Answer>Proceed carefully — adding passive equipment to an energized rack is always safe</Answer>
+  <Answer correct>Follow LOTO procedure: identify the power source, de-energize the circuit, apply a lockout device and tag, verify de-energization with a voltage tester, then proceed with installation</Answer>
+  <Answer>Turn off the compute unit — de-energizing the compute unit is sufficient LOTO for rack work</Answer>
+  <Answer>LOTO only applies to 480V and above — 120V rack systems do not require LOTO</Answer>
+  <Explanation>
+    OSHA LOTO requirements (29 CFR 1910.147) apply to all hazardous energy, including
+    120V electrical systems. Before working in an energized rack, the circuit must be
+    de-energized, locked out, tagged, and verified with a voltage tester. Simply turning
+    off the compute unit does not de-energize the PDU, power supplies of other devices,
+    or the raw power feeds in the rack.
+  </Explanation>
+
+  <Question>
+    An 85-inch commercial display weighs 110 lbs. The mount being specified is rated
+    for 150 lbs. Does this meet the minimum safety factor requirement?
+  </Question>
+  <Answer>Yes — the mount rating exceeds the display weight, so it is compliant</Answer>
+  <Answer correct>No — the minimum 4:1 safety factor requires a mount rated for at least 440 lbs (110 × 4) for a 110-lb display</Answer>
+  <Answer>Safety factors only apply to ceiling-mounted displays, not wall mounts</Answer>
+  <Answer>A 150-lb rating is sufficient as long as the display is under 100 lbs</Answer>
+  <Explanation>
+    The minimum 4:1 safety factor means the mount must be rated for at least four times
+    the actual load. A 110-lb display requires a mount rated for a minimum of 440 lbs.
+    A mount rated for 150 lbs is inadequate — it may appear to hold the display under
+    static conditions but does not provide the dynamic load margin required for a safe
+    commercial installation. Specify a mount with an appropriate weight rating.
+  </Explanation>
+
+  <Question>
+    What is the correct cable separation requirement between AV signal cables and 120V
+    power conductors running in parallel under NEC Article 725?
+  </Question>
+  <Answer>No separation is required if the signal cable is in conduit</Answer>
+  <Answer>6 inches minimum separation from power conductors</Answer>
+  <Answer correct>2 inches minimum separation from 120V and higher power conductors when running parallel</Answer>
+  <Answer>AV signal cables must be in separate rooms from power wiring entirely</Answer>
+  <Explanation>
+    NEC Article 725 specifies a minimum 2-inch separation between Class 2/3 power-limited
+    circuits (AV signal cables) and conductors carrying 120V or higher. Greater separation
+    is recommended for long parallel runs. Do not route AV cables in the same conduit as
+    power wiring. This separation prevents electromagnetic interference and protects cable
+    insulation from heat damage.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Apply OSHA requirements:** Fall protection above four feet, appropriate PPE, and OSHA 10/30 certification requirements for construction sites.
+- **Specify correct NEC cable ratings:** CMP for plenum, CMR for riser, CM/CMG for general use. Verify the installation environment before pulling cable — never assume.
+- **Execute LOTO correctly:** De-energize, lock, tag, verify before working near electrical systems in any rack or panel environment.
+- **Understand display mounting safety:** 4:1 safety factor on mount ratings; structural backing required for drywall installations; masonry anchors must be appropriately rated.
+- **Confirm permits:** Verify permit status before cabling begins; deliver permit closeout and as-built drawings at project completion.
+
+---
+
+## Module Complete
+
+You have completed Module 2.1: Site Preparation & Pre-Installation Planning. You now have the planning foundation for professional MTR installation — documented sites, assessed infrastructure, complete materials, and code-compliant safety practices.
+
+Module 2.2 moves to the physical cable work: selecting the right cable for each signal path, extending signals beyond their passive limits, terminating Cat6/6A to professional standards, and managing and labeling cable for long-term maintainability.
+
+[Continue to Module 2.2: Cable Infrastructure →](/programs/mtr-foundations/tracks/physical-installation/modules/cable-infrastructure/)

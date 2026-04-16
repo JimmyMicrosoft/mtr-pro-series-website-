@@ -1,0 +1,263 @@
+---
+id: "p2-t2-m1-l4"
+slug: "exchange-calendar-policies"
+title: "Exchange Online Calendar Policies and Delegation"
+shortTitle: "Calendar Policies"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 1
+moduleSlug: "resource-account-management-at-scale"
+moduleTitle: "Resource Account Management at Scale"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Configure AutomateProcessing and the full Set-CalendarProcessing parameter set for common room scenarios"
+  - "Set up calendar delegation to allow administrative users to book rooms on behalf of others"
+  - "Configure room booking policies including booking windows, working hours, and conflict handling"
+
+prerequisites:
+  - "p2-t2-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "exchange-online"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "resource-accounts"
+  - "exchange-online"
+  - "calendar"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-l4-calendar-policy-reference.pdf"
+    label: "Exchange Calendar Policy Reference for MTR"
+    sizeKb: 40
+
+relatedLessons:
+  - "p1-t1-m2-l4"
+  - "p2-t2-m1-l1"
+
+metaDescription: "Exchange Online calendar policies for MTR — Set-CalendarProcessing parameter reference, booking windows, conflict handling, delegate configuration, working hours, and common scenario configurations for enterprise room management."
+
+keywords:
+  - "Teams Rooms Exchange calendar policy"
+  - "MTR Set-CalendarProcessing"
+  - "Teams Rooms room booking configuration"
+  - "MTR AutomateProcessing"
+  - "Exchange Online resource mailbox policy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Calendar processing configuration is where the room booking behavior is defined. Beyond the basic `AutomateProcessing AutoAccept` covered in Program 1, `Set-CalendarProcessing` has a range of parameters that control booking windows, conflict handling, privacy, and working hours. Enterprise deployments often have specific requirements — some organizations allow only managers or admins to book certain rooms, others restrict booking to business hours only. This lesson covers the full parameter set and the configurations for common enterprise scenarios.
+
+---
+
+## Key Set-CalendarProcessing Parameters
+
+The complete parameter set for enterprise room configuration:
+
+**Booking acceptance:**
+```powershell
+Set-CalendarProcessing -Identity $room -AutomateProcessing AutoAccept
+```
+- `AutoAccept` — automatic booking confirmation (standard for self-service rooms)
+- `AutoUpdate` — processes updates and cancellations but requires manual booking approval
+- `None` — no automatic processing (requires a human to approve all bookings)
+
+**Meeting privacy:**
+```powershell
+Set-CalendarProcessing -Identity $room `
+    -DeleteComments $false `
+    -DeleteSubject $false `
+    -AddOrganizerToSubject $false `
+    -RemovePrivateProperty $false
+```
+- `DeleteComments $false` — preserves meeting body/agenda text in the room's calendar entry
+- `DeleteSubject $false` — preserves meeting subject in the room calendar
+- `AddOrganizerToSubject $false` — does not append "Organizer: [Name]" to the meeting subject
+- `RemovePrivateProperty $false` — preserves private meeting flags (prevents Teams Rooms from showing meeting details for privacy-flagged meetings)
+
+**Booking window:**
+```powershell
+Set-CalendarProcessing -Identity $room `
+    -BookingWindowInDays 365 `
+    -MaximumDurationInMinutes 480
+```
+- `BookingWindowInDays` — how far in advance rooms can be booked (default: 180 days)
+- `MaximumDurationInMinutes` — maximum meeting duration the room will accept (default: 1440 minutes = 24 hours; 480 = 8 hours is more typical for conference rooms)
+
+**Business hours restriction:**
+```powershell
+Set-CalendarProcessing -Identity $room `
+    -ScheduleOnlyDuringWorkHours $true
+```
+- `ScheduleOnlyDuringWorkHours $true` — the room will only accept bookings that fall within the mailbox's configured working hours
+- Working hours are set separately: `Set-MailboxCalendarConfiguration -Identity $room -WorkingHoursStartTime 08:00 -WorkingHoursEndTime 18:00`
+
+**Conflict handling:**
+```powershell
+Set-CalendarProcessing -Identity $room `
+    -AllowConflicts $false `
+    -ConflictPercentageAllowed 0 `
+    -MaximumConflictInstances 0
+```
+- `AllowConflicts $false` — rejects meetings that conflict with existing bookings
+- `AllowConflicts $true` combined with `ConflictPercentageAllowed` — useful for shared resource rooms where limited double-booking is acceptable
+
+**External meeting requests:**
+```powershell
+Set-CalendarProcessing -Identity $room -ProcessExternalMeetingMessages $true
+```
+- `$true` — allows external senders (from federated organizations) to book the room. Required for Teams federation scenarios and Direct Guest Join use cases.
+
+---
+
+## Restricted Room Configuration
+
+For executive boardrooms or rooms that require administrative approval or can only be booked by specific users:
+
+```powershell
+# Option 1: Allow only specific users to book (all-hands approval mode)
+Set-CalendarProcessing -Identity $room -AutomateProcessing AutoUpdate
+Set-MailboxFolderPermission -Identity "${room}:\Calendar" -User "ea-team@contoso.com" -AccessRights Editor
+```
+
+`AutoUpdate` means booking requests are sent to the room delegate for approval — the delegate accepts or declines. Combined with `Editor` permissions for the EA team, only the EA team's acceptances count.
+
+```powershell
+# Option 2: Allow only members of a booking group to book directly
+Set-CalendarProcessing -Identity $room `
+    -AutomateProcessing AutoAccept `
+    -AllBookInPolicy $false `
+    -BookInPolicy "room-booking-group@contoso.com"
+```
+
+`BookInPolicy` specifies a distribution group — only members of this group can submit accepted booking requests. Others receive a decline.
+
+---
+
+## Delegation for Administrative Management
+
+Room delegates can view, accept, or modify room bookings on behalf of the room:
+
+```powershell
+# Add a delegate who can manage the room calendar
+Add-MailboxFolderPermission -Identity "${room}:\Calendar" `
+    -User "ea-admin@contoso.com" `
+    -AccessRights Editor
+
+# View current calendar permissions
+Get-MailboxFolderPermission -Identity "${room}:\Calendar"
+```
+
+Common delegation scenarios:
+- Executive assistant managing the boardroom calendar: `Editor` or `PublishingEditor` rights
+- Facilities team managing room status: `Reviewer` rights (read-only)
+- IT administrator for configuration changes: `Owner` rights
+
+---
+
+## Batch Calendar Policy Configuration
+
+For large deployments with consistent policy requirements, apply configurations to all rooms from a CSV:
+
+```powershell
+$rooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited
+
+# Apply standard policy to all rooms
+foreach ($room in $rooms) {
+    Set-CalendarProcessing -Identity $room.UserPrincipalName `
+        -AutomateProcessing AutoAccept `
+        -DeleteComments $false `
+        -DeleteSubject $false `
+        -AddOrganizerToSubject $false `
+        -RemovePrivateProperty $false `
+        -ProcessExternalMeetingMessages $true `
+        -AllowConflicts $false `
+        -MaximumDurationInMinutes 480 `
+        -BookingWindowInDays 365
+    Write-Output "Configured: $($room.DisplayName)"
+}
+```
+
+<DownloadButton
+  file="p2-t2-m1-l4-calendar-policy-reference.pdf"
+  label="Exchange Calendar Policy Reference for MTR"
+  sizeKb={40}
+  description="Complete Set-CalendarProcessing parameter reference for MTR deployments — all parameters with descriptions, recommended values for standard and restricted rooms, working hours configuration, delegation setup, and batch configuration script templates."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m1-l4-kc">
+  <Question>
+    The CEO's personal assistant reports that when she books the executive
+    boardroom, the meeting subject ("Q3 Board Preparation — CONFIDENTIAL")
+    appears on the Teams Rooms home screen for anyone passing by. How do
+    you resolve this?
+  </Question>
+  <Answer>Set `DeleteSubject $true` to remove the meeting subject from the room calendar</Answer>
+  <Answer>Instruct the organizer to mark the meeting as Private in Outlook</Answer>
+  <Answer correct>Ensure `RemovePrivateProperty $false` is set (preserving the Private flag) AND instruct the organizer to mark meetings as Private in Outlook — the Teams Rooms device respects the Private flag when `RemovePrivateProperty $false` is configured, showing "Private Meeting" instead of the subject</Answer>
+  <Answer>Move the boardroom to a separate Exchange organization to prevent subject visibility</Answer>
+  <Explanation>
+    The Teams Rooms device shows meeting subjects from the room's calendar.
+    Two configuration elements are required for privacy: `RemovePrivateProperty $false`
+    in the calendar processing settings (which preserves the Private flag
+    from the meeting invitation), and the organizer marking the meeting as
+    Private in Outlook. When both are in place, the Teams Rooms home screen
+    shows "Private Meeting" instead of the subject. Setting `DeleteSubject $true`
+    would delete the subject for all meetings, not just confidential ones,
+    which may not be the desired behavior for the room's general use.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Core parameters:** AutomateProcessing, DeleteComments/Subject, RemovePrivateProperty, ProcessExternalMeetingMessages.
+- **Booking controls:** BookingWindowInDays, MaximumDurationInMinutes, ScheduleOnlyDuringWorkHours, AllowConflicts.
+- **Restricted rooms:** `AutoUpdate` + delegate for approval-required rooms; `BookInPolicy` for group-restricted booking.
+- **Delegation:** `Add-MailboxFolderPermission` with appropriate AccessRights for admin management.
+
+---
+
+## What's Next
+
+[Entra ID Governance for MTR Deployments →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/entra-id-governance/)

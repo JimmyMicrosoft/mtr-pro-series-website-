@@ -1,0 +1,318 @@
+---
+id: "p3-t3-m1-l1"
+slug: "fleet-inventory-script"
+title: "Building a Room Fleet Inventory Script"
+shortTitle: "Fleet Inventory Script"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 1
+moduleSlug: "powershell-mtr-operations"
+moduleTitle: "PowerShell for MTR Operations"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Build a PowerShell script that queries Teams Admin Center, Intune, and Exchange to produce a unified MTR fleet inventory"
+  - "Enrich the inventory with room metadata (location, room type, license tier) and export to CSV and Excel"
+  - "Schedule the inventory script to run automatically and distribute the output to stakeholders"
+
+prerequisites:
+  - "p3-t2-m3-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "powershell"
+  - "automation"
+  - "reporting"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l2"
+  - "p3-t3-m2-l1"
+
+metaDescription: "Building a PowerShell fleet inventory script for MTR — querying Teams Admin Center, Intune, and Exchange via PowerShell modules, combining data sources into a unified inventory, CSV/Excel export, and scheduling."
+
+keywords:
+  - "MTR PowerShell inventory script"
+  - "Teams Rooms fleet inventory PowerShell"
+  - "MTR automation PowerShell"
+  - "Teams Rooms PowerShell reporting"
+  - "MTR inventory script"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A room fleet inventory is the foundation of every management operation — knowing what devices exist, where they are, what software they're running, and what license they have is prerequisite to managing anything at scale. Manually building this inventory from multiple portals is error-prone and time-consuming. A PowerShell script that queries all three management sources (Exchange/Teams for resource accounts, TAC for device health, Intune for compliance) and produces a unified, current inventory in minutes is one of the highest-value automation investments for an enterprise MTR team.
+
+---
+
+## Required PowerShell Modules
+
+Install the required modules before scripting:
+
+```powershell
+# Microsoft Teams module (includes Teams Admin Center cmdlets)
+Install-Module -Name MicrosoftTeams -Force -AllowClobber
+
+# Microsoft Graph (for Intune, Entra ID, Exchange data)
+Install-Module -Name Microsoft.Graph -Force -AllowClobber
+
+# Exchange Online management
+Install-Module -Name ExchangeOnlineManagement -Force -AllowClobber
+
+# ImportExcel (for Excel output without requiring Excel installed)
+Install-Module -Name ImportExcel -Force -AllowClobber
+```
+
+---
+
+## Querying Resource Accounts from Exchange
+
+Resource accounts are Exchange mailboxes — the authoritative source for which room accounts exist is Exchange Online:
+
+```powershell
+# Connect to Exchange Online
+Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+
+# Get all room mailboxes (MTR resource accounts)
+$roomAccounts = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited |
+    Select-Object DisplayName, UserPrincipalName, Alias,
+                  @{N="Building"; E={$_.CustomAttribute1}},
+                  @{N="Floor"; E={$_.CustomAttribute2}},
+                  @{N="RoomType"; E={$_.CustomAttribute3}},
+                  @{N="Capacity"; E={$_.ResourceCapacity}}
+
+Write-Host "Found $($roomAccounts.Count) room accounts"
+```
+
+The `CustomAttribute1-5` fields are used here to retrieve room metadata set during provisioning (from Program 2 enrollment workflows).
+
+---
+
+## Querying Device Health from Teams Admin Center
+
+The `MicrosoftTeams` module provides cmdlets to query device health:
+
+```powershell
+# Connect to Teams
+Connect-MicrosoftTeams
+
+# Get all MTR Windows devices
+$mtrWindows = Get-CsTeamsRoomDevice |
+    Select-Object @{N="DeviceName"; E={$_.DisplayName}},
+                  @{N="ResourceAccount"; E={$_.ResourceAccount}},
+                  @{N="HealthStatus"; E={$_.HealthStatus}},
+                  @{N="TeamsAppVersion"; E={$_.CurrentVersion}},
+                  @{N="OSVersion"; E={$_.OSVersion}},
+                  @{N="DeviceType"; E={$_.DeviceType}},
+                  @{N="Manufacturer"; E={$_.Manufacturer}},
+                  @{N="Model"; E={$_.HardwareModel}},
+                  @{N="SerialNumber"; E={$_.SerialNumber}},
+                  @{N="LastActivity"; E={$_.LastSeenDateTime}}
+
+Write-Host "Found $($mtrWindows.Count) MTR devices in TAC"
+```
+
+<Callout type="tip">
+`Get-CsTeamsRoomDevice` returns both Windows and Android MTR devices. Filter by `$_.DeviceType -eq "TeamsRoomsWindows"` or `"TeamsRoomsAndroid"` if you need to separate them.
+</Callout>
+
+---
+
+## Querying License and Compliance from Intune via Graph
+
+```powershell
+# Connect to Microsoft Graph (scopes needed)
+Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All",
+                         "Device.Read.All",
+                         "Directory.Read.All"
+
+# Get Intune managed devices — filter by OS contains "Windows 10"/"Windows 11"
+# Note: filter to MTR devices using the device name prefix convention
+$intuneDevices = Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'Windows'" -All |
+    Where-Object { $_.DeviceName -like "MTR-*" } |
+    Select-Object @{N="DeviceName"; E={$_.DeviceName}},
+                  @{N="SerialNumber"; E={$_.SerialNumber}},
+                  @{N="OSVersion"; E={$_.OSVersion}},
+                  @{N="ComplianceState"; E={$_.ComplianceState}},
+                  @{N="LastCheckIn"; E={$_.LastSyncDateTime}},
+                  @{N="EnrolledDate"; E={$_.EnrolledDateTime}}
+
+Write-Host "Found $($intuneDevices.Count) MTR devices in Intune"
+```
+
+---
+
+## Joining Data Sources Into a Unified Inventory
+
+The three data sources (Exchange, TAC, Intune) are joined on common keys — resource account UPN from Exchange, and device name / serial number from TAC and Intune:
+
+```powershell
+# Build lookup hashtables for fast joining
+$tacLookup = @{}
+foreach ($device in $mtrWindows) {
+    if ($device.ResourceAccount) {
+        $tacLookup[$device.ResourceAccount.ToLower()] = $device
+    }
+}
+
+$intuneLookup = @{}
+foreach ($device in $intuneDevices) {
+    $intuneLookup[$device.SerialNumber] = $device
+}
+
+# Build unified inventory
+$inventory = foreach ($room in $roomAccounts) {
+    $upn = $room.UserPrincipalName.ToLower()
+    $tac = $tacLookup[$upn]
+    $intune = if ($tac) { $intuneLookup[$tac.SerialNumber] } else { $null }
+
+    [PSCustomObject]@{
+        DisplayName       = $room.DisplayName
+        UPN               = $room.UserPrincipalName
+        Building          = $room.Building
+        Floor             = $room.Floor
+        RoomType          = $room.RoomType
+        Capacity          = $room.Capacity
+        HealthStatus      = if ($tac) { $tac.HealthStatus } else { "NOT IN TAC" }
+        TeamsAppVersion   = if ($tac) { $tac.TeamsAppVersion } else { "N/A" }
+        OSVersion         = if ($tac) { $tac.OSVersion } else { "N/A" }
+        Manufacturer      = if ($tac) { $tac.Manufacturer } else { "N/A" }
+        Model             = if ($tac) { $tac.Model } else { "N/A" }
+        SerialNumber      = if ($tac) { $tac.SerialNumber } else { "N/A" }
+        LastActivity      = if ($tac) { $tac.LastActivity } else { "N/A" }
+        ComplianceState   = if ($intune) { $intune.ComplianceState } else { "NOT IN INTUNE" }
+        IntuneLastCheckIn = if ($intune) { $intune.LastCheckIn } else { "N/A" }
+        EnrolledDate      = if ($intune) { $intune.EnrolledDate } else { "N/A" }
+    }
+}
+
+Write-Host "Unified inventory built: $($inventory.Count) rooms"
+```
+
+---
+
+## Exporting the Inventory
+
+```powershell
+$date = Get-Date -Format "yyyy-MM-dd"
+$outputPath = "C:\Reports\MTR-Fleet-Inventory-$date"
+
+# CSV export
+$inventory | Export-Csv -Path "$outputPath.csv" -NoTypeInformation
+
+# Excel export with formatting (requires ImportExcel module)
+$inventory | Export-Excel -Path "$outputPath.xlsx" `
+    -WorksheetName "Fleet Inventory" `
+    -AutoSize `
+    -AutoFilter `
+    -TableName "MTRFleet" `
+    -ConditionalText @(
+        New-ConditionalText -Text "Critical" -BackgroundColor "LightCoral" -Column 6
+        New-ConditionalText -Text "NOT IN TAC" -BackgroundColor "Yellow" -Column 6
+        New-ConditionalText -Text "NOT IN INTUNE" -BackgroundColor "Yellow" -Column 15
+        New-ConditionalText -Text "noncompliant" -BackgroundColor "LightCoral" -Column 15
+    )
+
+Write-Host "Inventory exported to $outputPath.xlsx"
+```
+
+The conditional formatting in Excel immediately highlights rooms requiring attention: Critical health status in red, devices not enrolled in TAC or Intune in yellow, non-compliant devices in red.
+
+---
+
+## Scheduling the Script
+
+Run the inventory script on a schedule using Windows Task Scheduler:
+
+```powershell
+# Create scheduled task to run inventory every Monday at 07:00
+$action = New-ScheduledTaskAction -Execute "PowerShell.exe" `
+    -Argument "-NonInteractive -File C:\Scripts\MTR-Fleet-Inventory.ps1"
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 7:00AM
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 1)
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
+
+Register-ScheduledTask -TaskName "MTR Fleet Inventory" `
+    -Action $action -Trigger $trigger `
+    -Settings $settings -Principal $principal
+```
+
+For distribution, add an `Send-MailMessage` call at the end of the script to email the Excel file to the IT management distribution list, or upload to a SharePoint document library via Graph.
+
+---
+
+<KnowledgeCheck id="p3-t3-m1-l1-kc">
+  <Question>
+    When running the fleet inventory script, 12 rooms from the Exchange room
+    mailbox query do not have matching entries in the TAC device query —
+    they appear as "NOT IN TAC" in the unified inventory. What are the two
+    most likely causes, and how would you distinguish between them?
+  </Question>
+  <Answer>These rooms have been deleted from TAC — they need to be re-enrolled</Answer>
+  <Answer correct>The two most likely causes are: (1) the rooms have Teams Rooms Basic licenses (not Pro) — TAC does show Basic-licensed rooms in the device list, but they may not appear with a resource account association if the account was recently changed; or more likely (2) the resource account UPN in Exchange does not match what the device enrolled with in TAC — perhaps the account was renamed, or the device enrolled with a different UPN. To distinguish: check TAC directly for one of the missing rooms by searching for the device name or serial number. If the device appears in TAC but with a different resource account UPN, it's a UPN mismatch in the join logic. If the device doesn't appear in TAC at all, it may never have been enrolled or the Teams Rooms app is not running</Answer>
+  <Answer>These rooms are Android devices and Get-CsTeamsRoomDevice returns Windows devices only by default</Answer>
+  <Answer>The MicrosoftTeams module query has a result size limit — increase ResultSize to Unlimited</Answer>
+  <Explanation>
+    "NOT IN TAC" in the joined inventory means the join key (resource account UPN)
+    didn't find a match in the TAC data. This is a data quality issue in the join
+    rather than necessarily a missing device. Common causes: (1) the script joins
+    on resource account UPN, but the TAC device may be signed in with a different
+    account or the account may have been renamed post-enrollment; (2) the device
+    has not been enrolled in Teams Rooms (no Teams Rooms app or not yet deployed);
+    (3) Android devices with the DeviceType filter applied. Investigating one of
+    the missing rooms directly in TAC — searching by room name or the building/
+    floor metadata — quickly distinguishes between a join logic issue and a
+    genuine enrollment gap.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Modules needed:** MicrosoftTeams (TAC), Microsoft.Graph (Intune), ExchangeOnlineManagement, ImportExcel.
+- **Data sources:** Exchange (room accounts + metadata), TAC (device health + version), Intune (compliance + OS version).
+- **Join strategy:** Use resource account UPN as the primary join key; serial number as secondary.
+- **Export:** CSV for simple consumption; Excel with conditional formatting for operational review.
+- **Schedule:** Windows Task Scheduler with SYSTEM account; distribute via email or SharePoint upload.
+
+---
+
+## What's Next
+
+[Automated Compliance and Health Reporting →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/powershell-mtr-operations/lessons/automated-compliance-reporting/)

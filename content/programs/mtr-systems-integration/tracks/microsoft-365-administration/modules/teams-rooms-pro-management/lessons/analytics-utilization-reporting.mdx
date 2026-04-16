@@ -1,0 +1,217 @@
+---
+id: "p2-t2-m3-l4"
+slug: "analytics-utilization-reporting"
+title: "Analytics, Utilization Data, and Reporting"
+shortTitle: "Analytics and Reporting"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 3
+moduleSlug: "teams-rooms-pro-management"
+moduleTitle: "Teams Rooms Pro Management"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Access and interpret room utilization data from the Pro Management analytics dashboard"
+  - "Identify rooms that are consistently underutilized or overbooked using Pro Management data"
+  - "Build a client-ready utilization and quality report from Pro Management analytics"
+
+prerequisites:
+  - "p2-t2-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "pro-management"
+  - "analytics"
+  - "managed-services"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m3-l4-reporting-template.docx"
+    label: "Pro Management Client Reporting Template"
+    sizeKb: 45
+
+relatedLessons:
+  - "p2-t1-m2-l3"
+  - "p2-t2-m3-l5"
+
+metaDescription: "Teams Rooms Pro Management analytics — room utilization metrics, meeting quality data, underutilization identification, overutilization patterns, and building client-ready reports from Pro Management data."
+
+keywords:
+  - "Teams Rooms Pro Management analytics"
+  - "MTR room utilization data"
+  - "Pro Management reporting"
+  - "Teams Rooms utilization report"
+  - "MTR analytics client report"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Analytics is where Pro Management's data becomes business value for clients. Utilization data answers questions that drive real decisions: Which rooms are being used? Which are empty? Is the meeting room estate appropriately sized for the organization's meeting patterns? Are some rooms consistently having quality problems that need network attention? The analytics in Pro Management transform raw telemetry into actionable insights — and client-facing reports built from that data demonstrate the value of the managed service investment.
+
+---
+
+## Accessing Analytics
+
+In the Pro Management portal, navigate to **Analytics** in the left navigation. Analytics data is available for the date range selected (default: last 30 days; adjust as needed for quarterly or annual reporting).
+
+**Analytics sections:**
+- **Meeting quality:** Quality metrics per room and per building
+- **Utilization:** Room booking and meeting frequency data
+- **Room readiness:** Percentage of time rooms were operational vs. in an incident state
+- **Incidents over time:** Incident volume trends and resolution time
+
+---
+
+## Utilization Metrics
+
+Pro Management tracks when rooms are in active use (a meeting is in progress) and correlates this with available booking time.
+
+**Key utilization metrics:**
+
+| Metric | Description |
+|--------|-------------|
+| **Utilization rate** | Percentage of available business hours when the room was in use |
+| **Average meeting duration** | Mean duration of meetings held in the room |
+| **Peak hours** | Hours of the day with highest meeting frequency |
+| **Days active** | Number of days in the period when at least one meeting occurred |
+| **Total meetings** | Count of meetings held in the period |
+
+**Interpreting utilization:**
+
+| Utilization Rate | Interpretation |
+|-----------------|----------------|
+| > 80% | Overutilized — room may be a bottleneck; consider adding capacity |
+| 40–80% | Healthy utilization — room is being used appropriately |
+| 15–40% | Underutilized — review whether room is appropriately promoted or located |
+| < 15% | Very low utilization — potential candidate for repurposing or equipment reallocation |
+
+**Building-level utilization:** Aggregate utilization at the building level shows whether a building has the right number and type of rooms. A building where all rooms run at >80% utilization is undersupplied; a building where most rooms are <20% may have space that could be repurposed.
+
+---
+
+## Meeting Quality Analytics
+
+Pro Management's quality analytics show quality metrics per room — separate from CQD (which requires more setup and is more powerful for deep analysis):
+
+- **Poor meeting rate:** Percentage of meetings in the room that included a quality issue
+- **Audio quality:** Per-room audio quality score
+- **Video quality:** Per-room video quality score
+
+Use this data to identify rooms with persistent quality problems and correlate with the network investigation tools from Track 1.
+
+---
+
+## Room Readiness
+
+Room readiness measures what percentage of scheduled business hours the room was in an operational state (not in a Critical incident):
+
+- **Readiness rate:** (Available hours − hours in Critical incident) ÷ Available hours
+- A room that had a 4-hour Critical incident in a 40-hour business week has 90% readiness
+- Target for managed service SLAs: typically 99%+ readiness
+
+Room readiness data is the primary metric for managed service SLA reporting — it quantifies the operational impact of incidents and demonstrates the value of proactive monitoring (incidents resolved before they affect meetings = higher readiness).
+
+---
+
+## Building a Client Report
+
+For monthly managed service client reporting, build a report using Pro Management analytics:
+
+**Report sections:**
+
+1. **Executive Summary:** Fleet health summary — total rooms, average readiness rate, total incidents, incidents resolved remotely (no site visit required)
+
+2. **Utilization Overview:** Building-level utilization table with recommendations (overutilized rooms highlighted for capacity planning discussion)
+
+3. **Quality Summary:** Poor meeting rate by building or room type; any rooms requiring network investigation
+
+4. **Incident Summary:** Total incidents by type and severity; mean time to resolution; percentage resolved remotely vs. requiring site visit
+
+5. **Recommendations:** Specific rooms or buildings that require attention; upcoming maintenance activities
+
+**Data export:** Pro Management analytics can be exported to CSV or PDF. Use the PDF export as a base and add the executive summary and recommendations sections in Word or PowerPoint.
+
+<DownloadButton
+  file="p2-t2-m3-l4-reporting-template.docx"
+  label="Pro Management Client Reporting Template"
+  sizeKb={45}
+  description="Word template for monthly Pro Management client reports — executive summary, utilization table, quality summary, incident summary, and recommendations sections. Pre-formatted with placeholder data and commentary guidance for common reporting scenarios."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m3-l4-kc">
+  <Question>
+    Pro Management analytics show that two boardrooms in the HQ building
+    have a 92% and 87% utilization rate, while the four standard conference
+    rooms in the same building average 28% utilization. What is the
+    appropriate recommendation to include in the client report?
+  </Question>
+  <Answer>No recommendation needed — this is normal variation between room types</Answer>
+  <Answer>Reduce the boardrooms' booking window to free up capacity for other users</Answer>
+  <Answer correct>The boardrooms are overutilized (>80%), indicating a capacity bottleneck. The standard conference rooms are underutilized (28%). Recommend that the client review whether some meetings currently booked in boardrooms could be accommodated in standard conference rooms, and/or whether additional boardroom capacity is needed. Investigate whether the standard rooms are being passed over due to location, features, or awareness gap</Answer>
+  <Answer>Convert the standard conference rooms to additional boardrooms to match utilization patterns</Answer>
+  <Explanation>
+    Overutilized high-value rooms (boardrooms at 87–92%) alongside underutilized
+    standard rooms (28%) in the same building is a classic room portfolio
+    imbalance pattern. It may indicate that: users prefer boardrooms for
+    prestige even for small meetings, the standard rooms have a feature or
+    location disadvantage, or there is a genuine shortage of boardroom capacity.
+    The recommendation should surface the data, explain the pattern, and
+    suggest the client investigate root causes before deciding whether to add
+    boardroom capacity or address the standard room underutilization. This
+    is a data-driven insight that demonstrates value beyond device management.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Utilization metrics:** Rate (>80% overutilized, <15% very low), average duration, peak hours, meeting count.
+- **Quality analytics:** Poor meeting rate, audio/video quality scores per room — surface rooms needing network investigation.
+- **Readiness:** Available hours minus Critical incident hours — primary SLA metric for managed services.
+- **Client report:** Executive summary + utilization + quality + incident summary + recommendations — monthly deliverable.
+
+---
+
+## What's Next
+
+[Pro Management in Managed Services Delivery →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/teams-rooms-pro-management/lessons/pro-management-managed-services/)

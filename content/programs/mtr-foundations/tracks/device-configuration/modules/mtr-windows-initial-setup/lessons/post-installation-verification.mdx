@@ -1,0 +1,220 @@
+---
+id: "p1-t3-m1-l5"
+slug: "post-installation-verification"
+title: "Post-Installation Health Verification Checklist"
+shortTitle: "Acceptance Testing"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 1
+moduleSlug: "mtr-windows-initial-setup"
+moduleTitle: "MTR Windows — Initial Setup"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "evaluate"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Execute a comprehensive post-installation health verification checklist covering hardware, software, connectivity, and functional items"
+  - "Document verification results in a format suitable for client acceptance sign-off and project closeout"
+  - "Identify conditions that constitute a failed acceptance test and describe the remediation process before re-testing"
+
+prerequisites:
+  - "p1-t3-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "programmer"
+
+topicTags:
+  - "acceptance-testing"
+  - "commissioning"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m1-l5-acceptance-test-report.pdf"
+    label: "Post-Installation Acceptance Test Report"
+    sizeKb: 85
+
+relatedLessons:
+  - "p1-t3-m1-l4"
+
+metaDescription: "MTR Windows post-installation acceptance testing — hardware verification, software and configuration verification, functional testing (one-touch join, audio, video, content sharing), and client acceptance documentation."
+
+keywords:
+  - "MTR acceptance test"
+  - "Teams Rooms commissioning checklist"
+  - "MTR post installation verification"
+  - "Teams Rooms acceptance sign-off"
+  - "conference room AV testing"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Acceptance testing is the formal proof that a room works. It is not a casual walkthrough — it is a structured, documented test against a defined checklist that produces a signed report. That report is the basis for project closeout, client handover, and warranty period commencement. It also protects the integrator: a signed acceptance report with a passing result for every item creates a clear record that the room was functioning correctly at handoff. If the same item fails six months later, the record shows when it passed and allows the support investigation to focus on what changed.
+
+This lesson covers the four acceptance test categories, the specific items in each, and how to handle failures found during testing.
+
+---
+
+## Category 1 — Hardware Verification
+
+**Physical installation:** All mounts are secure. Displays are level and at the specified height. Compute unit is in the specified location with appropriate ventilation clearance. Touch consoles are at the specified position, cables concealed. Camera is centered on the display, at correct height. Microphones are at specified positions with HVAC clearances maintained. Rack equipment is fully installed, dressed, and labeled.
+
+**Cable verification:** All cables are labeled at both ends, matching the cable schedule. Cable management is correct in all locations (rack, ceiling, wall). No visible cable violations (bend radius, separation from power, unsecured runs).
+
+**Power verification:** All devices are powered on and show correct status LEDs. UPS is operational — simulate a brief power interruption (unplug the UPS input) and confirm all connected devices remain online on battery. Restore power and confirm normal operation resumes.
+
+**Hardware connections:** All USB, HDMI, and network connections are firmly seated. No loose connectors at any device. All peripheral devices appear in the MTR Peripherals settings without error states.
+
+---
+
+## Category 2 — Software and Configuration Verification
+
+**Resource account sign-in:** Correct resource account name displayed on home screen. Calendar panel showing upcoming meetings (pre-scheduled test meeting appears).
+
+**Teams Admin Center status:** Device shows as Healthy or Needs Attention (not Offline). All peripheral health indicators green. Correct resource account UPN shown. App version matches the current release.
+
+**App settings:** Display count matches physical configuration. Correct default microphone and speaker selected. Admin PIN changed from default. Meeting settings (auto content share, privacy mode, layout defaults) configured per project specification. Room name correct.
+
+**Windows OS settings:** System sleep = Never. Power plan = High Performance. Windows Update active hours cover facility operating hours. Wi-Fi disabled (if Ethernet connected). IP address documented.
+
+---
+
+## Category 3 — Functional Verification
+
+This is the live testing category — every item requires an actual test, not just a visual inspection.
+
+**Test 1 — Calendar sync:** A Teams meeting has been scheduled for the test with the resource account invited. The meeting should appear on the MTR console. Join the meeting via the one-touch join button. Confirm the device joins successfully, the meeting audio is active, and the connection is stable.
+
+**Test 2 — Camera active and auto-framing:** During the test meeting, confirm the camera feed is visible to remote participants. If the camera supports auto-framing (AI active speaker tracking), verify that the framing adjusts when participants move around the room.
+
+**Test 3 — Microphone pickup:** Have a remote participant on the test call confirm that in-room audio is clear and at appropriate volume. Walk to each end of the room and speak — confirm the remote participant hears clearly from all seating positions.
+
+**Test 4 — Speaker output:** In-room participants confirm that remote audio (from the test call) is clear and at appropriate volume from all seating positions. Remote participant speaks and in-room participants confirm the audio distribution.
+
+**Test 5 — Content sharing:** Connect a laptop to the HDMI content input. If auto content share is enabled, confirm content sharing starts automatically. If manual, start content sharing from the touch console. Remote participants confirm they can see the shared content clearly.
+
+**Test 6 — BYOD (if applicable):** Connect a laptop via the BYOD USB cable. Confirm the room's camera appears as a webcam option in the laptop's video conferencing app. Confirm the audio devices appear. Join a meeting from the laptop and verify camera and audio function through the room hardware.
+
+**Test 7 — Proximity join (if applicable):** With Bluetooth enabled on a personal device and the Teams app running, enter the room. Confirm the Teams app on the personal device offers to add the room to an active meeting. Complete the proximity join and confirm the room joins the meeting.
+
+---
+
+## Category 4 — Documentation Verification
+
+Before presenting the report for signature, confirm that all project documentation is complete and ready for the client closeout package:
+
+- Cable schedule with test results (all passes, or failures documented with resolution)
+- Serial number log (all major equipment with manufacturer, model, serial number)
+- As-built drawings (actual equipment placement and cable routing)
+- Resource account details (UPN, documentation of who holds the account credentials)
+- Admin PIN documentation (stored securely per the client's documentation requirements)
+- Warranty registration confirmation (all equipment registered per manufacturer requirements)
+
+---
+
+## Handling Failures
+
+Any item that fails the acceptance test is a remediation item. The correct process:
+
+1. **Document the failure** — specific item, what was tested, what the result was
+2. **Remediate** — fix the root cause of the failure
+3. **Re-test** — run the failed test item again and confirm it now passes
+4. **Document the remediation and re-test result** — the final acceptance report should show the original failure, the action taken, and the re-test pass
+
+Do not ask the client to sign off on a report with open failures. Do not mark a failed item as passing to avoid a conversation. The acceptance report is a legal document that may be referenced in payment disputes or warranty claims — accuracy is not optional.
+
+<DownloadButton
+  file="p1-t3-m1-l5-acceptance-test-report.pdf"
+  label="Post-Installation Acceptance Test Report"
+  sizeKb={85}
+  description="Professional acceptance test report template with all four verification categories, pass/fail fields, failure documentation sections, remediation notes, re-test results, and dual signature blocks for integrator and client."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m1-l5-kc">
+  <Question>
+    During functional acceptance testing, the one-touch join test fails — the meeting
+    appears on the console but the device displays an error when attempting to join.
+    The device is healthy in TAC. What is the correct response?
+  </Question>
+  <Answer>Mark the item as passing and note that it may resolve after a firmware update</Answer>
+  <Answer>Ask the client to sign the acceptance report with the failure noted as a known issue</Answer>
+  <Answer correct>Document the failure, investigate the root cause (check network connectivity to Microsoft 365 meeting service endpoints, check resource account policy assignment), remediate, re-test, and document the re-test result before requesting client sign-off</Answer>
+  <Answer>Skip the one-touch join test — proximity join and manual join are adequate fallbacks</Answer>
+  <Explanation>
+    One-touch join is the primary meeting join method for MTR rooms and a core function
+    that must pass acceptance testing. A failure during functional testing is a remediation
+    item that must be resolved and re-tested before the acceptance report is signed. Common
+    causes: meeting policy assigned to the resource account has a setting that prevents
+    joining from a room device, network firewall blocking meeting service endpoints, or
+    meeting lobby settings holding the room. Investigate, fix, re-test, and document.
+  </Explanation>
+
+  <Question>
+    Why is a signed acceptance test report important for the integrator's business
+    interests, beyond demonstrating professional quality?
+  </Question>
+  <Answer>Acceptance reports are required by AVIXA standards for all commercial AV projects</Answer>
+  <Answer correct>A signed acceptance report creates a timestamped record that the system was functioning correctly at client handoff, protecting the integrator if the same issue is later claimed to have been present since installation</Answer>
+  <Answer>Signed reports are needed to trigger the manufacturer warranty on installed equipment</Answer>
+  <Answer>The report is required by the client's insurance provider to cover the installed equipment</Answer>
+  <Explanation>
+    A signed acceptance report with passing results for all items creates a clear record
+    of the system's state at handoff. If a client reports the same issue six months later
+    and claims it was never working, the signed report demonstrates that the item passed
+    acceptance testing on a specific date. This record protects the integrator in payment
+    disputes and warranty claim negotiations. It is both a professional quality document
+    and a legal protection.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Execute all four test categories:** Hardware (physical installation, cables, power, connections), Software (sign-in, TAC status, app settings, OS settings), Functional (join, camera, microphone, speaker, content sharing, BYOD, proximity join), Documentation (cable schedule, serial log, as-builts, admin PIN).
+- **Handle failures professionally:** Document, remediate, re-test, document re-test — never sign off on open failures.
+- **Produce a signed acceptance report:** The legal record of the room's state at handoff, signed by both integrator project lead and client representative.
+
+---
+
+## Module Complete
+
+You have completed Module 3.1: MTR Windows — Initial Setup. The Windows commissioning sequence is now complete — from first boot through signed acceptance. Module 3.2 covers the Android MTR path, which follows parallel principles but with OEM-specific differences that require separate coverage.
+
+[Continue to Module 3.2: MTR Android — Initial Setup →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-android-initial-setup/)

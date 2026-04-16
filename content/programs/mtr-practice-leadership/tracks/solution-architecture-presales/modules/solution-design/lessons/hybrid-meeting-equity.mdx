@@ -1,0 +1,176 @@
+---
+id: "p4-t2-m1-l2"
+slug: "hybrid-meeting-equity"
+title: "Hybrid Meeting Equity Design"
+shortTitle: "Hybrid Meeting Equity"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 1
+moduleSlug: "solution-design"
+moduleTitle: "Solution Architecture and Design"
+
+lessonIndex: 2
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["solutions-architect", "presales-engineer", "customer-success"]
+
+objectives:
+  - "Define hybrid meeting equity and articulate why it is a design requirement, not a nice-to-have"
+  - "Identify the design decisions that create or destroy hybrid meeting equity in a room"
+  - "Apply Microsoft Front Row and other layout configurations that improve remote participant experience"
+  - "Use hybrid meeting equity as a business case argument in pre-sales conversations"
+
+prerequisites:
+  - "p4-t2-m1-l1"
+
+technologyTags: ["MTR", "Teams Rooms", "Front Row", "IntelliFrame"]
+roleTags: ["solutions-architect", "presales-engineer"]
+topicTags: ["hybrid-meetings", "meeting-equity", "solution-design", "remote-work"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t2-m1-l1"
+  - "p4-t2-m1-l3"
+
+metaDescription: "Learn how to design MTR rooms for hybrid meeting equity, including Front Row configuration, IntelliFrame, and the design decisions that create a level playing field for remote participants."
+keywords: ["hybrid meeting equity", "MTR Front Row", "Teams Rooms hybrid", "IntelliFrame", "remote meeting experience"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Hybrid Meeting Problem
+
+The challenge of hybrid meetings is not technical — it is perceptual. When some participants are in a room together and others are joining remotely, the in-room participants have an inherent advantage: they can see body language, have side conversations, and occupy a shared physical space that creates social cohesion.
+
+Remote participants, presented as small gallery thumbnails on a 75" display, can hear but not fully participate. They cannot see who is speaking. They cannot read the room. They are, in the language that has entered meeting culture, "Brady Bunch tiles" — present but not equal.
+
+Hybrid meeting equity is the design principle that the in-room and remote experience should be as close to equivalent as technology allows. This is not an aspiration — it is a business requirement. Organisations with hybrid workforces that cannot hold equitable hybrid meetings make structural decisions that disadvantage remote workers, reducing diversity and limiting talent access.
+
+---
+
+## The Four Dimensions of Hybrid Meeting Equity
+
+### 1. Visual Equity
+
+**Problem**: Remote participants are small thumbnails; in-room participants appear as one camera view that doesn't capture individual speakers.
+
+**Design response**:
+- **IntelliFrame**: Microsoft's AI-powered camera feature that creates a composite view of in-room participants, giving each person their own framing within a grid. Requires a compatible camera (Logitech Rally, Poly Studio E70) and a Teams Rooms Pro license.
+- **Front Row**: Microsoft's meeting layout for Teams Rooms that places remote participant video at eye level across the bottom of the display, rather than in small corner tiles. Requires a dual-display configuration or a single large display with a compatible layout.
+- **Camera placement**: Camera at eye level (not looking down from a high-mounted position) creates a more natural visual connection between in-room and remote participants.
+
+<Callout type="tip">
+**Front Row is the most impactful single configuration change for hybrid meeting equity.** Instead of remote participants appearing in small gallery tiles in the top corner, they appear in a horizontal strip at eye level across the display. In-room participants look at the camera (which is near the display) and appear to be making eye contact with remote attendees.
+</Callout>
+
+### 2. Audio Equity
+
+**Problem**: Remote participants cannot hear side conversations; in-room participants cannot accurately judge when remote participants want to speak.
+
+**Design response**:
+- **Microphone coverage**: Every seat at the table must be within the pickup pattern of a microphone. For tables longer than 3m, this typically requires a distributed mic system (ceiling array or tabletop expansion mics).
+- **Speaker quality**: Remote participants' voices should be clear and directional where possible. A single soundbar at the front of a 10m room means the remote participant sounds like they're at the far end. Distributed ceiling speakers provide more even coverage.
+- **Noise cancellation**: Microsoft Teams Rooms' built-in NLP noise suppression removes background noise from the in-room environment. Ensure it is enabled.
+- **Acoustic treatment**: A room with RT60 > 0.6s will create echo and intelligibility problems that affect remote participants' comprehension more severely than in-room participants'.
+
+### 3. Content Equity
+
+**Problem**: In-room participants can see the whiteboard, but remote participants cannot. Content shared by remote participants may not be visible on the room display.
+
+**Design response**:
+- **HDMI ingest**: A cable at the table allows in-room presenters to share laptop content to both the room display and remote participants simultaneously.
+- **Microsoft Whiteboard**: Digital whiteboard on the MTR device is visible to all participants; physical whiteboards are not (unless a document camera or content camera is used).
+- **Dual display configuration**: DualScreenMode allows the room display to show remote video on one screen and shared content on the other. Both are visible to in-room participants.
+- **Content camera**: For rooms that use a physical whiteboard, a dedicated content camera (e.g., Surface Hub camera) can capture and share the whiteboard digitally.
+
+### 4. Participation Equity
+
+**Problem**: Remote participants struggle to interject in an in-room dominated conversation; the meeting facilitator doesn't see remote hands raised.
+
+**Design response**:
+- **Raised hand notifications**: Teams displays raised hands from remote participants. In-room participants need to be trained to look for these.
+- **Meeting facilitator role**: Train in-room meeting organisers to explicitly invite remote participants to speak. This is a behavioural change, not a technology change — but the technology must support it.
+- **Spatial audio**: Teams Rooms supports spatial audio, which places different remote participants at different positions in the stereo field. This makes it easier to distinguish who is speaking.
+
+---
+
+## Front Row Configuration
+
+Front Row is enabled per room in the Teams Admin Centre or directly on the device.
+
+**Enable Front Row:**
+1. Teams Admin Centre → Rooms and Devices → select device → Device settings → Meetings → Default layout
+2. Set to **Front Row**
+3. This becomes the default layout when a meeting starts
+
+**Or directly on device:**
+More → Settings → Meetings → Default meeting layout → Front Row
+
+**Front Row requirements**:
+- Windows-based Teams Rooms device (not Android)
+- Single display of 16:9 ratio, or dual display configuration
+- Teams Rooms App version 4.16 or later
+
+**Front Row layout behaviour**:
+- Remote participant video fills the bottom strip of the display at eye level
+- Shared content appears above the video strip
+- Chat and meeting roster appear as overlays
+- In-room camera view appears as a thumbnail (self-preview)
+
+---
+
+## IntelliFrame Configuration
+
+IntelliFrame creates individual frames for each in-room participant using AI-based tracking.
+
+**Requirements**:
+- Compatible camera: Logitech Rally, Rally Bar, Rally Bar Mini, Rally Bar Huddle; Poly Studio E70
+- Teams Rooms Pro license
+- Teams Rooms App 4.16+
+
+**Enable IntelliFrame:**
+Settings → Camera → Enable IntelliFrame
+
+When enabled, remote participants see a composite view with individual frames for each in-room person, rather than a single wide-angle room view. This is the most significant improvement to visual equity for in-room participants.
+
+---
+
+## Hybrid Meeting Equity as a Pre-Sales Argument
+
+In pre-sales conversations, hybrid meeting equity connects technology to business outcomes that resonate with HR, DEI, and senior leadership:
+
+- **Talent access**: "Your remote employees are at a structural disadvantage in hybrid meetings. This design removes that disadvantage."
+- **DEI**: "Organisations where remote workers are visible equals in meetings make better decisions with more diverse input."
+- **Productivity**: "How many meeting decisions are made based on what the people in the room want, not the best answer? Equity changes that."
+- **Retention**: "Remote workers who don't feel included in meetings are more likely to disengage or leave."
+
+This framing elevates the conversation from "display and camera spec" to "organisational effectiveness" — and changes who the economic buyer is. IT managers buy cameras; CHROs and COOs buy equity.
+
+---
+
+<KnowledgeCheck>
+  <Question text="A client asks whether they need to buy dual displays for their 10-person meeting room to achieve hybrid meeting equity. What is the correct answer?">
+    <Answer>Yes — dual displays are always required for equity</Answer>
+    <Answer>No — a single display is always sufficient</Answer>
+    <Answer correct>It depends: a single large display with Front Row layout can significantly improve equity in rooms up to 8–10 people; dual displays provide the best experience for larger rooms by separating video and content</Answer>
+    <Answer>Hybrid meeting equity doesn't require specific display configuration</Answer>
+    <Explanation>Front Row on a single display provides a meaningful improvement for most standard room sizes. Dual displays are recommended for larger rooms where a single screen cannot adequately show both remote video and shared content at useful sizes simultaneously. It's a design decision based on room size and use case, not an absolute rule.</Explanation>
+  </Question>
+</KnowledgeCheck>

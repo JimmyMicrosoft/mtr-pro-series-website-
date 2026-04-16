@@ -1,0 +1,342 @@
+---
+id: "p3-t1-m2-l4"
+slug: "analytics-capacity-planning"
+title: "Analytics Deep-Dive and Capacity Planning"
+shortTitle: "Analytics and Capacity Planning"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 2
+moduleSlug: "pro-management-enterprise"
+moduleTitle: "Pro Management at Enterprise Scale"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Evaluate Pro Management utilization analytics data to identify underutilized buildings, bottleneck buildings, and seasonal demand patterns that inform corporate real estate decisions"
+  - "Correlate room quality analytics with utilization data to prioritize AV upgrade investments using evidence from Pro Management reports"
+  - "Build a capacity planning recommendation for executive stakeholders using Pro Management utilization data, including when to add rooms, repurpose rooms, or consolidate inventory"
+
+prerequisites:
+  - "p3-t1-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "pro-management"
+  - "analytics"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m2-l3"
+  - "p3-t1-m2-l5"
+
+metaDescription: "Use Teams Rooms Pro Management analytics for capacity planning: utilization trends, peak analysis, seasonal patterns, quality correlation, and executive-ready recommendations."
+
+keywords:
+  - "Teams Rooms Pro Management utilization analytics"
+  - "MTR capacity planning"
+  - "Teams Rooms meeting room utilization data"
+  - "Pro Management analytics corporate real estate"
+  - "MTR room quality utilization correlation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams Rooms Pro Management collects utilization and meeting quality data that most organizations never fully analyze. This data is exceptionally valuable for decisions that extend far beyond IT operations: which buildings need more meeting rooms, which rooms are candidates for repurposing or decommission, where to prioritize AV upgrade investment, and how to plan for seasonal demand fluctuations. This lesson covers how to read Pro Management analytics with the analytical depth required to produce defensible, evidence-based capacity planning recommendations — and how to present those findings to the real estate and executive stakeholders who act on them.
+
+---
+
+## Understanding Pro Management Utilization Metrics
+
+Before drawing conclusions from utilization data, it is essential to understand what Pro Management is actually measuring and the limitations of each metric.
+
+**Key utilization metrics in Pro Management:**
+
+| Metric | Definition | Limitation |
+|--------|-----------|-----------|
+| **Utilization rate** | % of business hours (configurable) during which the room had an active meeting | Does not distinguish between 2-person and 20-person use; measures time, not occupancy |
+| **Meeting count** | Number of meetings held in the room in the selected period | A 2-minute test booking and a 3-hour all-hands count equally |
+| **Average meeting duration** | Mean duration of meetings held in the room | Skewed by very long or very short meetings; median is more informative |
+| **Peak utilization hours** | Hours of the day with highest meeting frequency across the fleet | Useful for identifying scheduling bottlenecks |
+| **Meeting quality rate** | % of meetings rated "Good" by Pro Management's quality assessment (based on network, audio, video metrics) | Reflects technical quality, not user satisfaction |
+
+**Configuring the business hours baseline:**
+
+Utilization rate is calculated against a configurable business hours window. Ensure this is set correctly per building (accounting for local time zone and working hours) before drawing conclusions. A building in Tokyo set to New York business hours will show anomalously low utilization rates because meetings are being measured against an incorrect denominator.
+
+Navigate to: Pro Management → Buildings → select building → Edit → Business hours
+
+**Minimum data collection period for reliability:**
+
+Utilization data is only reliable after at least **4 weeks** of continuous data collection. Drawing capacity conclusions from the first week of data after enrollment is a common mistake — the first week often shows anomalous patterns as users discover and schedule around the newly available rooms.
+
+---
+
+## Identifying Utilization Patterns Across the Fleet
+
+With a reliable 90-day utilization dataset, several pattern categories become visible that are directly actionable for capacity planning.
+
+**1. Utilization rate tiers across buildings:**
+
+Sort buildings by average utilization rate over the trailing 90 days. A typical enterprise distribution looks like:
+
+| Utilization Rate | Classification | Capacity Implication |
+|----------------|---------------|---------------------|
+| >75% | **Bottleneck** | Demand exceeds supply; users cannot book rooms when needed; add capacity |
+| 50–75% | **Healthy** | Well-utilized; no immediate action required |
+| 25–50% | **Moderate** | Some underutilization; investigate before acting |
+| <25% | **Underutilized** | Low demand; candidate for repurposing or right-sizing |
+
+<Callout type="warning">
+A 25% utilization rate does not automatically mean the room should be repurposed. Low utilization may reflect poor discoverability (room is not bookable through the directory), a recent building move where employees have not yet adapted their booking habits, or seasonal factors. Always investigate cause before recommending decommission.
+</Callout>
+
+**2. Peak vs. off-peak demand analysis:**
+
+The peak utilization hours report shows which time blocks see the highest concurrent meeting demand. For capacity planning, the critical question is: what is the maximum concurrent room demand, and does the available room count support it?
+
+**Calculating peak room shortfall:**
+
+```
+Total rooms in building:        24
+Peak concurrent utilization:    92% at 10:00–11:00 (Tuesday–Thursday)
+Peak rooms in use:              22 of 24
+Available at peak:              2 rooms
+Booking lead time at peak:      Users report needing to book >3 days ahead
+
+Interpretation: Building is effectively at capacity during peak hours.
+At 92% peak utilization, the remaining 2 rooms provide insufficient buffer
+for spontaneous or same-day bookings.
+
+Recommendation: 3 additional medium rooms would reduce peak utilization
+to ~75% and restore same-day booking availability.
+```
+
+**3. Day-of-week analysis:**
+
+Hybrid work patterns create strong day-of-week utilization variance in most organizations. A typical hybrid fleet shows:
+
+- **Monday:** Moderate (many employees work from home; those in office use rooms for focus work)
+- **Tuesday–Thursday:** High (peak in-office days under hybrid arrangements)
+- **Friday:** Low (second most-common WFH day)
+
+This pattern has implications for provisioning: adding rooms to meet Tuesday–Thursday peak demand will result in those rooms sitting empty Monday and Friday. The recommendation for right-sizing in hybrid environments should use **median weekday peak utilization** (Tuesday–Thursday average) rather than overall weekly average, which understates the peak demand problem.
+
+---
+
+## Seasonal Utilization Patterns and Planning
+
+Utilization is not constant across the year. Understanding seasonal demand patterns prevents both over-provisioning (adding rooms for a temporary peak) and under-provisioning (failing to anticipate a demand surge).
+
+**Common seasonal patterns in enterprise MTR fleets:**
+
+| Period | Typical Pattern | Planning Implication |
+|--------|---------------|---------------------|
+| Q1 (Jan–Mar) | Strong demand — new year, high project activity | Full utilization expected; ensure room readiness at peak |
+| Q2 (Apr–Jun) | Moderate — stable demand | Good period for major AV upgrades (lower impact if a room is offline) |
+| Q3 (Jul–Sep) | Low demand — summer vacations reduce office attendance | Use this window for large-scale maintenance, firmware updates, room reconfigurations |
+| Q4 (Oct–Dec) | Very high demand — year-end project cycles, board meetings, planning sessions | Minimize maintenance; ensure all rooms healthy before Oct; avoid AV projects during Nov–Dec |
+
+**Using 12-month historical data for seasonal planning:**
+
+Pro Management analytics can show up to 180 days of historical data within a single query. For annual seasonal analysis, export two 180-day periods and combine them in Excel or Power BI to build a 12-month view.
+
+From a 12-month dataset, calculate:
+- **Q4 average utilization vs. Q3 average utilization:** the ratio represents your seasonal demand multiplier
+- If Q4 utilization is 40% higher than Q3, and Q3 is your baseline ("normal"), plan for 40% higher room demand in Q4
+- Ensure that any rooms taken offline for AV upgrades during Q2–Q3 are fully restored to service no later than September 15 to be ready for Q4 ramp-up
+
+---
+
+## Meeting Duration Trends and Room Availability Impact
+
+Average meeting duration directly affects room availability: longer meetings reduce room turnover, decreasing the number of distinct bookings the room can accommodate in a day.
+
+**Duration analysis from Pro Management:**
+
+Navigate to: Pro Management → Analytics → Meetings → Duration distribution
+
+The duration distribution chart shows the breakdown of meetings by length. Key patterns to look for:
+
+| Duration Pattern | Implication |
+|----------------|------------|
+| High volume of 30-minute meetings | High turnover rooms; room availability depends on buffer time between bookings |
+| High volume of 60-minute meetings | Standard pattern; moderate turnover |
+| >30% of meetings >90 minutes | Long-duration users; fewer daily cycles; a 90-minute average dramatically reduces available slots |
+| Many meetings ending late (running over) | Booking conflicts and double-booking friction; consider adding 5-minute buffer blocks in Exchange booking policies |
+
+**Calculating daily room capacity by duration:**
+
+```
+Room available hours (business day):    9 hours (09:00–18:00)
+Average meeting duration:               52 minutes
+Assumed setup/transition time:          8 minutes
+Effective meeting cycle:                60 minutes
+Maximum theoretical meetings per day:   9
+
+At 75% utilization target:
+Target meetings per day:                ~7
+
+If average duration increases to 75 minutes (transition to hybrid longer sessions):
+Effective meeting cycle:                83 minutes
+Maximum theoretical meetings per day:   6.5
+
+Impact: 28% reduction in room throughput — a building that needed
+12 rooms at 52-minute average may need 17 rooms at 75-minute average
+to maintain the same booking availability.
+```
+
+---
+
+## Quality Analytics Correlation with Utilization
+
+One of the most actionable combinations in Pro Management analytics is correlating meeting quality rate with utilization rate. This correlation reveals which rooms are simultaneously highly demanded AND technically impaired — the highest-priority candidates for AV investment.
+
+**The quality-utilization matrix:**
+
+| Utilization | Quality | Classification | Priority Action |
+|------------|---------|---------------|----------------|
+| High (>60%) | High (>90% good) | Healthy + High-Use | Maintain; protect from unplanned maintenance |
+| High (>60%) | Low (<70% good) | **Critical — High Use, Poor Quality** | Immediate AV upgrade priority; users are experiencing poor quality in a high-demand room |
+| Low (<30%) | High (>90% good) | Healthy but Underused | Investigate discoverability; check booking policy |
+| Low (<30%) | Low (<70% good) | Declining room | Investigate cause; low use may partly reflect users avoiding a poor-quality room |
+
+**Practical quality correlation workflow:**
+
+1. Export the 90-day utilization report (CSV) — room name, building, utilization rate
+2. Export the 90-day quality report (CSV) — room name, building, meeting quality rate, incident count
+3. Join on room name in Excel; add a column: `= IF(util>0.6, "High-Use", IF(util>0.3, "Medium-Use", "Low-Use"))`
+4. Add a column: `= IF(quality<0.7, "Poor-Quality", IF(quality<0.85, "Moderate-Quality", "Good-Quality"))`
+5. Filter for `High-Use + Poor-Quality` — this is your AV upgrade priority list
+6. Sort by utilization rate descending within the High-Use + Poor-Quality filter
+
+The output is an evidence-based, rank-ordered AV upgrade list that can be presented to budget holders with utilization and quality data supporting each recommendation.
+
+---
+
+## Building an Executive-Ready Capacity Planning Recommendation
+
+Analytics findings must be translated into recommendations that non-technical stakeholders can act on. The audience for capacity planning is typically Real Estate, Finance, and Facilities — not IT. The framing must connect room data to business outcomes, not technology metrics.
+
+**Recommendation structure:**
+
+```
+MEETING ROOM CAPACITY ASSESSMENT — Q2 2026
+Prepared by: IT/AV Infrastructure Team
+Data period: Jan 1 – Mar 31, 2026
+
+EXECUTIVE SUMMARY
+Three of our twelve buildings are operating at capacity during peak hours
+(Tuesday–Thursday, 10:00–12:00 and 14:00–16:00). Employees in these
+buildings are booking rooms 4+ days in advance or conducting meetings
+from hallways and open spaces. Two buildings are significantly
+underutilized and may represent real estate optimization opportunities.
+
+BOTTLENECK BUILDINGS (Action Required)
+┌─────────────────────┬─────────────┬────────────────┬──────────────────┐
+│ Building            │ Avg Util %  │ Peak Util %    │ Recommendation   │
+├─────────────────────┼─────────────┼────────────────┼──────────────────┤
+│ NYC — HQ            │ 71%         │ 94% (Tue–Thu)  │ Add 4 rooms      │
+│ London — Canary Whf │ 68%         │ 91% (Tue–Thu)  │ Add 3 rooms      │
+│ Singapore — Shenton │ 65%         │ 89% (Tue–Thu)  │ Add 2 rooms      │
+└─────────────────────┴─────────────┴────────────────┴──────────────────┘
+
+UNDERUTILIZED BUILDINGS (Optimization Opportunity)
+┌─────────────────────┬─────────────┬──────────────────────────────────┐
+│ Building            │ Avg Util %  │ Recommendation                   │
+├─────────────────────┼─────────────┼──────────────────────────────────┤
+│ Chicago — River N   │ 19%         │ Repurpose 3 large rooms to        │
+│                     │             │ focus/phone booth spaces           │
+│ Austin — Domain     │ 22%         │ Investigate discoverability;       │
+│                     │             │ building recently opened          │
+└─────────────────────┴─────────────┴──────────────────────────────────┘
+
+AV UPGRADE PRIORITIES (Quality + Utilization Data)
+Four rooms in NYC-HQ and two in London-CW are in the High-Use/Poor-Quality
+category — utilization >65%, meeting quality rate <68%. Users are scheduling
+these rooms in high numbers despite poor AV performance. Recommend priority
+AV refresh for these 6 rooms before Q4 high-demand period.
+```
+
+<Callout type="tip">
+When presenting capacity planning data to real estate stakeholders, lead with business impact (employees cannot book rooms, meetings happen in sub-optimal spaces) before presenting the utilization percentages. Executives respond to "employees are conducting board meetings from hallways" more readily than "peak utilization is 94%."
+</Callout>
+
+---
+
+<KnowledgeCheck id="p3-t1-m2-l4-kc">
+  <Question>
+    Pro Management analytics show that Building A has a 90-day average
+    utilization rate of 28% — well below the 50% threshold you would typically
+    consider "healthy." The CRE (Corporate Real Estate) team asks you to
+    recommend whether to repurpose half the rooms in Building A for open
+    workspace. Before making a recommendation, which additional data analysis
+    should you perform?
+  </Question>
+  <Answer>Export the room quality data for Building A — if quality rates are also low, users may be avoiding the rooms due to poor AV, which explains the low utilization</Answer>
+  <Answer>Check the day-of-week breakdown to see if the low average is masking high Tuesday–Thursday utilization due to a strongly hybrid workforce in that location</Answer>
+  <Answer>Review the 12-month trend to determine whether the 28% represents a stable long-term pattern or a recent decline — if the building opened recently, the first 90 days may underrepresent eventual utilization</Answer>
+  <Answer correct>All three analyses are necessary before making a recommendation. Low overall utilization could mask high peak utilization on hybrid peak days (Tuesday–Thursday), in which case repurposing rooms would worsen a capacity problem that the average rate conceals. Low quality rates could explain avoidance behavior — users may not be booking the rooms precisely because they perform poorly, making the rooms candidates for AV upgrade rather than repurposing. And a building that recently opened may show artificially low utilization in its first 90 days as booking habits form. A capacity planning recommendation based solely on the 90-day average utilization rate without these additional analyses risks a poor real estate decision</Answer>
+  <Explanation>
+    The 90-day average utilization rate is a starting point for analysis, not
+    a conclusion. A single average metric collapses all the nuance that makes
+    capacity planning defensible. The day-of-week breakdown can reveal that
+    a building with 28% average utilization has 85% Tuesday–Thursday peak
+    utilization under a hybrid model — recommending room repurposing in this
+    scenario would create a capacity crisis on in-office days. Quality
+    correlation can reveal avoidance behavior. Trend analysis can identify
+    ramp-up periods for recently opened buildings. A CRE decision to repurpose
+    rooms has long lead times and high reversal costs — the analysis should
+    be thorough enough to withstand scrutiny from multiple stakeholders.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Utilization metrics:** utilization rate measures time, not occupancy; set business hours per building in local time zone before analyzing; require minimum 4 weeks of data.
+- **Utilization tiers:** >75% = bottleneck (add capacity), 50–75% = healthy, 25–50% = investigate, <25% = candidate for repurposing (with additional analysis).
+- **Day-of-week analysis:** hybrid work creates strong Tuesday–Thursday peaks; use median peak-day utilization, not weekly average, for capacity decisions.
+- **Seasonal patterns:** Q4 = high demand (protect rooms from maintenance), Q3 = low demand (ideal for large-scale upgrades), plan Q3 completions by Sep 15 for Q4 readiness.
+- **Quality-utilization matrix:** High-Use + Poor-Quality rooms are the highest-priority AV upgrade candidates — high user demand combined with poor technical performance.
+- **Executive recommendations:** frame capacity findings in business impact language; provide building-level summary with specific room counts and actions.
+
+---
+
+## What's Next
+
+[Custom Reporting and Data Export →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/pro-management-enterprise/lessons/custom-reporting-data-export/)

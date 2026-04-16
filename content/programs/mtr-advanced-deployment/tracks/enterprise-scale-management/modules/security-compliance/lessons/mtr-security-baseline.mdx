@@ -1,0 +1,308 @@
+---
+id: "p3-t1-m3-l1"
+slug: "mtr-security-baseline"
+title: "MTR Security Baseline"
+shortTitle: "Security Baseline"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 3
+moduleSlug: "security-compliance"
+moduleTitle: "Security and Compliance for MTR"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Configure Windows Defender and Defender for Endpoint on MTR devices without breaking Teams Rooms functionality"
+  - "Verify TPM 2.0 and Secure Boot status on MTR devices using PowerShell"
+  - "Deploy BitLocker silent encryption and LAPS via Intune for MTR room devices"
+  - "Identify which Microsoft Security Baseline and CIS Benchmark Level 1 settings require exceptions for MTR"
+
+prerequisites:
+  - "p3-t1-m2-l5"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "security"
+  - "compliance"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m3-l2"
+
+metaDescription: "MTR security baseline — Windows Defender AV and Defender for Endpoint on room devices, TPM 2.0 verification, Secure Boot, BitLocker silent encryption via Intune, LAPS for local admin rotation, and applying the Microsoft Security Baseline and CIS Benchmark Level 1 with MTR-specific exceptions."
+
+keywords:
+  - "MTR security baseline"
+  - "Teams Rooms Windows Defender"
+  - "MTR BitLocker Intune"
+  - "Teams Rooms TPM Secure Boot"
+  - "CIS Benchmark MTR exceptions"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+MTR Windows devices are managed endpoints running Windows 11 IoT Enterprise — they are subject to the same OS-level security controls as any managed PC in the environment. However, room devices operate unattended with a resource account and a fixed-function application, which means security settings that assume an interactive user (PIN requirements, MFA prompts, screen lock) break room functionality. This lesson establishes the MTR security baseline: the specific controls to enable, the controls to exclude, and how to apply industry frameworks (Microsoft Security Baseline, CIS Benchmark) with the exceptions required for room devices to function.
+
+---
+
+## Windows Defender on MTR Devices
+
+MTR Windows devices should run Windows Defender Antivirus (Defender AV) and, in most enterprise environments, should also be enrolled in Microsoft Defender for Endpoint (MDE) for EDR visibility.
+
+**Defender AV on MTR — what works out of the box:**
+
+Defender AV is active by default on Windows 11 IoT Enterprise. MTR devices receive signature updates through Windows Update alongside OS patches. No special configuration is required to enable Defender AV; the focus is on ensuring it stays enabled and that attack surface reduction (ASR) rules do not interfere with Teams Rooms application behavior.
+
+**Attack Surface Reduction rules — applicable vs. problematic for MTR:**
+
+| ASR Rule | GUID | Recommended MTR Setting | Reason |
+|---|---|---|---|
+| Block executable content from email/webmail | BE9BA2D9-53EA-4CDC-84E5-9B1EEEE46550 | Enable | Email not used on room device |
+| Block Office apps creating child processes | D4F940AB-401B-4EFC-AADC-AD5F3C50688A | Audit only | Office not installed; safe but set to Audit to avoid unexpected blocks |
+| Block credential stealing from LSASS | 9E6C4E1F-7D60-472F-BA1A-A39EF669E4B0 | Enable | No legitimate process needs LSASS credential access on MTR |
+| Block untrusted/unsigned processes from USB | B2B3F03D-6A65-4F7B-A9C7-1C7EF74A9BA4 | Enable | Room devices should not run code from USB |
+| Block process creations from PSExec/WMI | D1E49AAC-8F56-4280-B9BA-993A6D77406C | **Audit only** | Teams Rooms app and OEM management agents may use WMI; enabling blocks them |
+| Block persistence via Windows Management Instrumentation | E6DB77E5-3DF2-4CF1-B95A-636979351E5B | **Disable** | Breaks OEM device management agents that register WMI event subscriptions |
+| Use advanced protection against ransomware | C1DB55AB-C21A-4637-BB3F-A12568109D35 | Enable | Appropriate for room devices |
+| Block abuse of exploited vulnerable signed drivers | 56a863a9-875e-4185-98a7-b882c64b5ce5 | Enable | No legitimate need for vulnerable drivers on MTR |
+
+<Callout type="warning">
+The "Block persistence through WMI event subscription" ASR rule (E6DB77E5) breaks multiple OEM management agents (Lenovo ThinkSmart Manager, Crestron XiO Cloud agent, Poly Lens). Always test ASR rule enablement in Audit mode on MTR devices before switching to Block mode. Review the Defender for Endpoint Advanced Hunting `DeviceEvents` table for ASR audit events against MTR devices before enforcing.
+</Callout>
+
+**Defender for Endpoint enrollment via Intune:**
+
+MDE provides EDR telemetry, vulnerability assessment, and device risk scoring — all useful for MTR fleet security operations. Onboard MTR devices to MDE through Intune:
+
+1. In Intune → Endpoint Security → Endpoint Detection and Response → Create Policy
+2. Platform: Windows 10 and later
+3. Profile: Endpoint Detection and Response
+4. Set "Microsoft Defender for Endpoint client configuration package type" to **Auto from connector**
+5. Assign to the MTR Windows device group
+
+Once enrolled, MTR devices appear in the MDE portal (security.microsoft.com) with a device risk score. Monitor for devices with risk scores above "Low" — these are rooms that require investigation.
+
+---
+
+## TPM 2.0 and Secure Boot Verification
+
+All Microsoft-certified MTR Windows devices ship with TPM 2.0 and Secure Boot enabled. Verify this baseline is intact after deployment, especially on devices that have been re-imaged or shipped from secondary sources.
+
+**Verify TPM status via PowerShell (run as admin on device or via Intune remediation script):**
+
+```powershell
+# Check TPM presence and version
+$tpm = Get-Tpm
+Write-Output "TPM Present: $($tpm.TpmPresent)"
+Write-Output "TPM Ready: $($tpm.TpmReady)"
+Write-Output "TPM Enabled: $($tpm.TpmEnabled)"
+
+# Get TPM specification version
+$tpmWmi = Get-WmiObject -Namespace "root\cimv2\security\microsofttpm" -Class Win32_Tpm
+Write-Output "TPM Spec Version: $($tpmWmi.SpecVersion)"
+```
+
+Expected output for a healthy MTR device: `TpmPresent: True`, `TpmReady: True`, `SpecVersion: 2.0, 1.38, 3` (or similar 2.0 family version).
+
+**Verify Secure Boot via PowerShell:**
+
+```powershell
+# Check Secure Boot state
+$secureBoot = Confirm-SecureBootUEFI
+Write-Output "Secure Boot Enabled: $secureBoot"
+
+# Get UEFI firmware type (must be UEFI, not Legacy BIOS)
+$firmware = (Get-ItemProperty HKLM:\System\CurrentControlSet\Control\SecureBootPolicy -ErrorAction SilentlyContinue)
+if ($env:firmware_type -eq "UEFI") {
+    Write-Output "Firmware type: UEFI"
+} else {
+    Write-Output "Firmware type: $env:firmware_type"
+}
+```
+
+`Confirm-SecureBootUEFI` returns `True` if Secure Boot is enabled, throws an exception if the device is not a UEFI system or Secure Boot is not supported. A return value of `False` indicates Secure Boot is supported but currently disabled — flag these devices for remediation.
+
+**Intune compliance policy integration:**
+
+Both TPM and Secure Boot are checkable through Intune compliance policy settings (Device Health section). Enable "Require Secure Boot to be enabled on the device" in the MTR compliance policy to surface devices where Secure Boot has been disabled.
+
+---
+
+## BitLocker Silent Encryption via Intune
+
+BitLocker encrypts the OS drive to protect meeting data at rest. MTR devices support TPM-backed silent encryption — BitLocker encrypts the drive using the TPM as the key protector with no user interaction and no recovery key prompt at boot.
+
+**Intune BitLocker policy for MTR (Endpoint Security → Disk Encryption → BitLocker):**
+
+| Setting | Value | Notes |
+|---|---|---|
+| Require device encryption | Yes | Triggers BitLocker if not already enabled |
+| Allow standard users to enable encryption during Autopilot | Yes | Ensures encryption occurs during Autopilot even before admin sign-in |
+| Configure encryption method for OS drives | XTS-AES 256-bit | Strongest available; no performance impact on modern hardware |
+| Startup authentication required | Not configured | TPM-only key protector — no PIN, no USB key, no user input at boot |
+| BitLocker OS drive recovery: Recovery key | Allow 48-digit recovery password | Keys are escrowed to Azure AD automatically |
+| Hide recovery options during BitLocker setup | Yes | Prevents user from being prompted; fully silent |
+| Save BitLocker recovery information to Azure AD | Yes — require before BitLocker enabled | Ensures key is backed up before encryption activates |
+| Block write access to removable drives not protected by BitLocker | Not configured | Removable media not a concern for room devices; avoid complexity |
+
+<Callout type="warning">
+Setting "Startup authentication required" to a value requiring a PIN will prevent MTR devices from booting unattended after a power cycle. Room devices must boot without user interaction. The TPM-only key protector is appropriate — the TPM releases the encryption key automatically when the boot sequence is measured as valid (Secure Boot enabled, no tampering).
+</Callout>
+
+**Verify BitLocker status via PowerShell:**
+
+```powershell
+# Check BitLocker status on OS drive
+$bitlocker = Get-BitLockerVolume -MountPoint C:
+Write-Output "Protection Status: $($bitlocker.ProtectionStatus)"
+Write-Output "Encryption Percentage: $($bitlocker.EncryptionPercentage)%"
+Write-Output "Key Protectors: $($bitlocker.KeyProtector.KeyProtectorType -join ', ')"
+```
+
+Expected: `ProtectionStatus: On`, `EncryptionPercentage: 100`, `KeyProtectors: Tpm, RecoveryPassword`.
+
+---
+
+## LAPS for Local Admin Account Rotation
+
+MTR Windows devices have a local administrator account used for device-level administration. If the same local admin password is deployed to every MTR device (common in OEM imaging), a single compromised device exposes the local admin credential to every room in the fleet.
+
+Windows LAPS (Local Administrator Password Solution), now natively integrated in Windows 11, rotates the local administrator password on a schedule and stores the current password in Azure AD. IT staff retrieve the current password from Intune or via PowerShell when needed.
+
+**Configure LAPS via Intune (Endpoint Security → Account Protection → Local Admin Password Solution):**
+
+| Setting | Recommended Value |
+|---|---|
+| Enable Local Administrator Password Management | Yes |
+| Administrator account name to manage | Leave blank to manage the built-in Administrator account |
+| Password age (days) | 30 |
+| Password complexity | Large letters + small letters + numbers + special characters |
+| Password length | 20 |
+| Post-authentication actions | Reset password (do not log out — room devices must stay signed in) |
+| Post-authentication reset delay (hours) | 8 |
+
+**Retrieve a room device's current local admin password:**
+
+```powershell
+# Requires: Azure AD module, appropriate Azure AD role (Intune Administrator or Local Administrator Password Recovery)
+# Via Microsoft Graph PowerShell
+Get-MgDeviceLocalCredential -DeviceId "<Azure-AD-Device-Object-ID>"
+```
+
+Or retrieve from the Intune portal: Devices → select device → Local Admin Password → Show local administrator password.
+
+---
+
+## Microsoft Security Baseline and CIS Benchmark Exceptions for MTR
+
+The Microsoft Security Baseline for Windows 11 and CIS Benchmark Level 1 are excellent starting points for MTR hardening — but both contain settings that break room device functionality. Apply the baseline via Intune Security Baselines, then override specific settings using a separate Intune configuration profile targeted to the MTR device group.
+
+**Microsoft Security Baseline — settings requiring MTR exceptions:**
+
+| Baseline Setting | Baseline Value | MTR Override | Reason |
+|---|---|---|---|
+| Interactive logon: Machine inactivity limit | 900 seconds | 0 (disabled) | Screen lock breaks the room display state |
+| Accounts: Block Microsoft accounts | Administrators can't add accounts | Not configured | Resource account sign-in uses Microsoft account federation |
+| Windows Ink Workspace: Allow Windows Ink Workspace | Block | Not configured | Surface Hub-style whiteboard features require Ink Workspace |
+| User Account Control: Behavior of elevation prompt for standard users | Automatically deny elevation requests | Prompt for credentials on the secure desktop | OEM agents on some MTR devices require UAC elevation during first run |
+| Windows Defender SmartScreen: Configure App Install Control | Require app to be from Store | Not configured | MTR OEM agents are not Store apps |
+| Power management: Sleep timeout (plugged in) | 1800 seconds | 0 (never sleep) | Room devices must never sleep; sleep interrupts calls |
+| Allow Telemetry | Security (0) | Required (1) | Setting 0 blocks MDE telemetry required for device risk scoring |
+
+**CIS Benchmark Level 1 — known MTR exceptions:**
+
+| CIS Control | CIS Recommendation | MTR Exception |
+|---|---|---|
+| 1.1.6 — Screen saver: Password protected | Enabled | Disabled — no interactive user; screen saver breaks display |
+| 2.3.7.3 — Interactive logon: Do not display last user name | Enabled | Not configured — MTR kiosk mode sign-in relies on stored credentials |
+| 18.9.13.1 — Turn off app notifications on the lock screen | Enabled | Not configured — meeting notifications must display |
+| 19.7.5.1 — Turn off Windows Ink Workspace | Enabled | Not configured — required for whiteboard-enabled MTR devices |
+
+**Applying the baseline with exceptions in Intune:**
+
+1. Create a Security Baseline policy: Intune → Endpoint Security → Security Baselines → Windows 11 Security Baseline → Create Profile
+2. Assign to all Windows devices (or a broader group)
+3. Create a separate Configuration Profile (Settings Catalog) with the MTR-specific override values listed above
+4. Assign the override profile to the MTR Windows device group with a **higher priority** than the baseline policy
+
+Intune applies policies in priority order; the MTR override profile wins over the baseline for the specific settings it configures, leaving all other baseline settings intact.
+
+---
+
+<KnowledgeCheck id="p3-t1-m3-l1-kc">
+  <Question>
+    After applying the Microsoft Security Baseline via Intune to all Windows devices
+    in the environment (including MTR), the security team reports that MTR rooms
+    are rebooting overnight and not returning to the Teams Rooms sign-in screen —
+    they are sitting at a dark display. Investigation shows the OS is running
+    normally but the display is off. No changes were made to the MTR-specific
+    Intune profiles. What Security Baseline setting is most likely responsible,
+    and what is the correct remediation?
+  </Question>
+  <Answer>The Baseline enabled BitLocker, which requires a PIN at startup. Disable BitLocker on MTR devices.</Answer>
+  <Answer>The Baseline applied an ASR rule that is blocking the Teams Rooms application from launching. Audit ASR events to identify the rule and set it to Audit mode.</Answer>
+  <Answer correct>The Security Baseline sets a power management sleep timeout (typically 1800 seconds / 30 minutes plugged in). MTR devices that are idle overnight hit this timeout and the display enters sleep state. The Teams Rooms app does not always recover the display from OS-level sleep. The remediation is to create an MTR-specific Intune Configuration Profile (Settings Catalog) that overrides the sleep timeout to 0 (never) for the MTR device group, with higher priority than the Security Baseline policy assignment.</Answer>
+  <Answer>The Baseline disabled Windows Update, preventing the Teams Rooms application from updating, which caused an application crash. Re-enable Windows Update in the baseline.</Answer>
+  <Explanation>
+    The Microsoft Security Baseline configures plugged-in sleep timeouts to
+    reduce attack surface on unattended devices. For most managed PCs this is
+    appropriate — but MTR devices are intentionally left unattended and must
+    stay in an active display state (or return to the Teams Rooms standby
+    screen, not a black display). The OS sleep state is not the same as the
+    Teams Rooms display standby mode, and the Teams Rooms app does not reliably
+    wake the display from OS-level sleep. The fix is an override profile that
+    sets the sleep timeout to 0 (never) for the MTR device group. This is
+    the standard pattern for applying security baselines to MTR: apply broadly,
+    then override the handful of settings that conflict with room device operation.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Defender AV:** Active by default on MTR. Test ASR rules in Audit mode before enforcing — rules targeting WMI persistence and PSExec break OEM management agents.
+- **MDE enrollment:** Onboard via Intune EDR policy using the Auto connector; monitor device risk scores in the MDE portal.
+- **TPM 2.0 and Secure Boot:** Verify with `Get-Tpm` and `Confirm-SecureBootUEFI`; surface failures via Intune compliance policy.
+- **BitLocker:** Deploy silent TPM-only encryption via Intune Disk Encryption policy; never configure a startup PIN on room devices; escrow recovery keys to Azure AD.
+- **LAPS:** Rotate the local admin password every 30 days; retrieve current passwords from Intune when needed; do not configure post-auth device logoff.
+- **Security Baseline exceptions:** Override sleep timeout (set to never), screen saver lock, SmartScreen app install control, and Allow Telemetry level using a higher-priority MTR Configuration Profile.
+
+---
+
+## What's Next
+
+[Conditional Access Advanced Patterns →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/security-compliance/lessons/conditional-access-advanced/)

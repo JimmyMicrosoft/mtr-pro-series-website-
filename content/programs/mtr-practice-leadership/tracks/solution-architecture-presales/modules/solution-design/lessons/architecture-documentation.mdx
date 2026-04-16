@@ -1,0 +1,240 @@
+---
+id: "p4-t2-m1-l4"
+slug: "architecture-documentation"
+title: "Architecture Documentation Standards"
+shortTitle: "Architecture Documentation"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 1
+moduleSlug: "solution-design"
+moduleTitle: "Solution Architecture and Design"
+
+lessonIndex: 4
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "presales-engineer"]
+
+objectives:
+  - "Produce architecture documentation that communicates a design clearly to both technical and non-technical audiences"
+  - "Apply consistent drawing and notation standards to MTR room design documentation"
+  - "Build a documentation package that serves both the sales process and the delivery team"
+  - "Define the documentation standards that enable a third party to install from the design"
+
+prerequisites:
+  - "p4-t2-m1-l1"
+  - "p4-t2-m1-l3"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["solutions-architect", "presales-engineer"]
+topicTags: ["solution-design", "documentation", "architecture", "drawing-standards"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Architecture Documentation Template Pack"
+    filename: "mtr-architecture-documentation-pack.zip"
+
+relatedLessons:
+  - "p4-t2-m1-l1"
+  - "p4-t2-m3-l2"
+  - "p4-t1-m2-l4"
+
+metaDescription: "Learn to produce MTR architecture documentation that communicates designs clearly to both sales and delivery audiences, including room drawings, signal flow diagrams, and configuration specifications."
+keywords: ["MTR architecture documentation", "room design drawings", "signal flow diagram", "AV documentation standards"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Documentation as Communication
+
+Architecture documentation serves two audiences with different needs:
+
+**The client (sales audience)**: Needs to understand what they are buying, why it is the right solution, and what the end state will look like. Technical depth appropriate for an IT manager or facilities manager.
+
+**The installation team (delivery audience)**: Needs to know exactly what to buy, where to put it, how to connect it, and how to configure it. Must be complete enough for a third party to install without needing to contact the designer.
+
+Good architecture documentation satisfies both. Vague or incomplete documentation creates installation errors, support calls back to the designer, and warranty disputes.
+
+---
+
+## Documentation Deliverables
+
+A complete architecture documentation package contains:
+
+### 1. Design Overview
+
+**Audience**: Client (IT manager, sponsor, procurement)
+
+One to two pages covering:
+- Project context (what is being deployed, why)
+- Design approach (what patterns were selected and why)
+- Hardware summary (manufacturer, model, key specifications)
+- Configuration approach (MTR policy, licensing, management platform)
+- Diagram: room layout overview (one per room type, not every room)
+
+Language: Non-technical. No jargon unless defined. Focus on outcomes and benefits.
+
+### 2. Room Schedule
+
+**Audience**: Both
+
+The complete list of every room in scope, mapped to its design pattern:
+
+```
+Room ID | Room Name      | Floor | Pattern  | MTR Device               | Display      | Camera        | Notes
+--------|---------------|-------|----------|--------------------------|--------------|---------------|------
+R-001   | Boardroom A    | 2     | Pattern 4| Crestron UC-MX70         | 98" Samsung  | Logitech PTZ2 | Dual display
+R-002   | Meeting Rm 2A  | 2     | Pattern 2| Logitech Rally Bar       | 75" Samsung  | Integrated    |
+R-003   | Meeting Rm 2B  | 2     | Pattern 2| Logitech Rally Bar       | 75" Samsung  | Integrated    |
+R-004   | Huddle A       | 3     | Pattern 1| Logitech Rally Bar Huddle| 65" Samsung  | Integrated    |
+```
+
+### 3. Room Design Drawings
+
+**Audience**: Installation team (primary); client (secondary)
+
+One drawing set per room type (not every room, unless rooms vary significantly):
+
+**Plan view** (top-down):
+- Room dimensions labelled
+- Equipment positions with labels
+- Cable routes (dashed lines)
+- Network outlet positions
+- Power outlet positions
+
+**Elevation view** (front wall):
+- Display height (bottom edge measurement from floor)
+- Camera position relative to display
+- Mount type indicated
+- Cable management route
+
+**Signal flow diagram**:
+- Every component drawn as a box with labelled inputs/outputs
+- Cable type and direction shown for each connection
+- Audio signal chain: microphone → DSP → amplifier → speaker
+- Video signal chain: camera → compute → display
+- Network connections: compute → PoE switch
+- Control: touch controller → compute or control system
+
+**Drawing standards**:
+- Use standard AV schematic symbols where applicable (AVIXA standards)
+- Every device labelled with manufacturer, model, and quantity
+- Cable types labelled (HDMI, CAT6, USB-A, USB-C, Phoenix terminal)
+- Drawing revision history at bottom of every page
+
+<Callout type="tip">
+**Draw the signal flow before writing the bill of materials.** The diagram makes it immediately obvious if you have missed a cable, a converter, or a power supply. Many BOM errors originate from skipping this step.
+</Callout>
+
+### 4. Bill of Materials
+
+**Audience**: Procurement, installation team
+
+The complete hardware list, line by line:
+
+```
+Line | Qty | Manufacturer | Part Number   | Description                    | Unit Price | Extended | Notes
+-----|-----|-------------|---------------|-------------------------------|-----------|----------|------
+1    | 20  | Logitech    | 960-001390    | Rally Bar (graphite)          | £X         | £X       | Pattern 2 rooms
+2    | 20  | Samsung     | LH75QMBPAGCXEN| 75" QMB-T Commercial Display  | £X         | £X       | With stand option
+3    | 20  | Samsung     | BN81-22729A   | VESA mount for QMB-T          | £X         | £X       |
+4    | 2   | Crestron    | UC-MX70-T     | Flex UC for Teams, medium     | £X         | £X       | Pattern 4 boardrooms
+5    | 2   | Logitech    | 960-001057    | PTZ Pro 2 Camera              | £X         | £X       | Boardrooms
+...
+```
+
+Include:
+- Cables (specify type and length)
+- Mounting hardware (VESA mounts, wall brackets)
+- Power cables and surge protectors
+- Any consumables (cable labels, velcro, trunking)
+- Spare items (typically 5–10% for critical components)
+
+### 5. Configuration Specification
+
+**Audience**: Commissioning engineer (primary)
+
+For each design pattern, document:
+
+```
+Pattern 2 — Standard Meeting Room Configuration
+
+MTR App Settings:
+- Room Type: Meeting Room
+- Default layout: Front Row
+- DualScreenMode: Disabled
+- Allow HDMI ingest: Yes
+- Teams Rooms Pro: Yes
+
+Teams Admin Centre Policies:
+- Meeting policy: [ClientName]-MeetingRooms
+- Calling policy: [ClientName]-Rooms
+- IP phone policy: [ClientName]-Rooms
+
+Intune Configuration Profile:
+- Profile name: MTR-StandardRoom-Config
+- Assigned to: MTR-Devices-Standard (device group)
+
+Resource Account Configuration:
+- License: Teams Rooms Pro
+- Calendar processing: AutoAccept
+- Password: Never expires
+- MFA: Excluded via Conditional Access (named CA policy)
+```
+
+### 6. Network Configuration Requirements
+
+**Audience**: Client network team
+
+What the network team needs to know before installation:
+
+- VLAN ID(s) required and DHCP scope
+- DNS requirements (public DNS resolution from MTR VLAN)
+- Firewall rules required (Microsoft 365 URL/IP list)
+- QoS DSCP markings and port ranges
+- PoE requirements per port (specify PoE+/PoE++ if needed)
+- Switch port assignments per room (if static)
+
+---
+
+## Documentation Version Control
+
+Architecture documentation must be version-controlled:
+
+| Version | Date | Author | Change Summary |
+|---|---|---|---|
+| 0.1 | 2026-04-01 | J. Smith | Initial draft for client review |
+| 0.2 | 2026-04-08 | J. Smith | Updated boardroom display spec; added cable schedule |
+| 1.0 | 2026-04-13 | J. Smith | Approved by client; issued for construction |
+
+**Golden rule**: The version issued to the installation team must be the approved version, signed by the client. If a change is made after approval, a new revision is issued. Never hand an installation team an unapproved or superseded drawing.
+
+---
+
+<KnowledgeCheck>
+  <Question text="An installation engineer calls you during installation and says the HDMI cable specified in the BOM is 2m but the table is 3.5m from the display wall. What does this indicate about the documentation?">
+    <Answer>This is an installation error — the engineer should have bought a longer cable on-site</Answer>
+    <Answer correct>The room survey measurements were not fully reflected in the BOM — cable lengths should be specified based on actual route measurements, not estimated distances</Answer>
+    <Answer>The engineer is reading the wrong drawing</Answer>
+    <Answer>HDMI cables can always be extended without signal degradation</Answer>
+    <Explanation>Cable lengths in the BOM must reflect the actual cable route length from the survey, not just room dimensions. A cable running along walls, through conduit, and around furniture will be significantly longer than the straight-line distance. This is a documentation gap — route lengths should be measured during the site survey.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Architecture Documentation Template Pack" filename="mtr-architecture-documentation-pack.zip" />

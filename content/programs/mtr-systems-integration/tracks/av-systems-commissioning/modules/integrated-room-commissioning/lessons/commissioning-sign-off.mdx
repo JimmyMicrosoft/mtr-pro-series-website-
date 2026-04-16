@@ -1,0 +1,288 @@
+---
+id: "p2-t3-m3-l4"
+slug: "commissioning-sign-off"
+title: "AV Commissioning Sign-Off and Documentation"
+shortTitle: "Commissioning Sign-Off"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 3
+moduleSlug: "integrated-room-commissioning"
+moduleTitle: "Integrated Room Systems and Commissioning Sign-Off"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Compile the complete set of commissioning documentation required for an MTR room handover"
+  - "Conduct a structured client handover including system walkthrough and user orientation"
+  - "Identify the post-handover support obligations that define the warranty and warranty-response period"
+
+prerequisites:
+  - "p2-t3-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+  - "support"
+
+topicTags:
+  - "commissioning"
+  - "documentation"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t3-m3-l4-commissioning-sign-off-package.docx"
+    label: "AV Commissioning Sign-Off Package"
+    sizeKb: 65
+
+relatedLessons:
+  - "p2-t3-m3-l3"
+  - "p2-t2-m3-l5"
+
+metaDescription: "AV commissioning sign-off and documentation for MTR conference rooms — as-built documentation, test report compilation, client handover walkthrough, user orientation, warranty obligations, and post-commissioning support transition."
+
+keywords:
+  - "MTR commissioning sign-off"
+  - "Teams Rooms handover documentation"
+  - "AV commissioning as-built"
+  - "conference room commissioning package"
+  - "MTR project handover"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Commissioning sign-off is both a technical milestone (all systems tested, all tests passed) and a contractual milestone (the client accepts the room as delivered to specification). A well-executed handover protects the integrator from disputed scope and provides the client with the documentation they need to operate and support the room. This lesson covers the documentation, handover process, and post-commissioning obligations.
+
+---
+
+## Commissioning Documentation Package
+
+The commissioning documentation package is assembled from deliverables produced throughout the project and compiled into a single set of handover documents.
+
+**Required documents:**
+
+**1. As-Built Drawings**
+Updated versions of the design drawings reflecting any changes made during installation:
+- Rack elevation drawing (all equipment in the rack, labeled with model and asset tag)
+- Room plan showing device placement (camera position, mic positions, speaker locations, cable routes)
+- Signal flow diagram (audio signal chain, video signal chain, control connections)
+- Network diagram (room network connections, VLAN, IP address table for managed devices)
+
+*As-built drawings must be updated to reflect what was actually installed, not what was originally designed. Changes made on-site that are not reflected in as-builts create support problems when the next technician works in the room.*
+
+**2. Equipment Schedule**
+A table of all installed equipment:
+| Field | Description |
+|-------|-------------|
+| Item | Equipment name/type |
+| Manufacturer | Brand |
+| Model | Specific model number |
+| Serial number | Recorded from unit |
+| Firmware version | Installed firmware at time of commissioning |
+| Asset tag | Client asset number if applicable |
+| Warranty expiry | From purchase date |
+| Location | Room location of the unit |
+
+**3. Test Reports**
+Compiled from subsystem and integrated testing:
+- Audio acceptance test report (RT60, STI, background noise, level calibration, test call)
+- Video quality validation report (camera framing, display calibration, signal path, test call)
+- Network validation report (connectivity, QoS, bandwidth assessment — from Track 1)
+- Integrated system test report (all scenarios pass/fail, issue log with resolution status)
+
+**4. Configuration Documentation**
+Record of all configuration settings applied to each system:
+- Teams Rooms app configuration (device settings, display settings, feature flags)
+- DSP program file (exported/saved copy of the DSP configuration)
+- Control system program (exported/saved copy of control processor program)
+- Camera preset positions (documented list of PTZ presets)
+- Network device configuration (VLAN, QoS policies, switch port settings — reference to IT team documentation)
+
+**5. Credentials and Access Information**
+Securely provided to the client IT team (not included in the general documentation package):
+- Teams Rooms resource account username
+- Local Windows admin credentials for the MTR compute unit
+- DSP software admin credentials
+- Control processor admin credentials
+- Display LAN control credentials (if applicable)
+
+*Credentials must be stored in the client's password manager, not in an emailed document.*
+
+**6. Open Items Log**
+List of any non-blocking issues documented during testing that have committed resolution dates. Any items from this list that remain unresolved at handover must be explicitly acknowledged by the client.
+
+---
+
+## Client Handover Walkthrough
+
+The handover walkthrough demonstrates that the room works as specified and trains the client team on daily operation and basic troubleshooting.
+
+**Attendees:**
+- Integrator: lead technician + project manager
+- Client: IT administrator (will own the system), facilities manager (will manage the room), room end-user representative (will use the room daily)
+
+**Walkthrough agenda:**
+
+**Part 1 — System demonstration (15–20 minutes):**
+Walk through each meeting scenario from the test plan with client attendees observing:
+1. Start an ad hoc meeting from the touch panel
+2. Join a scheduled meeting
+3. Share content from a laptop (HDMI ingest)
+4. Demonstrate room automation (show what happens when the meeting ends)
+5. PTZ camera presets (if applicable)
+
+**Part 2 — IT administrator walkthrough (20–30 minutes):**
+Walk the IT administrator through the system from a support perspective:
+1. How to restart the MTR device from the touch panel (Settings → Restart)
+2. How to verify the device is online in Teams Admin Center
+3. How to find the device in Pro Management (if Pro licensed)
+4. Basic DSP software access — show the DSP configuration; explain what should and should not be changed
+5. Display RS-232 or LAN control — how to manually control a display if automation fails
+6. Who to call for each system: integrator AV support, Microsoft support (TRPS), client IT helpdesk
+
+**Part 3 — Documentation handover:**
+Physically or digitally deliver the complete commissioning package. Confirm that:
+- The IT administrator knows where the documentation is stored
+- Credentials are transferred to the client password manager
+- The open items log is reviewed and the client confirms they understand the status of each item
+
+---
+
+## Sign-Off Procedure
+
+**Completion criteria before sign-off:**
+- All blocking issues from integrated testing are resolved
+- All test reports show pass results (or exceptions documented and agreed)
+- As-built drawings updated to reflect as-installed
+- Documentation package complete and delivered
+- Credentials transferred to client
+
+**Sign-off document:**
+The sign-off document confirms acceptance of the room. It includes:
+- Room name and location
+- Date of handover
+- List of systems covered (MTR device, audio, video, control, network)
+- Statement of acceptance: "The systems listed above have been commissioned and tested in accordance with the agreed specification. Outstanding items (if any) are documented in the attached open items log."
+- Signature lines: Integrator authorized representative + Client authorized representative
+
+*The client signature indicates acceptance of the room as commissioned — not acceptance of any outstanding open items. Outstanding items remain the integrator's obligation until resolved.*
+
+---
+
+## Post-Commissioning: Warranty and Support Transition
+
+**Warranty period:**
+The integrator's warranty typically covers:
+- Labor for fault diagnosis and repair for systems installed by the integrator
+- Part replacement for failed equipment within the warranty period (depending on contract terms)
+- Software configuration faults attributable to the commissioning work
+
+**Warranty response times** should be defined in the contract, not assumed. Typical:
+- Critical fault (room unusable): 4-hour response, next business day on-site
+- Non-critical fault (degraded functionality): 24-hour response, 3-business-day on-site
+
+**Support transition:**
+After warranty expiry (or from day one for managed service clients), support transitions to:
+- The client's IT helpdesk for first-line triage (restart, basic checks)
+- The integrator or MSP for AV-specific faults
+- Microsoft support via TRPS (Teams Rooms Premium Support) for software and platform issues
+
+Ensure the client has:
+- The integrator's support contact information
+- Knowledge of what warranty covers and what is out of scope
+- Microsoft support case process documented (for the IT admin)
+
+---
+
+<KnowledgeCheck id="p2-t3-m3-l4-kc">
+  <Question>
+    At the handover meeting, the client's IT administrator notices that the
+    DSP configuration document in the commissioning package shows the factory-
+    default password for the DSP admin account. The actual installed DSP has
+    a custom password set during commissioning. The technician cannot locate
+    the updated password. What is the correct course of action?
+  </Question>
+  <Answer>Complete the handover with the factory-default password documented, and note that the actual password may differ</Answer>
+  <Answer>Reset the DSP to factory defaults so that the documented password is correct</Answer>
+  <Answer correct>Do not complete handover with incorrect credentials documentation. The technician must either locate the custom password from commissioning notes or project records, or reset the DSP admin password to a new known value, update the documentation, and transfer the correct credentials to the client's password manager. Documenting an incorrect password leaves the client unable to access their own equipment and is a commissioning defect. Resetting to factory defaults would lose the current DSP configuration — only do this if the DSP configuration can be restored from the saved configuration backup, which should be part of the commissioning documentation</Answer>
+  <Answer>Proceed with handover and raise a non-blocking open item to resolve the password later</Answer>
+  <Explanation>
+    Incorrect credentials in the commissioning documentation is a blocking
+    issue — it leaves the client unable to access equipment they own. Handing
+    over with a known-incorrect credential documented is not acceptable.
+    "Note that the actual password may differ" actively acknowledges providing
+    wrong information. Completing handover and raising an open item defers
+    a critical access problem. The correct approach: locate the correct
+    credential or reset to a new known value, update documentation, transfer
+    the correct credential securely to the client, and then complete handover.
+    The DSP configuration backup should already exist as a commissioning
+    deliverable — if it does, resetting and restoring is low-risk. If no
+    configuration backup exists, that is a second documentation gap to address
+    before handover.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Documentation package:** As-built drawings, equipment schedule, test reports, configuration documentation, credentials, open items log.
+- **Handover walkthrough:** System demonstration + IT administrator training + documentation delivery — all three required.
+- **Sign-off:** Written acceptance from client representative; blocking issues must be resolved before sign-off.
+- **Post-commissioning:** Define warranty scope and response times; ensure support transition plan is understood by client IT team.
+
+---
+
+<DownloadButton
+  file="p2-t3-m3-l4-commissioning-sign-off-package.docx"
+  label="AV Commissioning Sign-Off Package"
+  sizeKb={65}
+  description="Word template for MTR room commissioning sign-off — as-built drawing index, equipment schedule table, test report summary, open items log, handover checklist, sign-off signature page, and warranty and support contact section."
+/>
+
+---
+
+## Program Complete
+
+You have completed the MTR Systems Integration program. You now have the full integration toolkit for enterprise MTR deployments — from network infrastructure design and Microsoft 365 administration through audio/video systems and commissioning sign-off.
+
+The three tracks you have completed cover the technical depth required to design, deploy, and manage MTR systems at scale:
+
+- **Track 1 — Network Infrastructure and QoS:** The network layer that makes Teams media reliable at enterprise scale
+- **Track 2 — Microsoft 365 Administration:** The identity, policy, and monitoring layer that governs the device fleet
+- **Track 3 — AV Systems Commissioning:** The physical systems layer that determines the room experience
+
+Program 3 covers advanced MTR deployment scenarios — multi-room campus deployments, hybrid meeting equity, and integration with building management and collaboration platforms.
+
+[Continue to Program 3: MTR Advanced Deployment →](/programs/mtr-advanced-deployment/)

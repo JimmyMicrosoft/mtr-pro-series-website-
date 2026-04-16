@@ -1,0 +1,354 @@
+---
+id: "p1-t3-m3-l2"
+slug: "common-configuration-scenarios"
+title: "Common Configuration Scenarios — Dual Display, Content Camera, Theming, Front Row"
+shortTitle: "XML Configuration Scenarios"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 3
+moduleSlug: "xml-configuration-profiles"
+moduleTitle: "XML Configuration Profiles"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Write valid SkypeSettings.xml configurations for dual display, content camera, custom theming, and Front Row scenarios"
+  - "Identify the element combinations required for each scenario and the common configuration mistakes for each"
+  - "Troubleshoot XML configurations that appear to be applied but produce unexpected device behavior"
+
+prerequisites:
+  - "p1-t3-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "architect"
+  - "support"
+
+topicTags:
+  - "xml-configuration"
+  - "skypesettings"
+  - "dual-display"
+  - "content-camera"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m3-l2-xml-templates.zip"
+    label: "SkypeSettings.xml Configuration Templates"
+    sizeKb: 35
+
+relatedLessons:
+  - "p1-t3-m3-l1"
+  - "p1-t3-m3-l3"
+
+metaDescription: "SkypeSettings.xml configuration for common MTR Windows scenarios — complete XML examples for dual display, content camera with AI enhancement, custom theming (3840×1080), Front Row default, and troubleshooting XML not applied."
+
+keywords:
+  - "SkypeSettings.xml dual display"
+  - "MTR content camera XML"
+  - "Teams Rooms custom theme XML"
+  - "MTR Front Row XML configuration"
+  - "SkypeSettings.xml examples"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Schema knowledge becomes useful only when applied to real deployment scenarios. This lesson builds complete, validated XML configurations for the four most common MTR Windows configuration scenarios encountered in the field: dual display rooms, content camera (whiteboard camera) deployments, custom client branding, and Front Row layout enablement. Each scenario includes the complete XML, an explanation of each element's role, and the most common mistakes that cause the configuration to silently fail.
+
+---
+
+## Scenario 1: Dual Display Room
+
+A room has two front-of-room displays. The requirement is:
+- Teams UI extended across both displays (meeting content on one, participant gallery on the other)
+- Content shared into the room (from HDMI ingest) should appear on the primary display only, not duplicated to the secondary display
+- Content ingest should auto-share when a cable is connected
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <DualMonitorMode>true</DualMonitorMode>
+  <ContentDuplicationAllowed>false</ContentDuplicationAllowed>
+  <AutoScreenShare>true</AutoScreenShare>
+</SkypeSettings>
+```
+
+**Element breakdown:**
+
+- `<DualMonitorMode>true</DualMonitorMode>` — enables extended dual-display mode. Without this, the Teams app mirrors to both displays regardless of how many monitors are connected.
+- `<ContentDuplicationAllowed>false</ContentDuplicationAllowed>` — with dual display active, this prevents shared content from duplicating to the second monitor. Content appears on the primary display; the secondary display continues to show the meeting gallery.
+- `<AutoScreenShare>true</AutoScreenShare>` — when an HDMI source is plugged into the compute unit's capture card or HDMI ingest port, content sharing begins automatically without requiring the presenter to tap "Share" on the console.
+
+**Common mistake:** Setting `<ContentDuplicationAllowed>false</ContentDuplicationAllowed>` without also setting `<DualMonitorMode>true</DualMonitorMode>`. With dual display mode disabled, the duplication setting has no effect — both displays mirror regardless.
+
+**Physical prerequisite:** Verify that both displays are connected to the correct outputs on the compute unit. On most MTR Windows compute units, the primary display output determines where the Teams home screen and gallery appear; the secondary output shows content. Confirm this with the hardware documentation before writing the XML.
+
+---
+
+## Scenario 2: Content Camera (Whiteboard Camera)
+
+A room has a dedicated content camera pointed at a whiteboard. The requirement is:
+- A secondary USB camera is the designated content camera
+- AI whiteboard enhancement should be enabled (cleans up handwriting, removes presenter from in front of the whiteboard)
+- The camera is mounted in a standard upright position (not inverted)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <ContentCameraId>USB Video Device</ContentCameraId>
+  <ContentCameraInverted>false</ContentCameraInverted>
+  <ContentCameraEnhancement>true</ContentCameraEnhancement>
+</SkypeSettings>
+```
+
+**Element breakdown:**
+
+- `<ContentCameraId>USB Video Device</ContentCameraId>` — identifies which connected camera device is the content camera. The value must be the exact Windows device name. "USB Video Device" is the generic name that Windows assigns to many basic USB cameras — verify the actual name on the target device before using this value, as it may differ.
+- `<ContentCameraInverted>false</ContentCameraInverted>` — when set to `true`, the Teams application flips the camera image 180°. Use `true` when the camera is mounted upside down on a ceiling or inverted bracket; use `false` for standard upright mounting.
+- `<ContentCameraEnhancement>true</ContentCameraEnhancement>` — enables the AI whiteboard processing that removes the presenter from the image, cleans up handwriting, and enhances contrast. Requires a Teams Rooms Pro license. If the license is not present, the element is valid but the feature will not be available in the Teams UI.
+
+**Getting the correct device name:** With the content camera connected to the device, open Device Manager, expand Cameras, and note the exact device name. Alternatively, open the Teams app settings and observe the camera name shown in the Camera dropdown — this is the Windows device name that the XML element must match.
+
+**Scenario variation — inverted ceiling mount:**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <ContentCameraId>Logitech BRIO</ContentCameraId>
+  <ContentCameraInverted>true</ContentCameraInverted>
+  <ContentCameraEnhancement>true</ContentCameraEnhancement>
+</SkypeSettings>
+```
+
+---
+
+## Scenario 3: Custom Theming and Room Branding
+
+A client wants custom branding on all MTR devices: their company logo on the home screen background image, and the room display name to reflect their internal room naming convention.
+
+**Image requirements:**
+- Single display: 1920×1080px JPEG
+- Dual display (background spans both displays): 3840×1080px JPEG
+- File format: JPEG (PNG is not officially supported for custom themes)
+- The image file must be accessible to the Skype user account — store it in the Teams app LocalState folder
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <CustomThemeImageUrl>C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\CustomTheme.jpg</CustomThemeImageUrl>
+  <CustomThemeName>Contoso Theme</CustomThemeName>
+  <RoomName>Contoso — Conference Room A</RoomName>
+</SkypeSettings>
+```
+
+**Element breakdown:**
+
+- `<CustomThemeImageUrl>` — the path to the background image. This is a local file path using the full absolute path. The path is long but must be exact — any path error means the Teams app cannot find the file and silently falls back to the default theme.
+- `<CustomThemeName>` — an internal name for the theme. This value is not displayed to users in the meeting UI but appears in the Teams app admin settings.
+- `<RoomName>` — overrides the resource account display name shown on the home screen. Useful when the resource account display name in Entra ID uses a technical naming convention but the client wants a more descriptive room name on the device.
+
+**Deployment workflow for custom themes:**
+
+1. Prepare the JPEG at the correct resolution
+2. Copy the image to the LocalState folder path on the device (can be done via script or manually)
+3. Deploy the XML with the matching path
+4. Reboot — the custom theme appears on the home screen
+
+**Common mistake:** Storing the image in a location that the Skype user account cannot access (e.g., a folder owned by the admin user account). The XML file itself runs in the context of the Skype account. Store the image in the Skype account's own folder structure.
+
+---
+
+## Scenario 4: Front Row Layout
+
+A client wants Front Row as the default meeting layout for all rooms — participants joining remotely should appear at eye level in a horizontal strip at the bottom of the display, with content taking the upper portion of the screen.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <FrontRowEnabled>true</FrontRowEnabled>
+  <FrontRowDefault>true</FrontRowDefault>
+</SkypeSettings>
+```
+
+**Element breakdown:**
+
+- `<FrontRowEnabled>true</FrontRowEnabled>` — makes Front Row available as a layout option in the Teams meeting UI. This must be `true` before `<FrontRowDefault>` has any effect.
+- `<FrontRowDefault>true</FrontRowDefault>` — sets Front Row as the starting layout when a meeting begins. Without this, Front Row is available but the default layout remains the standard Gallery view.
+
+**License requirement:** Front Row requires a Teams Rooms Pro license. On devices with a Teams Rooms Basic license, the `<FrontRowEnabled>` element is valid XML but the feature will not appear in the meeting controls.
+
+**Hardware consideration:** Front Row is designed for widescreen displays (16:9 or wider). On a 4:3 display (uncommon in modern rooms but occasionally encountered), the Front Row layout may not render correctly.
+
+---
+
+## Combined Configuration Example
+
+A typical medium conference room with dual displays, a content camera, and Front Row enabled:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <!-- Display -->
+  <DualMonitorMode>true</DualMonitorMode>
+  <ContentDuplicationAllowed>false</ContentDuplicationAllowed>
+  <AutoScreenShare>true</AutoScreenShare>
+
+  <!-- Content Camera -->
+  <ContentCameraId>Logitech BRIO</ContentCameraId>
+  <ContentCameraInverted>false</ContentCameraInverted>
+  <ContentCameraEnhancement>true</ContentCameraEnhancement>
+
+  <!-- Layout -->
+  <FrontRowEnabled>true</FrontRowEnabled>
+  <FrontRowDefault>false</FrontRowDefault>
+
+  <!-- Meeting Behavior -->
+  <HideMeetingName>false</HideMeetingName>
+  <DefaultVolume>65</DefaultVolume>
+</SkypeSettings>
+```
+
+XML comments (`<!-- text -->`) are valid in SkypeSettings.xml and are useful for organizing sections in complex configurations. The Teams app ignores comments.
+
+---
+
+## Troubleshooting: XML Applied but Settings Not in Effect
+
+When a SkypeSettings.xml file is deployed correctly but the expected settings are not observed, work through the following:
+
+**1. Verify the file is in the correct location.**
+The file must be at `C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\SkypeSettings.xml`. The package directory name contains the Skype user account's SID component — confirm the exact path by navigating there.
+
+**2. Verify the file was read after the last reboot.**
+The Teams app reads SkypeSettings.xml at startup. If the file was placed after the last reboot, the settings have not been applied yet. Reboot the device and check again.
+
+**3. Check for a TAC configuration profile override.**
+Teams Admin Center configuration profiles (Pro license feature) take precedence over local SkypeSettings.xml for settings they control. If a TAC profile is assigned to the device, it may be overriding the local XML. Check TAC Devices → the specific device → Configuration profile to see if a profile is assigned.
+
+**4. Validate the XML against the XSD.**
+Run the file through XSD validation to confirm there are no schema errors. Silent failures are almost always caused by element name case errors or unsupported element names.
+
+**5. Check the Teams app logs.**
+The Teams app log files (at `C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\`) include entries for XML file reads. Search for "SkypeSettings" in the most recent log file to see whether the file was read and whether any parse errors were recorded.
+
+<DownloadButton
+  file="p1-t3-m3-l2-xml-templates.zip"
+  label="SkypeSettings.xml Configuration Templates"
+  sizeKb={35}
+  description="Ready-to-use XML configuration templates for all four scenarios in this lesson: dual display, content camera (standard and inverted), custom theming (single and dual display image specs), and Front Row. Each template is pre-validated against the current XSD schema."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m3-l2-kc">
+  <Question>
+    A room has a content camera mounted upside down on the ceiling above the
+    whiteboard. The camera image in Teams shows the whiteboard inverted. Which
+    XML element and value corrects this?
+  </Question>
+  <Answer>`&lt;ContentCameraRotation&gt;180&lt;/ContentCameraRotation&gt;`</Answer>
+  <Answer correct>`&lt;ContentCameraInverted&gt;true&lt;/ContentCameraInverted&gt;`</Answer>
+  <Answer>`&lt;ContentCameraFlip&gt;vertical&lt;/ContentCameraFlip&gt;`</Answer>
+  <Answer>`&lt;ContentCameraInverted&gt;false&lt;/ContentCameraInverted&gt;`</Answer>
+  <Explanation>
+    `&lt;ContentCameraInverted&gt;true&lt;/ContentCameraInverted&gt;` instructs the Teams
+    application to flip the content camera image 180°. This is the correct
+    element for ceiling-mounted or otherwise inverted content camera
+    installations. `&lt;ContentCameraRotation&gt;` and `&lt;ContentCameraFlip&gt;` are
+    not valid SkypeSettings.xml elements and would be silently ignored.
+    Setting the value to `false` would leave the image in its current
+    inverted state.
+  </Explanation>
+
+  <Question>
+    A client's dual-display room is configured with `&lt;DualMonitorMode&gt;true&lt;/DualMonitorMode&gt;`,
+    but during meetings the presenter's shared content appears on both monitors
+    simultaneously instead of only the primary display. Which element is missing
+    from the XML?
+  </Question>
+  <Answer>`&lt;SecondaryDisplayContent&gt;false&lt;/SecondaryDisplayContent&gt;`</Answer>
+  <Answer>`&lt;DualMonitorContent&gt;primary&lt;/DualMonitorContent&gt;`</Answer>
+  <Answer correct>`&lt;ContentDuplicationAllowed&gt;false&lt;/ContentDuplicationAllowed&gt;`</Answer>
+  <Answer>`&lt;AutoScreenShare&gt;false&lt;/AutoScreenShare&gt;`</Answer>
+  <Explanation>
+    `&lt;ContentDuplicationAllowed&gt;false&lt;/ContentDuplicationAllowed&gt;` controls
+    whether shared content is duplicated to both displays in dual-display mode.
+    When omitted (or set to `true`), shared content appears on both displays.
+    Setting it to `false` restricts shared content to the primary display,
+    with the participant gallery remaining on the secondary display. This
+    element requires `&lt;DualMonitorMode&gt;true&lt;/DualMonitorMode&gt;` to be present
+    and effective.
+  </Explanation>
+
+  <Question>
+    You deploy a SkypeSettings.xml with a custom theme image path, but the
+    device still shows the default Teams Rooms background after rebooting.
+    The XML was validated with XSD and the path looks correct. What is the
+    most likely cause?
+  </Question>
+  <Answer>Custom theming requires a Teams Rooms Pro license</Answer>
+  <Answer correct>The image file is stored in a location the Skype user account cannot access — the file should be in the Skype account's own LocalState folder, not in a directory owned by another user account</Answer>
+  <Answer>The image resolution is incorrect — single-display themes require 3840×1080px</Answer>
+  <Answer>The XML element is `&lt;ThemeImageUrl&gt;`, not `&lt;CustomThemeImageUrl&gt;`</Answer>
+  <Explanation>
+    The Teams app runs under the Skype user account and can only access files
+    that account has permission to read. Images stored in folders owned by
+    the admin account or another user will not be accessible. Store the theme
+    image in `C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\`
+    and reference it from there. Custom theming does not require a Pro license.
+    Single-display themes use 1920×1080px (not 3840×1080px — that dimension
+    is for dual-display spanning images).
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Configure dual display:** `<DualMonitorMode>true</DualMonitorMode>` + `<ContentDuplicationAllowed>false</ContentDuplicationAllowed>` + `<AutoScreenShare>true</AutoScreenShare>`.
+- **Configure content camera:** `<ContentCameraId>` with exact Windows device name + `<ContentCameraInverted>` (true for ceiling/inverted mount) + `<ContentCameraEnhancement>true</ContentCameraEnhancement>`.
+- **Configure custom theming:** 1920×1080px JPEG (single) or 3840×1080px (dual) in the LocalState folder; `<CustomThemeImageUrl>` with full local path.
+- **Configure Front Row:** `<FrontRowEnabled>true</FrontRowEnabled>` required before `<FrontRowDefault>` has effect. Pro license required.
+- **Troubleshoot non-applied XML:** Check file location → verify reboot → check TAC profile override → XSD validate → review app logs.
+
+---
+
+## What's Next
+
+With configurations written, the next lesson covers how to get them onto devices — the deployment methods from manual file copy through fleet-scale Intune and TAC deployment.
+
+[XML Deployment Methods — Manual, USB, Intune, TAC Config Profiles →](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/lessons/xml-deployment-methods/)

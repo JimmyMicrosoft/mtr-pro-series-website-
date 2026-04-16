@@ -1,0 +1,128 @@
+{
+  "trackSlug": "device-configuration",
+  "trackTitle": "Device Configuration",
+  "programSlug": "mtr-foundations",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What is the purpose of the SkypeSettings.xml file on an MTR for Windows device?",
+      "answers": [
+        "It stores the Windows operating system activation key and regional settings.",
+        "It is a local XML configuration file that the Teams Rooms app reads at startup to apply device-level settings such as default audio/video devices, theme, and display layout.",
+        "It is uploaded to Microsoft 365 to synchronise room settings across all devices in the tenant.",
+        "It contains the encrypted credentials for the resource account and is generated automatically during first boot."
+      ],
+      "correct": 1,
+      "explanation": "SkypeSettings.xml is a local configuration file placed in the Teams Rooms app data folder. It is read at application startup and allows administrators to pre-configure device settings like default microphone, speaker, camera, front-of-room display layout, and theming — without requiring manual in-app configuration."
+    },
+    {
+      "id": 2,
+      "text": "An administrator is deploying MTR for Android devices for the first time. Which statement correctly describes a key difference in the initial setup process compared to MTR for Windows?",
+      "answers": [
+        "MTR for Android uses SkypeSettings.xml for initial configuration, just like MTR for Windows.",
+        "MTR for Android devices require a Windows domain join before the Teams Rooms app can be activated.",
+        "MTR for Android devices do not support Intune enrolment and must be configured entirely through the OEM's proprietary management console.",
+        "MTR for Android initial setup is handled through the Teams Rooms app's on-screen setup wizard or OEM provisioning tools, and does not use SkypeSettings.xml."
+      ],
+      "correct": 3,
+      "explanation": "SkypeSettings.xml is specific to MTR for Windows. Android-based MTR devices use an on-screen setup wizard or OEM-specific provisioning methods (such as Yealink Device Management or Logitech Sync) for initial configuration, and can be enrolled in Teams Admin Center for ongoing management."
+    },
+    {
+      "id": 3,
+      "text": "A room mailbox has been created for an MTR device but the resource account is failing to sign in. The technician confirms network connectivity is fine. What should be checked first?",
+      "answers": [
+        "Whether the device has the latest firmware from the OEM.",
+        "Whether the resource account has a Teams Rooms licence assigned and the account is not blocked from signing in.",
+        "Whether the SkypeSettings.xml file contains the correct Wi-Fi password.",
+        "Whether the MTR Windows device has been joined to the on-premises Active Directory."
+      ],
+      "correct": 1,
+      "explanation": "The most common cause of MTR sign-in failure is either a missing Teams Rooms licence on the resource account, the account being blocked from interactive sign-in, or the Exchange Online mailbox not being properly configured. Licence assignment should be verified first."
+    },
+    {
+      "id": 4,
+      "text": "Which of the following is a valid SkypeSettings.xml element used to configure the Teams Rooms app to use a specific front-of-room display in dual-display mode?",
+      "answers": [
+        "<DualScreenMode>true</DualScreenMode>",
+        "<EnableTwoPrimaryScreens>1</EnableTwoPrimaryScreens>",
+        "<DualMonitor>enabled</DualMonitor>",
+        "<SecondDisplayEnabled>true</SecondDisplayEnabled>"
+      ],
+      "correct": 0,
+      "explanation": "The correct XML element for enabling dual front-of-room display mode in SkypeSettings.xml is <DualScreenMode>true</DualScreenMode>. Incorrect element names will simply be ignored by the app, so precise syntax is critical."
+    },
+    {
+      "id": 5,
+      "text": "A Conditional Access policy in the tenant is blocking the MTR resource account from signing in, even though the account has the correct licence. What is the recommended resolution?",
+      "answers": [
+        "Disable Conditional Access entirely for the tenant to allow MTR devices to function.",
+        "Create a named location for the MTR device IP addresses and exclude resource accounts or MTR service accounts from the blocking Conditional Access policy.",
+        "Switch all MTR devices to Android, as Conditional Access does not apply to Android devices.",
+        "Assign the resource account a Global Administrator role to bypass Conditional Access restrictions."
+      ],
+      "correct": 1,
+      "explanation": "The correct approach is to exclude MTR resource accounts from Conditional Access policies that would block them (such as those requiring MFA or compliant devices), ideally using a dedicated group for room accounts and optionally restricting sign-in to named network locations for security."
+    },
+    {
+      "id": 6,
+      "text": "What is the purpose of the MTR app 'Validation Ring' update channel?",
+      "answers": [
+        "It is the fastest update channel, receiving updates before General Availability to allow early testing in a subset of devices.",
+        "It is the slowest update channel, receiving updates 90 days after General Availability to maximise stability.",
+        "It restricts updates to security patches only and ignores feature updates.",
+        "It is the default channel for all MTR devices and cannot be changed by administrators."
+      ],
+      "correct": 0,
+      "explanation": "The Validation Ring (also called the Preview ring) is an early-access update channel that receives new Teams Rooms app versions before General Availability. It is used to test updates on a small subset of non-critical devices before rolling them out to the full fleet."
+    },
+    {
+      "id": 7,
+      "text": "An administrator wants to deploy the same SkypeSettings.xml configuration to 30 MTR for Windows devices. Which method is most appropriate for a domain-joined, Intune-managed fleet?",
+      "answers": [
+        "Physically visit each device and manually copy the XML file using a USB drive.",
+        "Email the XML file to the local IT contact at each site and ask them to copy it manually.",
+        "Deploy the XML file using an Intune PowerShell script or a Win32 app package that writes the file to the correct Teams Rooms app data directory on each device.",
+        "Upload the XML file to SharePoint and instruct end users to download and install it themselves."
+      ],
+      "correct": 2,
+      "explanation": "For Intune-managed MTR Windows devices, the standard approach is to deploy the SkypeSettings.xml via an Intune PowerShell script or Win32 app deployment, which writes the file to %SystemDrive%\\Users\\Skype\\AppData\\Local\\Packages\\...\\LocalState\\ on each device automatically."
+    },
+    {
+      "id": 8,
+      "text": "During the first-boot setup of an MTR for Windows device, in what order should the technician complete the following steps: (A) sign in with the resource account, (B) verify the room calendar appears, (C) run Windows Update, (D) configure the SkypeSettings.xml?",
+      "answers": [
+        "A → B → D → C",
+        "C → D → A → B",
+        "D → C → A → B",
+        "B → A → C → D"
+      ],
+      "correct": 1,
+      "explanation": "Best practice first-boot sequence: (C) run Windows Update to ensure the OS and Teams Rooms app are on the latest version, then (D) deploy SkypeSettings.xml with the desired device configuration, then (A) sign in with the resource account, and finally (B) verify the calendar and meeting tiles appear correctly."
+    },
+    {
+      "id": 9,
+      "text": "A Logitech Rally Bar is being configured as an MTR for Android device. Which OEM tool is used to manage firmware, configure device settings, and enrol the device into a fleet management programme?",
+      "answers": [
+        "Yealink Device Management (YDM)",
+        "Poly Lens",
+        "Logitech Sync",
+        "Crestron XiO Cloud"
+      ],
+      "correct": 2,
+      "explanation": "Logitech Sync is Logitech's device management platform for their collaboration hardware including the Rally Bar family. It provides firmware management, device configuration, health monitoring, and fleet deployment capabilities."
+    },
+    {
+      "id": 10,
+      "text": "After signing in the resource account on an MTR for Windows device, the touchscreen console (e.g., a Logitech Tap or Crestron TSS) fails to display the Teams Rooms interface. What is the most likely cause?",
+      "answers": [
+        "The resource account password has expired.",
+        "The console is not correctly paired with the compute unit — the USB or HDMI pairing cable between the console and compute unit is disconnected or faulty.",
+        "The Teams Rooms app requires a manual restart after every resource account sign-in.",
+        "The console requires its own separate resource account licence."
+      ],
+      "correct": 1,
+      "explanation": "The touchscreen console communicates with the MTR compute unit over a dedicated USB (and sometimes HDMI) connection. If this pairing cable is disconnected, incorrectly connected, or faulty, the console will not display the Teams Rooms interface, even if the compute unit itself is functioning correctly."
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+---
+id: "p2-t2-m3-l5"
+slug: "pro-management-managed-services"
+title: "Pro Management in Managed Services Delivery"
+shortTitle: "Managed Services Integration"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 3
+moduleSlug: "teams-rooms-pro-management"
+moduleTitle: "Teams Rooms Pro Management"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "morgan"
+  - "jordan"
+
+objectives:
+  - "Describe how Pro Management fits into a managed services delivery model for MTR"
+  - "Design a managed services operational workflow using Pro Management as the monitoring backbone"
+  - "Identify the SLA commitments that Pro Management data can support and measure"
+
+prerequisites:
+  - "p2-t2-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "pre-sales"
+
+topicTags:
+  - "pro-management"
+  - "managed-services"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p2-t2-m3-l4"
+
+metaDescription: "Teams Rooms Pro Management in managed services delivery — MSP operational workflow, SLA design using readiness and MTTR metrics, client onboarding, multi-tenant management, and value demonstration through Pro Management reporting."
+
+keywords:
+  - "Teams Rooms managed services Pro Management"
+  - "MTR managed services workflow"
+  - "Teams Rooms Pro Management MSP"
+  - "MTR managed services SLA"
+  - "Pro Management managed service provider"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Pro Management was built with managed services delivery in mind. The multi-tenant access model, automated incident detection, remote management capabilities, and analytics reporting are all aligned to what a managed service provider needs to deliver proactive MTR support at scale. This lesson outlines how to structure a managed services operation around Pro Management — from client onboarding through ongoing operational delivery and SLA reporting.
+
+---
+
+## The Managed Services Model with Pro Management
+
+A typical Pro Management-based managed services operation has three service tiers aligned to how deeply the MSP monitors and manages each client:
+
+**Tier 1 — Monitoring Only:**
+- Pro Management access provisioned; incident notifications configured
+- MSP receives alerts; client IT team resolves issues
+- MSP provides monthly health reports
+- Value: early warning that the client's IT team acts on
+
+**Tier 2 — Remote Managed:**
+- Pro Management access provisioned; incidents assigned to MSP operator queue
+- MSP resolves incidents remotely (restart, log collection, sign-in repair)
+- Site visits dispatched when remote resolution fails
+- SLA: Mean time to resolution (MTTR) for remote incidents
+- Value: proactive issue resolution, reduced IT burden on client
+
+**Tier 3 — Full Managed:**
+- All Tier 2 capabilities plus proactive maintenance
+- Scheduled maintenance windows, firmware updates, configuration compliance
+- Monthly client business review with utilization and quality analytics
+- SLA: Room readiness rate + MTTR
+- Value: complete outsourced room management
+
+---
+
+## Client Onboarding Workflow
+
+**Step 1 — Delegated access provisioning:**
+The client's Teams admin grants the MSP operator account Managed Services access in their Pro Management tenant:
+1. Client navigates to `portal.rooms.microsoft.com → Settings → Partners`
+2. Adds the MSP's partner account with the appropriate role (Operator or Administrator)
+3. MSP operator now sees the client's rooms in their unified multi-tenant view
+
+**Step 2 — Building structure setup:**
+Configure the client's building structure in Pro Management → Settings → Buildings. Add each building with correct address and assign rooms to buildings. This enables building-level health views and alert scoping.
+
+**Step 3 — Alert rules configuration:**
+Set up the client's alert rules per the agreed service tier:
+- Tier 1: Email notifications only to client IT team
+- Tier 2/3: Email + webhook to MSP ticketing system + escalation to client
+
+**Step 4 — Baseline establishment:**
+Run the first 30 days as a monitoring period to establish baseline utilization and quality metrics. The first monthly report compares against this baseline.
+
+---
+
+## SLA Metrics Supported by Pro Management
+
+| SLA Metric | Pro Management Data Source |
+|------------|--------------------------|
+| Room readiness rate | Analytics → Room Readiness % |
+| MTTR (remote incidents) | Incident timestamps: detected → resolved |
+| Incidents resolved remotely | Incident count by resolution type |
+| Poor meeting rate | Analytics → Meeting quality |
+| Monthly incident count | Incidents → filter by date range |
+
+**SLA example language:**
+- "99% room readiness rate (averaged across the managed fleet)"
+- "< 4-hour MTTR for Critical incidents during business hours"
+- "70% of Critical incidents resolved remotely without site visit"
+
+These commitments are measurable directly from Pro Management data, enabling objective SLA reporting.
+
+---
+
+## Demonstrating Value to Clients
+
+Clients who have not experienced proactive monitoring often underestimate its value — they compare the managed service cost to "nothing bad has happened recently." The Pro Management data tells a different story:
+
+- **Incidents prevented from impacting meetings:** Show incidents that were detected and resolved outside of meeting hours (e.g., detected at 03:00, resolved at 06:30, no meeting impact)
+- **Remote resolution rate:** "X incidents resolved remotely, saving Y on-site visits at $Z per visit"
+- **Utilization insights:** Capacity planning recommendations from utilization data demonstrate value beyond technical support
+- **Room readiness trend:** Show readiness rate improving over the managed service period vs. the baseline
+
+The monthly client report (built from Pro Management analytics) is the primary value demonstration vehicle. Each report should quantify what the managed service prevented, not just what it fixed.
+
+---
+
+<KnowledgeCheck id="p2-t2-m3-l5-kc">
+  <Question>
+    A client asks why they need to pay for a managed service when their rooms
+    "mostly work fine." Using Pro Management data from the past 90 days,
+    which data points most effectively demonstrate the value of proactive
+    management?
+  </Question>
+  <Answer>The total count of incidents in the past 90 days — more incidents means more value</Answer>
+  <Answer correct>The number of Critical incidents detected and resolved outside of meeting hours (no meeting impact), the MTTR compared to the client's stated tolerance, and the number of remote resolutions that avoided on-site dispatches — these quantify the value in terms the client directly understands: meetings not disrupted and cost of on-site visits avoided</Answer>
+  <Answer>The utilization data showing which rooms are being used most</Answer>
+  <Answer>The room readiness percentage as a standalone number</Answer>
+  <Explanation>
+    Value is best demonstrated in terms the client understands: meetings not
+    disrupted and money saved. "8 Critical incidents detected and resolved
+    before business hours — 0 meetings affected" is more compelling than "8
+    incidents in 90 days." "12 incidents resolved remotely, avoiding 12
+    on-site visits at $350 each = $4,200 saved" quantifies the cost avoidance
+    of the service. Room readiness and incident counts alone are technical
+    metrics that don't translate to business impact without the contextual
+    framing. The goal is to answer the client's implicit question: "What
+    would have happened without the managed service?"
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Service tiers:** Monitoring → Remote Managed → Full Managed — match tier to client's IT capability and budget.
+- **Onboarding:** Delegated access → building structure → alert rules → 30-day baseline.
+- **SLA metrics:** Readiness rate, MTTR, remote resolution rate — all measurable from Pro Management data.
+- **Value demonstration:** Incidents prevented from meeting impact + remote resolution savings + utilization insights.
+
+---
+
+## Track Complete
+
+You have completed Track 2: Microsoft 365 Administration. You now have the full Microsoft 365 administration toolkit for enterprise MTR deployments — from resource account provisioning and governance through TAC fleet management and Teams Rooms Pro Management.
+
+Track 3 covers the AV systems layer — the audio design, video systems, and integrated room commissioning knowledge that completes the MTR Systems Integration program.
+
+[Continue to Track 3: AV Systems Commissioning →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/)

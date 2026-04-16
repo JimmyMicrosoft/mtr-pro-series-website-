@@ -1,0 +1,213 @@
+---
+id: "p4-t2-m3-l1"
+slug: "bill-of-materials-costing"
+title: "Bill of Materials and Costing"
+shortTitle: "BOM and Costing"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 2
+trackSlug: "solution-architecture-presales"
+trackTitle: "Solution Architecture and Pre-Sales"
+
+module: 3
+moduleSlug: "proposal-scoping"
+moduleTitle: "Proposal Development and Commercial Scoping"
+
+lessonIndex: 1
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "presales-engineer", "account-manager"]
+
+objectives:
+  - "Build a complete, accurate bill of materials for an MTR deployment using design pattern libraries"
+  - "Apply cost of goods, labour, and overhead to generate an accurate project cost"
+  - "Apply margin discipline that delivers sustainable profitability without making the proposal uncompetitive"
+  - "Identify the BOM errors that most commonly cause margin erosion on MTR projects"
+
+prerequisites:
+  - "p4-t2-m1-l1"
+  - "p4-t2-m2-l3"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["solutions-architect", "presales-engineer", "account-manager"]
+topicTags: ["BOM", "costing", "commercial", "proposal"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "BOM and Costing Template"
+    filename: "mtr-bom-costing-template.xlsx"
+
+relatedLessons:
+  - "p4-t2-m3-l2"
+  - "p4-t2-m3-l3"
+  - "p4-t2-m1-l1"
+
+metaDescription: "Learn to build accurate MTR bills of materials and apply cost, labour, and margin to generate profitable proposals."
+keywords: ["MTR BOM", "bill of materials", "project costing", "MTR proposal costing", "margin"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The BOM as the Commercial Foundation
+
+The bill of materials is the foundation of every project cost. An incomplete or inaccurate BOM produces an undercosted proposal — which either wins unprofitably or loses when the margin correction is applied.
+
+BOM accuracy comes from:
+1. A thorough site survey (you know exactly what each room needs)
+2. Validated design patterns (you aren't guessing what components the design requires)
+3. Discipline in including everything (cables, mounts, consumables, spares)
+
+---
+
+## BOM Structure
+
+A complete MTR project BOM has four sections:
+
+### Section 1: Hardware
+
+All equipment to be supplied and installed:
+
+```
+Line | QTY | Manufacturer | Part Number   | Description                   | Buy Price | Sell Price | Extended Sell
+-----|-----|-------------|---------------|------------------------------|-----------|------------|-------------
+1    | 20  | Logitech    | 960-001390    | Rally Bar (Graphite)          | £1,800    | £2,340     | £46,800
+2    | 20  | Samsung     | LH75QMBPAGCXEN| 75" QMB-T Commercial Display  | £680      | £884       | £17,680
+3    | 20  | Samsung     | —             | VESA wall mount kit           | £45       | £58        | £1,160
+4    | 20  | Logitech    | 952-000089    | Tap IP Touch Controller       | £420      | £546       | £10,920
+5    | 20  | Generic     | —             | 3m HDMI 2.0 cable             | £12       | £16        | £320
+6    | 20  | Generic     | —             | Cat6 patch cable (2m)         | £4        | £5         | £100
+7    | 2   | Generic     | —             | Spare Tap IP (5% buffer)      | £420      | £420       | £840 [cost only]
+...
+```
+
+**Margin approach**: Apply consistent markup to hardware (typically 15–25% depending on vendor and volume). Track buy price and sell price separately.
+
+### Section 2: Software and Licensing
+
+Annual recurring costs that the client should understand as ongoing OpEx:
+
+```
+Line | QTY | Item                          | Annual Cost | Notes
+-----|-----|-------------------------------|-------------|------
+1    | 20  | Teams Rooms Pro license        | £450/device | Client purchases direct from Microsoft; or through partner
+2    | 1   | MTR Managed Service (if sold)  | £X/year     | Per separate MSA
+```
+
+**Note**: Reselling Microsoft licenses requires CSP partner status. Confirm whether the practice is a CSP partner or whether the client purchases direct.
+
+### Section 3: Labour
+
+All professional services hours:
+
+```
+Labour Category              | Rate  | Hours | Total
+-----------------------------|-------|-------|------
+Project management           | £85   | 40    | £3,400
+Site survey and NRA (already done) | £85 | 16  | £1,360
+Design and documentation     | £75   | 20    | £1,500
+Installation (per room × 20) | £65   | 4 hrs/room = 80 hrs | £5,200
+Commissioning (per room × 20)| £65   | 1.5 hrs/room = 30 hrs | £1,950
+Acceptance testing           | £65   | 16    | £1,040
+End-user training            | £65   | 8     | £520
+Documentation (as-builts)    | £55   | 16    | £880
+Travel (estimate)            | —     | —     | £600
+Total labour:                |       |       | £16,450
+```
+
+Labour rates should reflect actual loaded cost (salary + NI + benefits + overhead allocation) with appropriate margin.
+
+### Section 4: Contingency
+
+Include an explicit contingency line in the cost model (not in the client price):
+
+```
+Project contingency: 10% of hardware + labour = £(total × 0.10)
+```
+
+This is an internal buffer — it does not appear in the client-facing proposal unless the practice's commercial model exposes it. It protects the project from minor scope variations and unknown site conditions.
+
+---
+
+## Common BOM Errors
+
+These are the items most often missed in MTR BOM preparation:
+
+### Physical
+
+- **VESA mounts**: Every display needs a mount. Mount cost varies significantly (standard wall mount £45; heavy-duty articulating arm £180; ceiling mount £200+)
+- **Cable lengths**: BOM cables are always shorter than actual route lengths. Add 20% to straight-line measurements for actual installed lengths
+- **Cable containment**: Surface trunking, floor boxes, and conduit are rarely included in the design pattern BOM — add as a site-specific line item
+- **Power supplies**: Some cameras and control systems require separate power adaptors — confirm what's in the box
+
+### Technical
+
+- **USB extenders or hubs**: Logitech Rally requires an active USB extension for compute-to-hub cable runs over 5m
+- **Display control cables**: RS-232 or LAN control cable from compute to display (often 2–3m behind display)
+- **HDMI ingest cable**: The table cable for laptop sharing. Specify length; add cable anchor/retractor
+- **PoE switches**: If the existing switch doesn't have PoE+ ports, a PoE injector or switch upgrade may be needed
+
+### Organisational
+
+- **Spares**: For a fleet of 20+, hold 1–2 spare units of the most critical components (touch controller, compute unit)
+- **Label materials**: Cable labels, asset tags — small cost but time-consuming to add as a change after delivery
+
+---
+
+## Margin Discipline
+
+### Margin vs Markup
+
+Margin and markup are different:
+- **Markup**: Percentage added to cost → Sell price = Cost × (1 + markup%)
+- **Margin**: Percentage of sell price that is profit → Margin = (Sell - Cost) / Sell
+
+| Markup | Effective Margin |
+|---|---|
+| 10% | 9.1% |
+| 20% | 16.7% |
+| 25% | 20.0% |
+| 33% | 24.8% |
+
+Know which metric your practice uses for pricing targets and be consistent.
+
+### Target Margins
+
+| Revenue Type | Target Margin | Notes |
+|---|---|---|
+| Hardware supply | 15–25% | Depends on vendor rebates and volume |
+| Installation labour | 35–45% | Loaded cost to sell rate |
+| Project management | 40–50% | Senior resource; high value per hour |
+| Managed service (recurring) | 50–65% | Highly leveraged; target grows with scale |
+
+### Red Lines
+
+- Never submit a proposal without knowing the total cost and total margin
+- If a client-imposed discount brings margin below 15% on hardware, the deal is not worth taking unless there is a strategic reason (new logo, large managed service attached)
+- Undercutting competitors on price to win is not a sustainable strategy — it conditions the client to expect low prices on every subsequent deal
+
+---
+
+<KnowledgeCheck>
+  <Question text="A Logitech Rally Bar has a buy price of £1,800. You apply a 20% markup. What is the sell price, and what is the gross margin percentage?">
+    <Answer>Sell price: £2,000; Margin: 20%</Answer>
+    <Answer correct>Sell price: £2,160; Margin: 16.7%</Answer>
+    <Answer>Sell price: £2,160; Margin: 20%</Answer>
+    <Answer>Sell price: £1,980; Margin: 10%</Answer>
+    <Explanation>Sell price = £1,800 × 1.20 = £2,160. Gross margin = (£2,160 - £1,800) / £2,160 = £360 / £2,160 = 16.7%. Markup and margin are different measures — markup is applied to cost; margin is expressed as a percentage of selling price.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="BOM and Costing Template" filename="mtr-bom-costing-template.xlsx" />

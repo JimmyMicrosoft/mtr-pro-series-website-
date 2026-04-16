@@ -1,0 +1,300 @@
+---
+id: "p2-t2-m1-l1"
+slug: "bulk-provisioning-powershell"
+title: "Bulk Resource Account Provisioning with PowerShell"
+shortTitle: "Bulk Provisioning"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 1
+moduleSlug: "resource-account-management-at-scale"
+moduleTitle: "Resource Account Management at Scale"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Write a PowerShell script that provisions a resource account with all required MTR configuration steps from a CSV input file"
+  - "Verify bulk-provisioned accounts using PowerShell queries against the expected configuration state"
+  - "Handle common provisioning errors in bulk scripts including licensing failures and Exchange propagation delays"
+
+prerequisites:
+  - "p1-t1-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "entra-id"
+  - "exchange-online"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "resource-accounts"
+  - "powershell"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-l1-bulk-provisioning-script.ps1"
+    label: "MTR Bulk Provisioning Script Template"
+    sizeKb: 12
+
+relatedLessons:
+  - "p1-t1-m2-l4"
+  - "p2-t2-m1-l2"
+
+metaDescription: "MTR bulk resource account provisioning with PowerShell — CSV-driven provisioning script, Entra ID account creation, Exchange Online mailbox configuration, AutomateProcessing, license assignment, and bulk verification queries."
+
+keywords:
+  - "Teams Rooms bulk provisioning PowerShell"
+  - "MTR resource account script"
+  - "Teams Rooms CSV provisioning"
+  - "Exchange Online resource account automation"
+  - "MTR PowerShell bulk setup"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Provisioning a single resource account manually takes 10–15 minutes when following the step-by-step process. Provisioning 50 accounts that way takes most of a day and introduces human error at each step. A PowerShell script driven from a CSV input file provisions all 50 accounts in minutes with identical configuration, produces a log of what was created, and can be re-run to verify state at any time. This lesson builds that script from the ground up.
+
+---
+
+## Prerequisites and Module Installation
+
+The provisioning script requires two PowerShell modules:
+
+```powershell
+# Install required modules (run once from an admin PowerShell session)
+Install-Module -Name ExchangeOnlineManagement -Force -AllowClobber
+Install-Module -Name Microsoft.Graph -Force -AllowClobber
+
+# Connect to Exchange Online and Microsoft Graph
+Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+Connect-MgGraph -Scopes "User.ReadWrite.All", "Group.ReadWrite.All"
+```
+
+---
+
+## CSV Input File Structure
+
+The script reads room data from a CSV file. Each row represents one resource account.
+
+```csv
+DisplayName,UPN,Alias,RoomCapacity,Building,Floor,LicenseSKU
+"Boardroom A","boardroom-a@contoso.com","boardroom-a",12,"HQ","3","mtr_pro"
+"Conference Room 101","conf-101@contoso.com","conf-101",6,"HQ","1","mtr_basic"
+"Huddle Room B","huddle-b@contoso.com","huddle-b",4,"HQ","2","mtr_basic"
+```
+
+**CSV columns:**
+- `DisplayName` — room name displayed in calendar and on device home screen
+- `UPN` — User Principal Name for the account (format: roomname@domain.com)
+- `Alias` — Exchange alias (must be unique in the tenant)
+- `RoomCapacity` — room capacity for Exchange calendar display
+- `Building` and `Floor` — location attributes for room finder
+- `LicenseSKU` — `mtr_pro` or `mtr_basic` (maps to actual SKU IDs in the script)
+
+---
+
+## The Provisioning Script
+
+```powershell
+# MTR Bulk Resource Account Provisioning Script
+# Prerequisites: ExchangeOnlineManagement and Microsoft.Graph modules installed
+# Run as: Global Admin or privileged role with User.ReadWrite.All and Exchange admin
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$CsvPath,
+    [string]$LogPath = "C:\Temp\mtr-provisioning-log-$(Get-Date -Format 'yyyyMMdd-HHmm').txt"
+)
+
+# License SKU ID mapping (get actual SKU IDs from your tenant)
+$LicenseMap = @{
+    "mtr_pro"   = "Get-MgSubscribedSku | Where DisplayName -like '*Teams Rooms Pro*' | Select -Exp SkuId"
+    "mtr_basic" = "Get-MgSubscribedSku | Where DisplayName -like '*Teams Rooms Basic*' | Select -Exp SkuId"
+}
+
+# Resolve SKU IDs from tenant
+$ProSkuId    = (Get-MgSubscribedSku | Where-Object { $_.DisplayName -like "*Teams Rooms Pro*" }).SkuId
+$BasicSkuId  = (Get-MgSubscribedSku | Where-Object { $_.DisplayName -like "*Teams Rooms Basic*" }).SkuId
+
+function Write-Log {
+    param([string]$Message, [string]$Level = "INFO")
+    $entry = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] $Message"
+    Write-Output $entry
+    Add-Content -Path $LogPath -Value $entry
+}
+
+# Import room list
+$rooms = Import-Csv -Path $CsvPath
+Write-Log "Starting provisioning of $($rooms.Count) resource accounts"
+
+foreach ($room in $rooms) {
+    Write-Log "Processing: $($room.DisplayName) ($($room.UPN))"
+
+    try {
+        # Step 1: Create Exchange Online room mailbox
+        New-Mailbox -Name $room.DisplayName `
+                    -Alias $room.Alias `
+                    -Room `
+                    -EnableRoomMailboxAccount $true `
+                    -RoomMailboxPassword (ConvertTo-SecureString "Temp!$(Get-Random -Max 99999)" -AsPlainText -Force) `
+                    -MicrosoftOnlineServicesID $room.UPN `
+                    -ErrorAction Stop
+        Write-Log "  Mailbox created: $($room.UPN)"
+
+        # Step 2: Wait for mailbox propagation (Exchange Online provisioning delay)
+        Start-Sleep -Seconds 30
+
+        # Step 3: Configure AutomateProcessing and calendar settings
+        Set-CalendarProcessing -Identity $room.UPN `
+            -AutomateProcessing AutoAccept `
+            -AddOrganizerToSubject $false `
+            -DeleteComments $false `
+            -DeleteSubject $false `
+            -RemovePrivateProperty $false `
+            -ProcessExternalMeetingMessages $true `
+            -ErrorAction Stop
+        Write-Log "  Calendar processing configured"
+
+        # Step 4: Set room capacity and location
+        Set-Place -Identity $room.UPN `
+            -Capacity $room.RoomCapacity `
+            -Building $room.Building `
+            -Floor $room.Floor `
+            -ErrorAction Stop
+        Write-Log "  Room capacity and location set"
+
+        # Step 5: Disable password expiry (Entra ID)
+        Update-MgUser -UserId $room.UPN `
+            -PasswordPolicies "DisablePasswordExpiration" `
+            -ErrorAction Stop
+        Write-Log "  Password expiry disabled"
+
+        # Step 6: Block direct sign-in (account should only be used by MTR device)
+        # Note: DO NOT block sign-in — MTR device requires sign-in enabled
+        # Ensure account is NOT blocked:
+        Update-MgUser -UserId $room.UPN -AccountEnabled $true -ErrorAction Stop
+        Write-Log "  Account enabled for sign-in confirmed"
+
+        # Step 7: Assign license
+        $skuId = if ($room.LicenseSKU -eq "mtr_pro") { $ProSkuId } else { $BasicSkuId }
+        $licenseBody = @{
+            addLicenses    = @(@{ skuId = $skuId })
+            removeLicenses = @()
+        }
+        Set-MgUserLicense -UserId $room.UPN -BodyParameter $licenseBody -ErrorAction Stop
+        Write-Log "  License assigned: $($room.LicenseSKU)"
+
+        Write-Log "  COMPLETED: $($room.DisplayName)" "SUCCESS"
+
+    } catch {
+        Write-Log "  FAILED: $($room.DisplayName) — $($_.Exception.Message)" "ERROR"
+    }
+}
+
+Write-Log "Provisioning complete. Review log at $LogPath"
+```
+
+---
+
+## Post-Provisioning Verification
+
+After the script runs, verify the accounts are correctly configured:
+
+```powershell
+# Verify all accounts from the CSV
+$rooms = Import-Csv -Path $CsvPath
+
+foreach ($room in $rooms) {
+    $cal = Get-CalendarProcessing -Identity $room.UPN
+    $mbox = Get-Mailbox -Identity $room.UPN
+    $user = Get-MgUser -UserId $room.UPN -Property "AccountEnabled,PasswordPolicies"
+
+    Write-Output "$($room.UPN):"
+    Write-Output "  AutomateProcessing: $($cal.AutomateProcessing)"
+    Write-Output "  AccountEnabled: $($user.AccountEnabled)"
+    Write-Output "  PasswordPolicies: $($user.PasswordPolicies)"
+    Write-Output "  ResourceType: $($mbox.RecipientTypeDetails)"
+}
+```
+
+Expected output for each account:
+- `AutomateProcessing: AutoAccept`
+- `AccountEnabled: True`
+- `PasswordPolicies: DisablePasswordExpiration`
+- `ResourceType: RoomMailbox`
+
+<DownloadButton
+  file="p2-t2-m1-l1-bulk-provisioning-script.ps1"
+  label="MTR Bulk Provisioning Script Template"
+  sizeKb={12}
+  description="Production-ready PowerShell bulk provisioning script — reads from CSV, creates Exchange room mailboxes, configures AutomateProcessing, sets capacity/location, disables password expiry, and assigns licenses. Includes logging, error handling, and post-provisioning verification queries."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m1-l1-kc">
+  <Question>
+    During bulk provisioning, `Set-CalendarProcessing` fails for several
+    accounts immediately after `New-Mailbox` succeeds. The error says the
+    mailbox cannot be found. What is the cause?
+  </Question>
+  <Answer>The account credentials were set incorrectly and the mailbox is locked</Answer>
+  <Answer correct>Exchange Online mailbox provisioning has a propagation delay — the mailbox was created by `New-Mailbox` but is not yet available in the Exchange backend that `Set-CalendarProcessing` is querying. Adding `Start-Sleep -Seconds 30` (or longer on large tenants) between creation and configuration resolves this</Answer>
+  <Answer>Set-CalendarProcessing requires Exchange admin permissions that are different from the permissions needed for New-Mailbox</Answer>
+  <Answer>The CSV display name contains spaces which causes Set-CalendarProcessing to fail when looking up the identity</Answer>
+  <Explanation>
+    Exchange Online is a distributed service — when a mailbox is created with
+    `New-Mailbox`, the creation is acknowledged but the mailbox may not be
+    immediately visible to all Exchange backend systems. `Set-CalendarProcessing`
+    queries a different layer and may return "mailbox not found" for 15–60
+    seconds after creation. The standard solution is to add a `Start-Sleep`
+    delay between `New-Mailbox` and the subsequent configuration cmdlets.
+    For large batch provisioning, 30 seconds is usually sufficient; increase
+    to 60 if failures persist on large tenants.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **CSV-driven approach:** One row per room; script reads CSV and provisions all accounts identically.
+- **Key steps:** New-Mailbox (Room) → Start-Sleep (propagation) → Set-CalendarProcessing (AutoAccept) → Set-Place (capacity/location) → Update-MgUser (no password expiry) → Set-MgUserLicense.
+- **Verify after:** Confirm AutomateProcessing, AccountEnabled, PasswordPolicies, ResourceType for all provisioned accounts.
+
+---
+
+## What's Next
+
+[License Management — Assignment, Validation, and Cost Optimization →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/license-management/)

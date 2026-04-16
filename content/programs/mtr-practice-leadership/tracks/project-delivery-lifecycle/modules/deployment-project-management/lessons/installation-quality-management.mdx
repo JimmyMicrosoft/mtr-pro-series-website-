@@ -1,0 +1,238 @@
+---
+id: "p4-t1-m2-l3"
+slug: "installation-quality-management"
+title: "Installation Quality Management"
+shortTitle: "Quality Management"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 2
+moduleSlug: "deployment-project-management"
+moduleTitle: "Deployment Project Management"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["project-manager", "senior-technician"]
+
+objectives:
+  - "Define quality standards for MTR physical installation and commissioning"
+  - "Implement a per-room quality checklist that verifies installation standards before acceptance"
+  - "Apply a snag management process that captures, tracks, and resolves installation defects"
+  - "Establish the quality gate that determines when a room is ready for client acceptance"
+
+prerequisites:
+  - "p4-t1-m2-l1"
+  - "p2-t3-m3-l3 (Integrated System Testing)"
+
+technologyTags: ["MTR", "Teams Rooms"]
+roleTags: ["project-manager", "senior-technician"]
+topicTags: ["quality-management", "installation", "commissioning", "snag-management"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Room Quality Checklist"
+    filename: "mtr-room-quality-checklist.pdf"
+  - label: "Snag Register Template"
+    filename: "mtr-snag-register-template.xlsx"
+
+relatedLessons:
+  - "p4-t1-m2-l1"
+  - "p4-t1-m2-l4"
+  - "p2-t3-m3-l4"
+
+metaDescription: "Learn to implement installation quality management for MTR deployments, including quality standards, per-room checklists, snag management, and acceptance gate criteria."
+keywords: ["MTR installation quality", "commissioning checklist", "snag management", "Teams Rooms quality"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Quality as a Commercial Imperative
+
+A poor quality installation damages client confidence, generates warranty call-backs, and creates reputational risk. On multi-room deployments, quality problems that are not caught early multiply across the fleet — a cabling method that causes an issue in one room causes the same issue in every room installed the same way.
+
+Quality management is the systematic process of verifying, documenting, and assuring that installation standards are met in every room, before presenting those rooms for client acceptance.
+
+---
+
+## Physical Installation Standards
+
+Establish and brief the installation team on these standards before work begins.
+
+### Cable Management
+
+| Standard | Requirement |
+|---|---|
+| All cables in containment | No loose cables visible; all runs in trunking, conduit, or cable ties |
+| Cable identification | All cable ends labelled at source and destination |
+| Minimum bend radius | HDMI: 25mm; CAT cable: 8× cable diameter |
+| Cable lengths | No excessive slack; cables dressed to fit |
+| Power and data separation | Minimum 150mm separation for parallel runs |
+
+### Mounting
+
+| Standard | Requirement |
+|---|---|
+| Display mount | Level within 1mm/m; VESA fixings to spec; anti-tilt engaged |
+| Display height | Bottom edge 0.9–1.1m from floor (adjust for table height) |
+| Camera position | On display or above display; centred on room axis |
+| Cable concealment | All cables behind display concealed or in surface trunking |
+| Console/touch controller | At table; cable concealed; no tension on cable at use position |
+
+### Power
+
+| Standard | Requirement |
+|---|---|
+| Outlet type | Dedicated outlet; no extension leads behind display |
+| PoE | Confirm switch port provides correct PoE budget before connecting device |
+| Surge protection | Per client requirement; never a standard domestic power strip |
+
+<Callout type="tip">
+**Photograph the completed installation from the user's perspective** (standing at the door, seated at the table, looking at the display wall) before the client walkthrough. These photos are part of the as-built record and demonstrate standards were met.
+</Callout>
+
+---
+
+## Commissioning Standards
+
+### Device Configuration Verification
+
+For each room, verify:
+
+```
+□ Device sign-in successful (resource account displayed on home screen)
+□ Room name displayed correctly on device home screen
+□ Calendar integration working (test meeting visible if created)
+□ Correct MTR App version installed
+□ Windows updates applied (or WUfB policy confirmed in Intune)
+□ Intune enrolment confirmed (if applicable)
+□ Teams Admin Centre — device appears in Rooms and Devices list
+□ Pro Management portal — device appears and reporting data present (if Pro licensed)
+```
+
+### Audio Commissioning
+
+```
+□ Microphone gain appropriate (speech at normal volume, no clipping)
+□ AEC functioning (no echo on test call from remote participant)
+□ Noise cancellation active
+□ Speaker volume adequate at far end of table
+□ No mechanical noise (HVAC, equipment fans) picked up in call
+□ Verify audio in both directions on test call
+```
+
+### Video Commissioning
+
+```
+□ Camera framing covers all seated positions
+□ IntelliFrame or auto-framing active (if applicable)
+□ No backlight or window causing overexposure
+□ White balance correct for room lighting
+□ Focus sharp on near and far table positions
+□ Display resolution correct (verify in device settings)
+□ Content sharing functioning (connect laptop; verify HDMI ingest)
+```
+
+### Functional Testing
+
+```
+□ One-touch join working (test meeting in calendar)
+□ Meet Now functioning
+□ Screen sharing from laptop via HDMI/USB-C
+□ Remote participant can see and hear clearly
+□ Local participant can see and hear remote clearly
+□ Display shows remote participant full-screen in call
+□ Room shows as available/busy in Outlook room finder after test meeting
+```
+
+---
+
+## The Room Quality Checklist
+
+The room quality checklist is completed by the commissioning engineer for every room before that room is presented for acceptance. It is a non-negotiable gate — a room does not go to client acceptance until the checklist is complete and all items pass.
+
+The checklist has three sections:
+
+1. **Physical installation** (cable management, mounting, power)
+2. **Configuration** (device settings, account, policies)
+3. **Functional** (audio, video, calling, meeting join)
+
+Each item is: ✓ Pass / ✗ Fail / N/A
+
+Any Fail item is logged in the snag register and must be resolved before the room proceeds to acceptance.
+
+---
+
+## Snag Management
+
+A snag is any installation defect or commissioning failure that prevents a room from meeting the agreed quality standard. Snag management is the process of capturing, tracking, and resolving all snags.
+
+### Snag Classification
+
+| Class | Definition | Resolution Timeline |
+|---|---|---|
+| P1 – Critical | Room completely non-functional | Resolve before acceptance; same day if possible |
+| P2 – Major | Core function impaired (e.g., no audio, camera not working) | Resolve before acceptance |
+| P3 – Minor | Non-critical cosmetic or configuration issue | Resolve within 5 business days of acceptance |
+
+### Snag Register
+
+```
+Snag ID | Room  | Description                    | Class | Identified  | Owner       | Resolution              | Status
+--------|-------|-------------------------------|-------|-------------|-------------|-------------------------|--------
+S-001   | R-002 | HDMI cable visible below mount | P3    | 2026-04-15  | J. Smith    | Surface trunking to add | Open
+S-002   | R-005 | Echo present on test call     | P2    | 2026-04-15  | A. Jones    | DSP AEC tail length adj | Resolved
+S-003   | R-008 | Camera tilt 2° off horizontal  | P3    | 2026-04-16  | J. Smith    | Adjust mount            | Open
+```
+
+### Snag Resolution Process
+
+1. Log snag in register immediately on identification (during quality checklist or client walkthrough)
+2. Assign to named engineer with target resolution date
+3. Update status when resolved: photograph the fix; retest
+4. P1 and P2 snags require commissioning engineer sign-off on resolution
+5. P3 snags may be deferred to a scheduled return visit if client agrees in writing
+
+---
+
+## The Acceptance Gate
+
+A room is ready for client acceptance when:
+
+1. Quality checklist is 100% complete with all items passing
+2. No P1 or P2 snags outstanding
+3. All P3 snags logged and agreed remediation plan in place
+4. Commissioning engineer has signed the quality checklist
+
+Present the completed quality checklist and snag register to the client IT representative during the acceptance walkthrough. Walk through every room on the floor together — the client confirming acceptance in person is more reliable than signature on a document they haven't reviewed.
+
+---
+
+<KnowledgeCheck>
+  <Question text="During the quality checklist, a commissioning engineer discovers that echo is present when testing a room. How should this be handled?">
+    <Answer>Accept the room and log it as a P3 minor snag to be resolved later</Answer>
+    <Answer>Skip the echo test — it will improve once more people use the room</Answer>
+    <Answer correct>Log as a P2 major snag, investigate DSP AEC configuration, resolve before proceeding to client acceptance</Answer>
+    <Answer>Advise the client this is a known Teams limitation</Answer>
+    <Explanation>Echo is a P2 Major snag — it directly impairs the core function of the room (audio quality in calls). P2 snags must be resolved before the room proceeds to client acceptance. Echo is almost always a DSP AEC configuration issue and is resolvable.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Room Quality Checklist" filename="mtr-room-quality-checklist.pdf" />
+<DownloadButton label="Snag Register Template" filename="mtr-snag-register-template.xlsx" />

@@ -1,0 +1,189 @@
+---
+id: "p1-t2-m3-l2"
+slug: "compute-console-placement"
+title: "Touch Console and Compute Unit Placement"
+shortTitle: "Console & Compute Placement"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 3
+moduleSlug: "hardware-mounting"
+moduleTitle: "Hardware Mounting and Connections"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Position an MTR touch console in compliance with ADA accessibility requirements and Microsoft's recommended placement guidelines"
+  - "Determine the appropriate compute unit location based on ventilation, maintenance access, cable management, and security requirements"
+  - "Document the physical placement of all control and compute components in the as-built drawing package"
+
+prerequisites:
+  - "p1-t2-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+
+topicTags:
+  - "touch-console"
+  - "compute-placement"
+  - "ada"
+  - "cable-management"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m3-l2-placement-checklist.pdf"
+    label: "Console and Compute Placement Checklist"
+    sizeKb: 40
+
+relatedLessons:
+  - "p1-t2-m3-l1"
+  - "p1-t2-m3-l3"
+
+metaDescription: "MTR touch console and compute unit placement — ADA reach requirements, cable concealment through table, ventilation clearances, maintenance access, and physical security."
+
+keywords:
+  - "MTR touch console placement"
+  - "compute unit ventilation Teams Rooms"
+  - "ADA accessibility conference room controls"
+  - "Logitech Tap placement"
+  - "MTR compute unit location credenza"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The touch console is the primary user interface for an MTR room — where participants join meetings, control volume, share content, and end calls. Where it sits and how its cable is managed are decisions that significantly affect the user experience. The compute unit is the brain of the system — where it lives determines how reliably it operates, how easy it is to service, and how secure it is from unauthorized access. Both placements require thought before hardware arrives on-site.
+
+---
+
+## Touch Console Placement
+
+**Position on the table:** Microsoft's MTR design guidance places the touch console on the conference table or on a credenza at the table's end, within arm's reach of seated participants. For tables up to approximately 12 feet in length, a single console centered on the table serves all seats adequately. For tables over 14 feet, two consoles — one at each end — are recommended so participants at both ends of the table can reach a console without leaning across the table.
+
+**ADA accessibility:** The Americans with Disabilities Act Standards for Accessible Design (Section 308, Reach Ranges) specifies that tabletop controls must be reachable without requiring a forward reach over an obstruction greater than 10 inches. In practice, this means the touch console must be within approximately 24 inches of the near edge of the table. Placing the console in the center of a 48-inch wide table is typically compliant — placing it at the far end of the table from where participants approach is not.
+
+**Cable concealment:** The console's cable run (USB for USB-connected consoles, Ethernet for IP-based consoles like Logitech Tap IP) must be concealed. The professional standard for conference room console cabling: route through a table grommet to the inside of the table leg or credenza, then through furniture to the compute unit location. Exposed cables lying across the table surface or draped to the floor are unacceptable in a professional commercial installation and will generate client complaints immediately.
+
+If the table does not have a grommet at the correct position, a surface-mounted grommet can be installed by drilling through the table at the desired location. Verify the table material (wood, laminate, glass, stone) and confirm drilling is appropriate before modifying client furniture. When table modification is not possible, a cable raceway routed along the table edge or a furniture channel product is the alternative.
+
+---
+
+## Compute Unit Placement
+
+The compute unit (e.g., Lenovo ThinkSmart Core, Crestron UC-MX70, Neat Bar) must be located in a position that satisfies four requirements simultaneously:
+
+**Ventilation:** Every compute unit specification sheet lists operating temperature requirements (typically 0–40°C ambient) and minimum clearance distances for airflow (typically 2–4 inches on intake and exhaust sides). In a credenza, the compute unit must have airflow path — either through grilles in the credenza doors, active ventilation fans, or an open-back credenza design. A sealed credenza with a fully loaded compute unit will exceed thermal limits within hours of operation, causing performance throttling and reduced hardware life.
+
+**Maintenance access:** A technician must be able to reach the compute unit without disassembling furniture, removing the display, or requiring specialized tools. The compute unit should be accessible for USB device connection (for admin keyboard/mouse during commissioning and support), power cycling, and replacement. In a credenza, "accessible" means opening the credenza door provides direct access. Behind a locked panel or inside a sealed furniture void does not constitute maintainable access.
+
+**Cable management:** The compute unit should be located as close as practical to the cable infrastructure termination point — the location where network, display, camera, and audio cables converge. Every foot of excess cable between the compute unit and its cable connections is cable that must be managed somewhere. Placing the compute unit near the infrastructure reduces cable clutter and makes cable management cleaner.
+
+**Physical security:** The compute unit should not be accessible to general room occupants without authorization. Unauthorized USB device insertion (a key attack vector for security-conscious clients) and inadvertent power cycling are risks if the compute unit is visible and accessible on an open shelf. Inside a credenza with a lock, in a rack with a door, or behind a locked panel are appropriate locations for the compute unit in security-conscious environments. Discuss physical security requirements with the client during design — some clients require it, some do not, and this affects where the compute unit can be placed.
+
+---
+
+## Integrated Bundle Placement
+
+Many current MTR solutions are integrated bundles — the compute, audio, and sometimes camera are consolidated into a single or dual-unit assembly (e.g., Poly Studio X, Neat Bar Pro, Logitech Rally Bar). For these systems, placement is determined by the OEM installation guide, which specifies the allowed positions, ventilation requirements, and cable routing. Follow the OEM guide precisely — integrated bundles are designed for specific mounting configurations and field improvisation on placement creates thermal and cable management problems that are difficult to resolve after installation.
+
+---
+
+<KnowledgeCheck id="p1-t2-m3-l2-kc">
+  <Question>
+    A touch console cable is routed from the table surface, down the table leg, and
+    across the floor under a cable protector to the credenza. What is wrong with
+    this approach?
+  </Question>
+  <Answer>Nothing — cable protectors on the floor are the standard professional approach for console cabling</Answer>
+  <Answer correct>Routing cable externally across the floor is not professional practice for a conference room installation — the cable should be concealed through a table grommet and inside the furniture to the credenza</Answer>
+  <Answer>The cable length is too long when routed this way — it will cause signal degradation</Answer>
+  <Answer>Floor cable protectors are prohibited by ADA for accessibility reasons</Answer>
+  <Explanation>
+    External floor cable routing in a conference room is a commissioning failure that
+    virtually every client will notice and complain about. Professional installations
+    conceal the console cable through a table grommet (built-in or installed) and route
+    it inside the table leg or credenza. Floor cable protectors create tripping hazards,
+    interfere with chair movement, and signal an incomplete installation to the client.
+  </Explanation>
+
+  <Question>
+    A compute unit is installed in an enclosed credenza with solid wood doors and no
+    ventilation openings. What is the likely outcome over time?
+  </Question>
+  <Answer>No effect — compute units are designed to operate in any enclosure</Answer>
+  <Answer>The compute unit will display an overheating warning on the MTR touch console</Answer>
+  <Answer correct>The compute unit will exceed its operating temperature limit, causing thermal throttling (reduced performance) and potentially hardware failure from sustained elevated temperatures</Answer>
+  <Answer>The client should keep the credenza door open during meetings to prevent overheating</Answer>
+  <Explanation>
+    Compute units generate heat that must be dissipated through airflow. A sealed credenza
+    with no ventilation creates a hot box — the compute unit's intake draws in already-heated
+    air that has no exit path, rapidly raising ambient temperature above the rated operating
+    limit. Sustained operation above rated temperature causes processor throttling (sluggish
+    performance), shortened component life, and eventual thermal shutdown. Credenzas used
+    for compute units must have adequate ventilation openings or active cooling.
+  </Explanation>
+
+  <Question>
+    For a 20-foot conference table with seats along both sides, how many touch consoles
+    are recommended and why?
+  </Question>
+  <Answer>One console centered on the table — a single console serves all seats regardless of table length</Answer>
+  <Answer correct>Two consoles — one at each end of the table — so participants at both ends can reach a console without leaning across the table length</Answer>
+  <Answer>Four consoles — one per seat quadrant for tables over 14 feet</Answer>
+  <Answer>No console — a 20-foot table is too large for reliable console placement; wall-mounted controls should be used instead</Answer>
+  <Explanation>
+    Microsoft's MTR guidance recommends two touch consoles for tables over approximately
+    14 feet — one at each end. A single centered console on a 20-foot table is reachable
+    from the center seats but not from the far ends without leaning across multiple seats.
+    Participants at the ends of the table need access to join meetings, control volume,
+    and share content. Two consoles maintain accessibility for all seating positions.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Position the touch console:** Centered on the table (or two consoles for tables over 14 feet), within ADA reach range (~24 inches from table edge), cable concealed through grommet and furniture.
+- **Place the compute unit:** With ventilation clearance per OEM spec, accessible for maintenance without furniture disassembly, near the infrastructure termination point, and physically secured from unauthorized access.
+- **Document placement:** As-built drawings show the actual position of compute unit and console relative to furniture and infrastructure — not just the design intent.
+
+---
+
+## What's Next
+
+With the display, console, and compute unit placed, the next lesson covers the positioning that most directly affects meeting quality: where the camera and microphone go.
+
+[Camera and Microphone Positioning for MTR →](/programs/mtr-foundations/tracks/physical-installation/modules/hardware-mounting/lessons/camera-microphone-positioning/)

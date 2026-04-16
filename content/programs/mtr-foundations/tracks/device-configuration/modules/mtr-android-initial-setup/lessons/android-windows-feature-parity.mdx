@@ -1,0 +1,232 @@
+---
+id: "p1-t3-m2-l4"
+slug: "android-windows-feature-parity"
+title: "Feature Parity Comparison — MTR Android vs. MTR Windows"
+shortTitle: "Android vs. Windows Features"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 2
+moduleSlug: "mtr-android-initial-setup"
+moduleTitle: "MTR Android — Initial Setup"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "analyze"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the current feature gaps between MTR Android and MTR Windows"
+  - "Evaluate a client's room requirements against the MTR Android feature set"
+  - "Communicate feature parity limitations professionally without discrediting either platform"
+
+prerequisites:
+  - "p1-t3-m2-l3"
+
+technologyTags:
+  - "mtr-android"
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "pre-sales"
+  - "support"
+
+topicTags:
+  - "feature-parity"
+  - "platform-selection"
+  - "android-oem"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m2-l4-feature-parity-matrix.pdf"
+    label: "MTR Android vs. Windows Feature Parity Matrix"
+    sizeKb: 55
+
+relatedLessons:
+  - "p1-t1-m1-l2"
+  - "p1-t3-m2-l3"
+
+metaDescription: "MTR Android vs. Windows feature parity — current parity state, remaining Android gaps, update cadence differences, and how to communicate platform limitations professionally to clients."
+
+keywords:
+  - "MTR Android vs Windows features"
+  - "Teams Rooms Android feature gap"
+  - "MTR platform comparison"
+  - "Teams Rooms feature parity 2025"
+  - "MTR Android update cadence"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The question "Can MTR Android do everything MTR Windows can do?" does not have a yes or no answer — it has a nuanced, evolving answer that changes with every Microsoft and OEM firmware release. The honest and professionally responsible answer acknowledges the current parity state, identifies any relevant gaps for the specific client's requirements, and sets accurate expectations about the update timeline for features not yet on Android. Integrators who make overpromises about Android parity damage client trust when features are not available; integrators who unnecessarily discourage Android adoption miss the right platform for many use cases. This lesson provides the knowledge for the accurate, balanced answer.
+
+---
+
+## Current Parity State (As of 2025)
+
+The gap between MTR Android and MTR Windows has narrowed substantially over the past two years. Features that are now available on both platforms include:
+
+**Fully parity features:**
+- One-touch join (calendar-based meeting join from the touch console)
+- Proximity join (Bluetooth proximity detection)
+- Manual meeting ID entry
+- Direct Guest Join (Zoom, Webex)
+- Content sharing (HDMI input, if the device supports HDMI ingest)
+- Gallery, Large Gallery, and Together Mode layouts
+- Front Row layout (on supported Android OEM devices with Pro license)
+- Teams Panels integration (room scheduling display)
+- In-meeting controls (mute, camera, content share, participant management)
+- Coordinated Meetings (basic scenarios)
+- Teams Admin Center visibility and management
+
+For the majority of standard conference room use cases — scheduled meetings, ad hoc meetings, content sharing, multi-layout support — Android now delivers a functionally equivalent experience to Windows.
+
+---
+
+## Remaining Android Gaps
+
+Features that are Windows-only or significantly limited on Android as of 2025:
+
+**Intelligent Speaker (speaker identification):** This AI feature identifies individual meeting participants by voice and shows their name in the meeting transcript and attendance data. Currently Windows-only on MTR devices. Requires specific compute hardware and the full Windows audio processing stack that Android cannot replicate.
+
+**IntelliFrame (individual participant framing):** IntelliFrame on Windows MTR generates individual video streams for each in-room participant — remote attendees see individual face thumbnails rather than a wide room view. This feature requires specific Windows compute hardware and significant AI processing that is not yet available on Android. OEM AI auto-framing (RightSight, Poly auto-tracking) is a different feature that tracks the active speaker but sends a single camera stream.
+
+**Full content camera AI enhancement:** The Teams whiteboard AI that cleans up handwriting, removes the presenter standing in front of the whiteboard, and enhances the whiteboard image is more fully implemented on Windows. Android implementations vary by OEM and have reduced functionality compared to Windows.
+
+**Full SkypeSettings.xml schema support:** Android supports a subset of the SkypeSettings.xml configuration schema, but not all elements. The full XML configuration depth available on Windows is not available on Android. Verify specific XML elements on the target OEM platform before relying on them.
+
+---
+
+## The Update Cadence Difference
+
+This is the most important practical difference for setting expectations: **Android features arrive later than Windows.**
+
+When Microsoft announces a new Teams Rooms feature, the timeline differs:
+- **MTR Windows:** Feature available within weeks via Microsoft Store app update
+- **MTR Android:** Feature available when the OEM releases a firmware update that includes the Teams app version supporting that feature — which may be days, weeks, or months after the Windows availability date
+
+The reason: Android MTR feature delivery requires both the Microsoft Teams app update and an OEM firmware update. The OEM must test the Teams app update against their specific hardware, validate it, and release it as part of their firmware package. This OEM certification and release cycle adds time.
+
+The practical implication: a feature announced by Microsoft as "now available in Teams Rooms" should be verified as actually available on the specific OEM device before communicating that availability to a client.
+
+**Never make forward-looking feature availability promises based on Microsoft roadmap announcements for Android MTR deployments.** Reference only features confirmed as available in the current released firmware for the specific OEM device.
+
+---
+
+## Evaluating a Client's Requirements
+
+When a client asks whether Android can meet their requirements, work through the evaluation systematically:
+
+1. List all meeting room functionality requirements from the client's requirements document
+2. Check each requirement against the current Microsoft feature comparison documentation (learn.microsoft.com Teams Rooms feature comparison)
+3. For requirements marked as Android-supported, verify availability on the specific target OEM device and firmware version
+4. For requirements not fully supported on Android, evaluate: is this requirement essential (block Android) or desirable but not essential (inform client of limitation, Android may still be viable)
+5. Document the results in a compliance matrix
+
+A client requirement for Intelligent Speaker is an Android blocker — if the client's organization uses Teams transcription and speaker attribution as a core meeting function, Windows is the correct platform. A client requirement for high-quality auto-framing is Android-compatible — the major OEMs all have strong AI framing implementations.
+
+---
+
+## Professional Communication Approach
+
+When a client asks about Android vs. Windows capabilities, a professional response:
+
+- Acknowledges that the gap has narrowed and Android handles the majority of standard conference room use cases well
+- Specifically addresses any features from the client's requirements that are Windows-only, with a clear explanation of why they are not yet on Android
+- Does not make forward-looking promises about when Android will get parity on missing features ("I'll confirm with Microsoft's documentation what the current status is" is the right approach)
+- Does not dismiss Android — for many clients, the simplicity, lower per-unit cost, and integrated hardware design of Android OEMs is genuinely the right choice
+
+<DownloadButton
+  file="p1-t3-m2-l4-feature-parity-matrix.pdf"
+  label="MTR Android vs. Windows Feature Parity Matrix"
+  sizeKb={55}
+  description="Quick-reference feature parity matrix comparing MTR Android and Windows across all major Teams Rooms feature categories. Includes update cadence notes and evaluation framework for client requirements assessment."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m2-l4-kc">
+  <Question>
+    A client's requirements include Teams meeting transcription with individual speaker
+    attribution (knowing which specific person said what in the transcript). Can MTR
+    Android meet this requirement?
+  </Question>
+  <Answer>Yes — Teams transcription works identically on Android and Windows MTR devices</Answer>
+  <Answer correct>No — Intelligent Speaker (individual speaker identification for transcription attribution) is currently Windows-only. Android devices support basic meeting transcription but without per-person speaker identification</Answer>
+  <Answer>Yes — speaker identification is handled by the Teams service, not the room device</Answer>
+  <Answer>It depends on the OEM — some Android OEMs support speaker identification and some do not</Answer>
+  <Explanation>
+    Intelligent Speaker — the feature that identifies individual meeting participants by
+    voice and attributes transcript content to specific named people — is currently a
+    Windows-only MTR feature. Basic Teams meeting transcription (which creates a text
+    transcript but labels all in-room audio as "room") works on Android, but the individual
+    speaker identification capability requires the Windows platform and specific hardware.
+    If per-person speaker attribution is a client requirement, Windows MTR is the correct
+    platform.
+  </Explanation>
+
+  <Question>
+    Microsoft announces a new Teams Rooms feature at their Ignite conference in November.
+    A client asks if their Yealink MeetingBar A40 devices will support this feature.
+    What is the correct response?
+  </Question>
+  <Answer>Yes — all new Teams features are available simultaneously on all MTR platforms</Answer>
+  <Answer>The feature will be available within 2 weeks, which is the standard OEM update cycle</Answer>
+  <Answer correct>I'll verify in Yealink's current release notes and the Microsoft feature comparison documentation — Android feature delivery depends on an OEM firmware update that includes the Teams app version with this feature, so availability on Yealink is not guaranteed to be simultaneous with Windows</Answer>
+  <Answer>Microsoft Ignite announcements apply only to MTR Windows — Android features are announced separately by each OEM</Answer>
+  <Explanation>
+    Android feature delivery requires both Microsoft's Teams app update AND the OEM's
+    firmware update cycle. There is no guarantee that a feature announced at Ignite will
+    be available on Yealink's next firmware release, or that the OEM release schedule
+    will match Microsoft's announcement timeline. The correct response is to check current
+    documentation — Yealink's release notes and Microsoft's feature comparison — rather
+    than making an assumption about timing.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **State current parity:** One-touch join, proximity join, Direct Guest Join, content sharing, Front Row, Gallery layouts — all Android-compatible. The vast majority of standard conference room use cases are covered.
+- **Identify remaining gaps:** Intelligent Speaker (speaker attribution), IntelliFrame (individual participant streams), full content camera AI — currently Windows-only.
+- **Apply the update cadence rule:** Android feature availability = Microsoft announcement + OEM firmware cycle. Never promise Android feature availability based on announcement date alone.
+- **Evaluate and communicate professionally:** Work through client requirements systematically, document gaps, communicate accurately without dismissing either platform.
+
+---
+
+## Module Complete
+
+You have completed Module 3.2: MTR Android — Initial Setup. You now understand the Android commissioning path, the five major OEM platforms, how to use OEM admin interfaces and management portals, and how to evaluate and communicate platform feature parity accurately.
+
+Module 3.3 introduces XML configuration profiles — the advanced configuration layer for MTR Windows that enables precise, repeatable, and fleet-scalable device configuration.
+
+[Continue to Module 3.3: XML Configuration Profiles →](/programs/mtr-foundations/tracks/device-configuration/modules/xml-configuration-profiles/)

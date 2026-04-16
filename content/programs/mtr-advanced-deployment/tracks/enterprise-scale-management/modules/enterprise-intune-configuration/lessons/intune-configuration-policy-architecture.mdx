@@ -1,0 +1,260 @@
+---
+id: "p3-t1-m1-l2"
+slug: "intune-configuration-policy-architecture"
+title: "Configuration Policy Architecture for MTR Fleets"
+shortTitle: "Configuration Architecture"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 1
+moduleSlug: "enterprise-intune-configuration"
+moduleTitle: "Enterprise Intune and Configuration Management"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design an Intune configuration policy hierarchy that separates MTR-specific settings from baseline enterprise Windows policies"
+  - "Implement OMA-URI policies for MTR-specific Windows settings not available in Intune built-in templates"
+  - "Identify policy conflicts and their resolution when multiple Intune policies target the same MTR device"
+
+prerequisites:
+  - "p3-t1-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "intune"
+  - "configuration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l1"
+  - "p3-t1-m1-l3"
+
+metaDescription: "Intune configuration policy architecture for enterprise MTR fleets — policy hierarchy design, MTR-specific OMA-URI settings, QoS policies, kiosk mode configuration, policy conflict resolution, and configuration baseline for Teams Rooms Windows devices."
+
+keywords:
+  - "Intune configuration policy MTR"
+  - "Teams Rooms Intune OMA-URI"
+  - "MTR Intune policy architecture"
+  - "Teams Rooms Intune configuration"
+  - "MTR Windows Intune policy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+An MTR device enrolled in Intune should receive the correct Windows configuration without conflicting with the organization's standard user-device policies. MTR devices are single-purpose appliances, not general-purpose Windows endpoints — they need a distinct policy set that configures them for dedicated room use. This lesson covers how to structure the policy hierarchy, what MTR-specific policies to apply, and how to avoid and resolve conflicts.
+
+---
+
+## Policy Architecture Principles
+
+**Principle 1 — Separate MTR from user devices:**
+Never apply the same Intune configuration profiles to both MTR devices and user workstations. MTR devices require different power settings, Windows Update behavior, network configuration, and security settings. Create a dedicated MTR device group and assign MTR-specific policies exclusively to that group.
+
+**Principle 2 — Layer policies by scope:**
+Structure policies in layers from most general to most specific:
+
+```
+Layer 1: Windows Security Baseline (applies to all Windows devices including MTR)
+Layer 2: MTR Baseline (applies to all MTR devices — power, kiosk, update)
+Layer 3: MTR Site-Specific (applies to MTR devices at specific sites — network, proxy)
+Layer 4: MTR Room Type (applies to specific room types — boardroom vs. huddle)
+```
+
+**Principle 3 — Use settings catalog for available settings:**
+Intune's Settings Catalog provides a structured interface for common Windows configuration. Use Settings Catalog profiles before resorting to OMA-URI for settings it covers — they are easier to audit and maintain.
+
+**Principle 4 — Document OMA-URI sources:**
+Custom OMA-URI paths are opaque — a path like `./Device/Vendor/MSFT/Policy/Config/Power/DisplayOffTimeoutPluggedIn` is meaningless without context. Document every OMA-URI policy with the source reference (Microsoft documentation link), the value set, and the reason.
+
+---
+
+## MTR Baseline Policy: Essential Settings
+
+**Power management:**
+MTR devices must not sleep or hibernate — this prevents the room from waking for scheduled meetings. Configure via Settings Catalog:
+
+- `Power → Sleep → Allow Standby States When Sleeping On Battery`: **Disabled**
+- `Power → Sleep → Allow Standby States When Sleeping On AC`: **Disabled**
+- `Power → Hibernate → Allow Hibernate`: **Disabled**
+- Display sleep is managed by the Teams Rooms app itself (not Windows power settings) — set Windows display timeout to "Never" to avoid conflict:
+
+OMA-URI for display off timeout on AC:
+```
+OMA-URI: ./Device/Vendor/MSFT/Policy/Config/Power/DisplayOffTimeoutPluggedIn
+Data type: Integer
+Value: 0 (never)
+```
+
+**Remote Desktop:**
+MTR devices do not need Remote Desktop for end users. However, IT administrators may need remote access for support. Configure:
+- Enable Remote Desktop via Intune policy (Settings Catalog → Remote Desktop Services)
+- Restrict RDP access to IT administrator accounts via firewall policy (Windows Defender Firewall → Inbound Rules → Remote Desktop)
+- Disable Remote Desktop if the organization does not use it for MTR support
+
+**Windows Defender Firewall:**
+The MTR app requires specific firewall rules. Microsoft manages these through the Teams Rooms application itself, but enterprise Intune policies can conflict with app-managed rules. Configure:
+- Do not apply overly restrictive enterprise firewall baseline policies to MTR devices that block Teams media ports (UDP 3478–3481)
+- If applying a security baseline, verify the baseline does not block or restrict Teams media traffic
+
+**Local administrator account:**
+MTR devices have a local administrator account (`admin` by default on some OEM configurations). For enterprise management:
+- Disable the built-in local administrator account via Settings Catalog or OMA-URI
+- Create a named local admin account managed via LAPS (Local Administrator Password Solution) for break-glass access
+- Ensure the IT support team has the LAPS password retrieval process documented
+
+---
+
+## MTR-Specific OMA-URI Policies
+
+**QoS (DSCP marking) — applied in Program 2, recapped here in enterprise context:**
+
+Enterprise MTR fleets use the same OMA-URI QoS policies from Program 2, but applied via Intune at scale:
+
+```
+Audio (50000–50019):
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/AppPathNameMatchCondition
+Value: msteamsapp.exe
+
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/DSCPMarkingValue
+Value: 46
+
+OMA-URI: ./Device/Vendor/MSFT/NetworkQoSPolicy/TeamsAudio/SourcePortMatchCondition
+Value: 50000-50019
+```
+
+At enterprise scale, verify QoS policy delivery via Intune reporting (see Lesson 5) — confirm all devices in the fleet show the QoS configuration as compliant.
+
+**Proxy bypass (if applicable):**
+If the organization uses a proxy and MTR devices need a bypass:
+
+```
+OMA-URI: ./Vendor/MSFT/NetworkProxy/ProxySettingsPerUser
+Data type: Integer
+Value: 0 (machine-wide proxy settings, not per-user)
+
+OMA-URI: ./Vendor/MSFT/NetworkProxy/Exceptions
+Data type: String
+Value: *.teams.microsoft.com;*.lync.com;*.microsoft.com;*.skype.com
+```
+
+**Kiosk mode considerations:**
+MTR Windows devices are NOT configured as Kiosk mode devices (Assigned Access) — the Teams Rooms app runs as a full Windows session managed by its own lock-down mechanism, not by Windows Assigned Access. Do not apply Assigned Access (Kiosk) policies to MTR devices; this will break the Teams Rooms application.
+
+---
+
+## Policy Conflict Resolution
+
+When multiple Intune policies configure the same Windows setting, a conflict occurs. Intune reports conflicts in the device configuration profile status. Resolution:
+
+**Identifying conflicts:**
+In Intune → Devices → select device → Device Configuration → check for "Error" or "Conflict" status on any profile. Select the profile to see which specific setting is in conflict.
+
+**Conflict resolution hierarchy:**
+Intune does not have a strict "wins" hierarchy for conflicts between Configuration Profiles of the same type — both settings are marked as "Not configured (conflict)" and neither is applied. The resolution is to edit one of the conflicting profiles to remove the conflicting setting, or consolidate the settings into a single profile.
+
+**Common MTR conflict scenarios:**
+
+| Conflict | Cause | Resolution |
+|----------|-------|------------|
+| Power settings not applying | Enterprise Windows security baseline also sets sleep settings | Add MTR devices to an exclusion group for the enterprise power policy |
+| Windows Update settings conflict | Enterprise update ring and MTR-specific update ring both target the device | Assign the MTR update ring only to the MTR device group; exclude MTR from the enterprise update ring |
+| Firewall rules blocking Teams | Enterprise security baseline applies restrictive firewall rules | Add MTR device group exception to enterprise firewall policy, or create an explicit allow rule for UDP 3478–3481 |
+| Proxy settings overriding bypass | Enterprise proxy policy and MTR bypass policy conflict | Consolidate into a single policy for MTR devices |
+
+---
+
+## Verifying Policy Application
+
+After deploying configuration policies to MTR devices, verify application:
+
+**Intune portal verification:**
+- Devices → select device → Device Configuration
+- Each assigned profile should show "Succeeded" status
+- "Error" indicates a policy application failure; click for details and error code
+- "Conflict" indicates a setting conflict with another profile
+
+**On-device verification (for remote verification via PowerShell or Intune remediation scripts):**
+```powershell
+# Verify QoS policy is applied
+Get-NetQosPolicy | Where-Object {$_.Name -like "Teams*"} | Select-Object Name, DSCPAction, AppPathNameMatchCondition
+
+# Verify power settings
+powercfg /query SCHEME_CURRENT SUB_SLEEP STANDBYIDLE
+```
+
+---
+
+<KnowledgeCheck id="p3-t1-m1-l2-kc">
+  <Question>
+    After deploying an MTR-specific power management policy via Intune, the
+    Intune device configuration report shows "Conflict" for the power settings
+    on all MTR devices. The organization also has a Windows Security Baseline
+    profile assigned to all Windows devices (including MTR). What is the most
+    likely cause and the correct resolution?
+  </Question>
+  <Answer>The MTR power policy settings are invalid — recreate the policy with different OMA-URI paths</Answer>
+  <Answer>Disable the Windows Security Baseline for all devices to resolve the conflict</Answer>
+  <Answer correct>The Windows Security Baseline profile assigned to "all Windows devices" includes power settings that conflict with the MTR-specific power policy. Both profiles are targeting the same setting on the same device, creating a conflict where neither setting is applied. The correct resolution is to either: (a) add the MTR device group to an exclusion scope on the Windows Security Baseline profile to remove the conflicting power settings from MTR devices, or (b) create a separate copy of the Security Baseline for MTR that omits the power settings, and unassign the standard baseline from the MTR device group. Option (a) is simpler and avoids maintaining a duplicate baseline profile</Answer>
+  <Answer>Apply a higher-priority profile — Intune applies the most recently deployed profile and the MTR policy should be deployed after the baseline</Answer>
+  <Explanation>
+    Intune does not have a "most recent wins" conflict resolution for
+    Configuration Profiles of the same type. When two profiles configure the
+    same setting on the same device, Intune marks the setting as "Conflict"
+    and applies neither — the device receives no configured value for that
+    setting. The fix is structural: ensure that MTR devices only receive one
+    profile that configures any given setting. This is achieved by scoping
+    the enterprise baseline to exclude MTR devices, or by not including
+    power settings in the MTR-targeted baseline copy. Disabling the Security
+    Baseline for all devices to resolve an MTR conflict would degrade the
+    security posture of all other Windows endpoints — not an acceptable approach.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Architecture:** Layer policies (baseline → MTR baseline → site-specific → room type); keep MTR device group separate from user workstation targeting.
+- **Essential MTR settings:** Power (no sleep/hibernate), Remote Desktop (IT admin only), firewall (don't block Teams media).
+- **OMA-URI:** Use for QoS DSCP marking, proxy bypass, settings not in Settings Catalog; document all OMA-URI with source and reason.
+- **Kiosk mode:** Do NOT apply Windows Assigned Access to MTR devices — Teams Rooms manages its own lock-down.
+- **Conflict resolution:** "Conflict" status means neither policy applies; fix by consolidating or scoping exclusions.
+
+---
+
+## What's Next
+
+[Compliance Policies and Conditional Access Integration →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/enterprise-intune-configuration/lessons/compliance-policies-mtr/)

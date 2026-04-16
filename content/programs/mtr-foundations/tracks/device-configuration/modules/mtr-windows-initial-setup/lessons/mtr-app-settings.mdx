@@ -1,0 +1,231 @@
+---
+id: "p1-t3-m1-l3"
+slug: "mtr-app-settings"
+title: "MTR App Settings Deep Dive — Display, Audio, Meeting, Peripherals"
+shortTitle: "MTR App Settings"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 1
+moduleSlug: "mtr-windows-initial-setup"
+moduleTitle: "MTR Windows — Initial Setup"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 35
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Navigate the MTR Windows application settings menu and configure each major setting category correctly for a given room scenario"
+  - "Apply Microsoft's recommended default settings for standard MTR deployments and identify settings requiring site-specific customization"
+  - "Explain how each critical app setting affects the user experience and meeting quality"
+
+prerequisites:
+  - "p1-t3-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+
+topicTags:
+  - "app-settings"
+  - "display-configuration"
+  - "audio-settings"
+  - "meeting-settings"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m1-l3-settings-guide.pdf"
+    label: "MTR App Settings Configuration Guide"
+    sizeKb: 75
+
+relatedLessons:
+  - "p1-t3-m1-l2"
+  - "p1-t3-m1-l4"
+
+metaDescription: "MTR Windows app settings configuration — display settings, audio device assignment, meeting behavior options, peripheral assignment, theming, and the admin PIN. Every setting category covered for commissioning."
+
+keywords:
+  - "MTR app settings display"
+  - "Teams Rooms audio configuration"
+  - "MTR default microphone speaker"
+  - "Teams Rooms meeting settings"
+  - "MTR admin PIN"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The MTR application settings are the control layer between the physical hardware and the Teams meeting experience. Misconfigurations here — wrong default microphone, display count set wrong, admin PIN unchanged — generate support calls on the first day of use. Correct settings configuration is part of the commissioning deliverable: the room should not require any settings changes after client acceptance. This lesson covers every settings category, what each option does, and how to configure it correctly for a given room.
+
+---
+
+## Accessing Settings
+
+App settings are accessed by tapping the gear icon (⚙) on the MTR home screen. The app will prompt for the admin PIN. The default PIN on most MTR Windows builds is **0000** — this must be changed to a secure, documented PIN during initial setup. A room whose admin PIN has not been changed from default is accessible by any person who knows the default PIN.
+
+After entering the PIN, the settings menu displays four main categories: **Meetings**, **Display**, **Peripherals**, and **General** (which includes account and calling settings, theming, and diagnostics).
+
+---
+
+## Display Settings
+
+**Number of displays:** Set to match the physical display count — 1 for a single-display room, 2 for a dual-display configuration. Setting this incorrectly causes the MTR app layout to be optimized for the wrong display configuration. On a physical dual-display system with the app set to single display, the second display will be unused or show an extended desktop.
+
+**Content duplication:** When dual display is enabled, this controls whether Display 2 mirrors Display 1 (duplication) or shows content independently (extension). In extension mode (the standard for dual-display MTR rooms), Display 1 shows the participant gallery and meeting UI; Display 2 shows content being shared. Duplication shows the same content on both displays — occasionally requested for rooms with an audience at both ends of a long table.
+
+**Display timeout:** The screen-off timer when the room is idle. Set based on the client's preference — typically 5–10 minutes for commercial rooms. A display that never sleeps generates unnecessary wear and heat; a display that sleeps immediately after each meeting creates a poor user experience when the room is occupied between meetings.
+
+**Front Row:** Enables the Front Row layout option (Teams Rooms Pro license required). Front Row displays remote participants in a persistent strip at the bottom of the display, with shared content above. Available as a default layout option or user-selectable during meetings. Requires at least one large display (86"+) or a second display for an effective experience.
+
+---
+
+## Audio Settings
+
+**Default Microphone and Default Speaker:** These dropdowns list all USB audio devices visible to Windows. Select the device that matches the installed microphone system and speaker system. This is the most common audio configuration error in MTR deployments: the Windows audio system may list multiple audio devices (Windows built-in audio, USB audio bar, content bar), and the wrong selection results in a room that has no functional audio from the remote participant's perspective.
+
+To identify the correct device: the device name in the dropdown matches the USB device name as it appears in Windows Device Manager. If uncertain, test each option using the in-app microphone test function — the test confirms which device is actually picking up audio.
+
+**Microsoft Audio Processor:** When enabled, applies Microsoft's AI-based audio enhancement layer (echo cancellation, noise suppression, voice isolation) on top of the hardware's own processing. Available only for devices that support it (verify in the device's compatibility documentation). For certified audio bars that have their own built-in processing, enabling this may create double-processing artifacts — test with and without before finalizing.
+
+**Meeting speaker volume:** The default volume level for meeting audio. Set to an appropriate level for the room — most conference rooms work well with the volume at 60–70% of maximum to leave headroom for users to adjust up or down during meetings.
+
+---
+
+## Meeting Settings
+
+**Automatic screen sharing:** When enabled, the room automatically shares HDMI-connected content when a device is connected. When disabled, a user must manually start content sharing from the touch console. Client preference varies — some prefer automatic sharing (easier for presenters), others prefer manual (prevents accidental sharing during setup). Confirm the client's preference.
+
+**Hide meeting names and organizer information:** Privacy mode. When enabled, meeting titles and organizer names are not displayed on the room's home screen or touch console. Appropriate for executive suites and rooms in open-plan areas where meeting names might contain sensitive information. The room still joins meetings correctly — the information is only hidden from the home screen display.
+
+**Incoming meeting audio default (unmute/mute):** Sets whether the room's microphone starts unmuted or muted when joining a meeting. For most conference rooms, unmuted is the correct default — the room should be able to speak in meetings without a manual unmute step. For monitoring rooms or rooms primarily used for watching broadcast content, muted default may be appropriate.
+
+**Layout defaults:** Set the default meeting layout (Gallery, Large Gallery, Together Mode, Front Row). Gallery is the standard default for most conference rooms. Together Mode and Front Row are optional experiences that some clients request as the room default.
+
+---
+
+## Peripherals Settings
+
+**Camera assignment:** Select the primary camera from the USB device list. For systems with both a primary meeting camera and a content camera (whiteboard camera), assign each correctly. Misassigning the content camera as the primary camera will send the whiteboard image to remote participants during the meeting instead of the room's participant camera.
+
+**Peripheral health status:** Each peripheral (camera, microphone, speaker) shows a health indicator. A device showing as unhealthy at this stage — with the USB connection verified and the device powered — indicates a USB enumeration problem or driver issue that must be resolved before acceptance.
+
+---
+
+## General Settings
+
+**Room name:** The name displayed on the home screen. Populated from the resource account's Entra ID display name but can be overridden here or in SkypeSettings.xml. Set to the room's common name as the client intends to identify it (e.g., "Board Room A", "Innovation Lab").
+
+**Custom theming:** Upload a custom background image for organizational branding. Requires a JPEG image file accessible to the device (local file or network path). Image specifications: 3840×1080 pixels for single 4K display. Follow the client's brand guidelines for theming — or leave at the Microsoft default if no custom theme is requested.
+
+**Send logs:** Confirm this is enabled. Allows Microsoft Support to request diagnostic log collection when support cases are opened through TAC. Disabling this makes escalated troubleshooting significantly harder.
+
+<DownloadButton
+  file="p1-t3-m1-l3-settings-guide.pdf"
+  label="MTR App Settings Configuration Guide"
+  sizeKb={75}
+  description="Complete configuration guide for all MTR Windows app settings categories — every option documented with its function, recommended value, and the user experience impact of each setting."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m1-l3-kc">
+  <Question>
+    After commissioning an MTR Windows room, the IT administrator reports that remote
+    participants cannot hear anyone in the room. In-room participants can hear remote
+    participants clearly. What is the most likely configuration cause?
+  </Question>
+  <Answer>The display timeout is set too short, causing the device to sleep during meetings</Answer>
+  <Answer correct>The wrong audio device is selected as the Default Microphone in the Peripherals settings — a non-functional device (e.g., Windows built-in audio) is selected instead of the USB audio bar</Answer>
+  <Answer>The Teams Rooms Pro license is required for microphone functionality</Answer>
+  <Answer>The meeting audio default setting has the room joining meetings as muted</Answer>
+  <Explanation>
+    When remote participants cannot hear the room but the room can hear remote participants,
+    the microphone is the failure point (not the speaker). The most common cause is the
+    wrong audio device selected as the Default Microphone — Windows may list the compute
+    unit's internal audio (or a virtual audio device) alongside the USB audio bar, and if
+    the non-functional device is selected, no audio is sent. Navigate to Peripherals settings
+    and verify the correct device is selected, then test with the in-app microphone test.
+  </Explanation>
+
+  <Question>
+    A room's MTR touch console is visible in an open-plan workspace where many employees
+    pass by. The client requests that meeting titles and organizer names not be visible
+    on the room's screen. Which setting addresses this?
+  </Question>
+  <Answer>Display timeout — set to 0 to keep the screen blank when not in a meeting</Answer>
+  <Answer>Automatic screen sharing — disable to prevent meeting content from being displayed</Answer>
+  <Answer correct>Hide meeting names and organizer information (privacy mode) — when enabled, meeting details are not shown on the home screen or touch console</Answer>
+  <Answer>Custom theming — apply a dark background that obscures the meeting information</Answer>
+  <Explanation>
+    The privacy mode setting (Hide meeting names and organizer information) is specifically
+    designed for rooms in visible locations where meeting titles may contain sensitive
+    information. When enabled, the room display shows that a meeting is scheduled at a
+    given time but does not reveal the meeting title or organizer's name. The room joins
+    meetings normally — only the home screen display is affected.
+  </Explanation>
+
+  <Question>
+    The default admin PIN on an MTR Windows device has not been changed from 0000.
+    What is the security risk, and what should be done?
+  </Question>
+  <Answer>The default PIN is secure — it is device-specific and cannot be used on other rooms</Answer>
+  <Answer correct>The default PIN is publicly known (0000 is documented in Microsoft's installation guides) — anyone who knows it can access the MTR settings, change the configuration, or view sensitive diagnostic information. Change the PIN to a secure, documented value during commissioning</Answer>
+  <Answer>The PIN only protects cosmetic settings — leaving it at default has no meaningful security impact</Answer>
+  <Answer>The PIN is automatically changed after 30 days per Microsoft's security policy</Answer>
+  <Explanation>
+    The default admin PIN (0000) is published in Microsoft's documentation and is the
+    same on every MTR Windows device. In any environment where a conference room is
+    physically accessible, the default PIN allows anyone to access the MTR settings —
+    change audio devices, modify meeting settings, view the resource account name and
+    app diagnostics, or disrupt the room's configuration. Change the PIN during commissioning
+    and document the new PIN in the project's secure documentation.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Configure display settings:** Display count, content duplication vs. extension, timeout, Front Row.
+- **Assign audio devices correctly:** Default Microphone and Default Speaker matched to installed hardware; verified with in-app test.
+- **Set meeting behavior:** Automatic content sharing, privacy mode, incoming audio default, layout defaults — all confirmed with the client before commissioning.
+- **Change the admin PIN:** Required at every commissioning; document the new PIN in project records.
+
+---
+
+## What's Next
+
+With the Teams app configured, the next lesson covers the Windows OS settings that must be checked and adjusted to prevent reliability issues that the Teams app settings alone cannot control.
+
+[Windows OS Settings Relevant to MTR — Power, Updates, Networking →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-windows-initial-setup/lessons/windows-os-settings/)

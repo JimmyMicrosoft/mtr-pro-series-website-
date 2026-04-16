@@ -1,0 +1,270 @@
+---
+id: "p2-t3-m1-l2"
+slug: "microphone-systems"
+title: "Microphone Systems for Conference Rooms"
+shortTitle: "Microphone Systems"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 1
+moduleSlug: "conference-room-audio"
+moduleTitle: "Conference Room Audio Systems"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 35
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Select the appropriate microphone system type for a given room size, geometry, and use case"
+  - "Calculate microphone coverage requirements for a conference room based on seating layout"
+  - "Identify common microphone placement errors and their symptoms in meeting audio"
+
+prerequisites:
+  - "p2-t3-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "audio"
+  - "microphones"
+
+vendorTags:
+  - "shure"
+  - "biamp"
+  - "sennheiser"
+  - "yamaha"
+
+relatedLessons:
+  - "p2-t3-m1-l1"
+  - "p2-t3-m1-l3"
+
+metaDescription: "Conference room microphone system selection — beamforming ceiling arrays, tabletop boundary microphones, gooseneck microphones, integrated soundbar microphones, coverage calculation, placement rules, and common errors."
+
+keywords:
+  - "conference room microphone selection"
+  - "ceiling microphone array MTR"
+  - "beamforming microphone conference room"
+  - "Teams Rooms microphone coverage"
+  - "MTR audio microphone placement"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The microphone system determines whether participants at the far end can hear local participants clearly. No amount of DSP processing compensates for microphones that don't adequately cover the seating area, are placed incorrectly, or are the wrong type for the room geometry. This lesson covers microphone system types, selection criteria, coverage calculation, and the placement rules that determine whether a microphone system performs as intended.
+
+---
+
+## Microphone System Types
+
+**Beamforming Ceiling Microphone Arrays:**
+
+Ceiling microphone arrays use multiple microphone elements arranged in a grid to create software-defined pickup beams that track talkers in the room. The DSP automatically steers beams toward active speakers and suppresses noise from other directions.
+
+*Examples:* Shure MXA910/MXA920, Biamp Parlé TCM-1, Sennheiser TeamConnect Ceiling 2, Yamaha ADECIA
+
+*Best for:*
+- Medium to large conference rooms (tables 8–20+ seats)
+- Rooms where tabletop clutter makes tabletop mics impractical
+- Rooms requiring clean, furniture-free aesthetic
+- Rooms where the table configuration changes
+
+*Coverage:* Each array unit has a defined coverage area (typically a 2–3m radius circle below the array). Multiple units tile to cover larger tables. Manufacturer coverage calculators specify number of units needed per table size and seating count.
+
+*Installation considerations:*
+- Mount height typically 2.5–4m ceiling height; manufacturer specs define optimum height
+- Distance from ceiling speakers: minimum 1–2m from any speaker to avoid AEC reference issues
+- Dante or USB connection to DSP; most ceiling arrays include internal DSP
+- Requires PoE+ switch port (IEEE 802.3at) for power
+
+**Tabletop Boundary Microphones:**
+
+A boundary microphone sits flat on the table surface and uses the table as an acoustic boundary to extend its pickup pattern. Single omnidirectional element.
+
+*Examples:* Shure MX395, Yamaha YVC series, Poly Sync series (USB integrated)
+
+*Best for:*
+- Small rooms (table seats 4–8)
+- Budget-conscious installations
+- Rooms where ceiling installation is not possible
+- Temporary or flexible room configurations
+
+*Coverage:* Single boundary mic covers approximately 1.2–1.5m radius. For a 6-person table, one central boundary mic typically provides adequate coverage. For 8–10 person tables, two boundary mics (one each end) are common.
+
+*Limitations:*
+- Cable management on table surface
+- Susceptible to handling noise (someone placing a laptop next to the mic)
+- Blocks line of sight for video meetings
+- Less effective for L-shaped or U-shaped table configurations
+
+**Gooseneck / Desktop Podium Microphones:**
+
+Directional microphone on a flexible gooseneck stem, providing cardioid or supercardioid pickup aimed toward a single speaker position.
+
+*Examples:* Shure MX412/MX418, Biamp Devio SCX series, Audio-Technica U8xx series
+
+*Best for:*
+- Fixed speaker positions (lectern/podium, chairman position)
+- Boardrooms with designated presenter position
+- Training rooms with front-of-room presenter
+- Supplementing a ceiling mic system for a fixed position requiring higher gain
+
+*Coverage:* Each unit covers one speaker position at optimal distance (15–60cm from speaker's mouth depending on type). Not suitable as the sole microphone system for a round-table conference room.
+
+**Integrated Soundbar / Collaboration Bar Microphones:**
+
+All-in-one videoconference bars (Poly Studio R30/X30/X50, Logitech Rally Bar, Jabra PanaVision, Neat Bar) include microphone arrays built into the bar unit, mounted on the wall or display.
+
+*Best for:*
+- Small to medium rooms (table seats 4–12 depending on device)
+- Huddle rooms and focus spaces
+- Deployments requiring simple installation and limited cabling
+- Rooms where separate microphone infrastructure is not justified
+
+*Coverage:* Varies by device; manufacturer-specified room size recommendations define maximum table distance. Logitech Rally Bar covers rooms up to 10m; Poly Studio X50 covers up to 5.5m table.
+
+*Limitations:*
+- Fixed position — microphone and camera are co-located at the display wall
+- Less effective for long, narrow tables where the far end is distant from the bar
+- Limited expandability for room layout changes
+
+---
+
+## Coverage Calculation
+
+Before specifying a microphone system, calculate the coverage required:
+
+**Step 1 — Establish table dimensions:**
+Measure or obtain the conference table dimensions. Note whether the table is rectangular, round, U-shaped, or chevron configuration.
+
+**Step 2 — Determine seating:**
+Count total seats and note any seats that are unusual distances from the table center (end seats at long tables, outside U-shape positions).
+
+**Step 3 — Select microphone type and calculate units:**
+
+For ceiling arrays:
+- Use the manufacturer's coverage calculator (Shure IntelliMix Room, Sennheiser Control Cockpit, Biamp AudioTools)
+- Input table dimensions and ceiling height
+- Output: number of units and mounting positions
+
+General guidelines for ceiling arrays:
+
+| Table Length | Ceiling Height 2.7m | Ceiling Height 3.5m |
+|--------------|---------------------|---------------------|
+| Up to 3m | 1 unit | 1 unit |
+| 3–6m | 1–2 units | 2 units |
+| 6–9m | 2–3 units | 3 units |
+| 9–12m | 3–4 units | 4 units |
+
+*These are starting estimates — always verify with manufacturer calculator for specific products.*
+
+**Step 4 — Check edge seats:**
+The seats at the ends of a long table are typically the hardest to cover. Verify that the outermost seats fall within the manufacturer's rated coverage radius. If not, add an additional unit or consider supplementary tabletop boundary mics at the end positions.
+
+---
+
+## Microphone Placement Rules
+
+**Ceiling array positioning:**
+- Center units over the table seating area, not over the table itself
+- Maintain equal horizontal offset from both long sides of the table
+- For multi-unit installations, overlap coverage areas slightly (10–15% overlap recommended)
+- Keep minimum distance from HVAC diffusers: 1m or as specified (HVAC noise directly under a diffuser will overwhelm noise reduction)
+
+**Boundary microphone positioning:**
+- Center on the table, away from the table edge
+- Do not place adjacent to laptops, projectors, or other fan-cooled equipment
+- Keep a minimum 0.5m from any speaker (room or laptop)
+- Avoid placing under overhead air diffusers
+
+**Common placement errors and symptoms:**
+
+| Error | Symptom at Far End |
+|-------|-------------------|
+| Ceiling array too far from table edge seats | Far-end hears end-of-table seats as quiet or distant |
+| Ceiling array over HVAC diffuser | Constant HVAC roar on the far-end audio |
+| Boundary mic too close to laptop speakers | Echo or double audio (laptop plays far-end + room speakers play far-end) |
+| Gooseneck too far from speaker position | Speaker sounds distant, low level, high noise floor |
+| Multiple ceiling mics with incorrect automixer | Audible level pumping as automixer switches between units |
+
+---
+
+## Integration with MTR Devices
+
+**Shure MXA910/920 → MTR Windows:**
+- Recommended integration: Shure IntelliMix Room (software DSP on MTR compute unit) via USB Audio
+- Alternative: Dante → Biamp Tesira or QSC Q-SYS → USB Audio to MTR
+- Shure ANIUSB-MATRIX: dedicated USB bridging device for Dante-to-USB without external DSP
+
+**All-in-one certified devices:**
+- Logitech Rally System: Rally Mic Pods (satellite boundary mics) extend the Rally Bar's microphone coverage for longer tables
+- Poly Studio: directional beam with no separate DSP required for small/medium rooms
+- Yamaha ADECIA: ceiling mic + speaker system with integrated DSP, connects via USB to MTR device
+
+---
+
+<KnowledgeCheck id="p2-t3-m1-l2-kc">
+  <Question>
+    A 10-person boardroom has a 4.5m × 1.2m rectangular conference table at a
+    ceiling height of 3m. The client prefers a clean, cable-free table surface.
+    Which microphone system is most appropriate, and what quantity is likely needed?
+  </Question>
+  <Answer>A single tabletop boundary microphone centered on the table</Answer>
+  <Answer>Two gooseneck microphones at each end of the table</Answer>
+  <Answer correct>A ceiling beamforming array is most appropriate given the requirement for a cable-free table. For a 4.5m table at 3m ceiling height, 1–2 ceiling array units are likely needed — one unit centered over the table would cover up to approximately 3m of table length, so for a 4.5m table, 2 units (one at each third) should be specified and verified using the manufacturer's coverage calculator for the specific product chosen</Answer>
+  <Answer>The integrated soundbar microphone on a collaboration bar wall-mounted at one end</Answer>
+  <Explanation>
+    The client's preference for a cable-free table surface immediately eliminates
+    tabletop boundary and gooseneck options (both require cables on or near the
+    table). A collaboration bar's integrated microphone mounted at one end of a
+    4.5m boardroom table would struggle to pick up participants at the far end
+    — these devices are designed for smaller rooms. A ceiling beamforming array
+    provides full table coverage from above without any table surface equipment.
+    For a 4.5m table at 3m ceiling height, 2 units is a reasonable starting
+    specification, confirmed against the specific product's coverage calculator
+    (Shure MXA920 or equivalent). End-of-table seat coverage should be checked
+    specifically, as these positions are often at the edge of rated coverage.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Types:** Ceiling beamforming arrays (medium/large rooms, clean aesthetic), boundary mics (small rooms, simple), gooseneck (fixed positions), integrated soundbar mics (small/medium, simple install).
+- **Coverage:** Use manufacturer calculators; verify end-of-table seats specifically; 1.2–1.5m radius for boundary mics.
+- **Placement rules:** Center over seating area, avoid HVAC diffusers, maintain distance from speakers.
+- **MTR integration:** USB Audio is the standard connection method; Dante requires bridging device or external DSP.
+
+---
+
+## What's Next
+
+[Speaker Systems and Speech Intelligibility →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/conference-room-audio/lessons/speaker-systems-intelligibility/)

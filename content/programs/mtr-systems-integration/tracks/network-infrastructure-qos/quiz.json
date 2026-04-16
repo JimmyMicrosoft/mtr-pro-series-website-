@@ -1,0 +1,128 @@
+{
+  "trackSlug": "network-infrastructure-qos",
+  "trackTitle": "Network Infrastructure & QoS",
+  "programSlug": "mtr-systems-integration",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What DSCP value should be applied to Microsoft Teams audio traffic, and what per-hop behaviour does it correspond to?",
+      "answers": [
+        "DSCP 46 — Expedited Forwarding (EF), the highest-priority queue for latency-sensitive traffic.",
+        "DSCP 34 — Assured Forwarding Class 4 (AF41), for high-priority but non-time-critical traffic.",
+        "DSCP 18 — Assured Forwarding Class 2 (AF21), for best-effort business traffic.",
+        "DSCP 0 — Best Effort, the default for all unmarked traffic."
+      ],
+      "correct": 0,
+      "explanation": "Teams audio must be marked DSCP 46 (Expedited Forwarding). EF provides the lowest latency, lowest jitter, and lowest drop probability — essential for real-time voice. Video uses DSCP 34 (AF41) and screen sharing uses DSCP 18 (AF21)."
+    },
+    {
+      "id": 2,
+      "text": "An administrator is implementing QoS for MTR devices using Microsoft Intune rather than Group Policy. What is the mechanism used to mark traffic?",
+      "answers": [
+        "Intune deploys a custom firewall rule that re-marks packets at the network perimeter.",
+        "Intune delivers a Windows QoS Policy (via a custom OMA-URI or Settings Catalog policy) that configures port-based DSCP marking on the MTR Windows device.",
+        "Intune cannot configure QoS for Teams traffic; Group Policy is the only supported method.",
+        "Intune uses a network proxy configuration to apply DSCP tagging before packets leave the device."
+      ],
+      "correct": 1,
+      "explanation": "Microsoft Intune can deliver QoS policies to MTR Windows devices using custom OMA-URI settings or the Settings Catalog to configure Windows QoS Policy. This policy marks outbound Teams media packets with the correct DSCP values based on source port ranges."
+    },
+    {
+      "id": 3,
+      "text": "Which UDP port range must be open on the firewall for Microsoft Teams real-time media (audio, video, and sharing) to function correctly?",
+      "answers": [
+        "UDP 1024–65535 to all destinations",
+        "UDP 3478–3481 to Microsoft's media relay IP ranges",
+        "UDP 5060–5061 for SIP signalling",
+        "UDP 443 to all Microsoft 365 IP addresses"
+      ],
+      "correct": 1,
+      "explanation": "Teams media uses UDP ports 3478–3481 to reach Microsoft's TURN/STUN relay servers. These ports must be permitted outbound (and return traffic inbound) to Microsoft's published IP ranges. TCP 443 is used for signalling, not media. SIP ports are not used by Teams."
+    },
+    {
+      "id": 4,
+      "text": "A large enterprise wants to place all MTR devices on a dedicated VLAN. What is the primary security and operational benefit of this approach?",
+      "answers": [
+        "It allows MTR devices to bypass all firewall inspection, improving media quality.",
+        "It isolates room system traffic, simplifying QoS policy application, enabling granular firewall rules, and preventing room devices from accessing the general corporate network.",
+        "It eliminates the need for DNS resolution for Teams endpoints.",
+        "It automatically applies DSCP markings to all traffic without requiring Windows QoS policy configuration."
+      ],
+      "correct": 1,
+      "explanation": "Placing MTR devices on a dedicated VLAN provides network segmentation that simplifies QoS policy application (apply consistently at the VLAN level), enables targeted firewall rules, and prevents room devices from reaching unintended internal resources — a security and operational best practice."
+    },
+    {
+      "id": 5,
+      "text": "A network engineer is calculating minimum bandwidth for a conference room with one MTR device expected to host HD video calls with up to 5 remote participants simultaneously. What is the approximate minimum bandwidth budget required for this room's uplink?",
+      "answers": [
+        "512 Kbps — sufficient for compressed HD video.",
+        "1.5 Mbps — the standard single HD video stream allocation.",
+        "3–5 Mbps — to accommodate the room's outbound HD video stream plus headroom for multi-party gallery view and content sharing.",
+        "100 Mbps — because Teams requires dedicated gigabit connectivity per room."
+      ],
+      "correct": 2,
+      "explanation": "A single room's HD video stream to the cloud requires approximately 1.5 Mbps, but in a multi-party call receiving multiple participant streams plus content sharing, the total bandwidth requirement rises to 3–5 Mbps. Provisioning 5 Mbps per room with headroom is a reasonable baseline."
+    },
+    {
+      "id": 6,
+      "text": "Why should Microsoft Teams traffic be excluded from corporate web proxy inspection?",
+      "answers": [
+        "Teams does not use HTTPS and therefore cannot be inspected by a proxy.",
+        "Proxy inspection is only a concern for on-premises Skype for Business, not Teams.",
+        "Excluding Teams traffic from proxy inspection creates a security vulnerability that requires compensating controls.",
+        "Proxy inspection breaks Teams certificate pinning, adds latency to real-time media, and can cause authentication failures — Microsoft explicitly recommends proxy bypass for Teams endpoints."
+      ],
+      "correct": 3,
+      "explanation": "Microsoft explicitly recommends bypassing proxy and SSL inspection for Teams (and other Microsoft 365) traffic. Proxy inspection introduces additional latency (unacceptable for real-time media), may break TLS certificate validation, and can interfere with authentication flows. Compensating security controls are available."
+    },
+    {
+      "id": 7,
+      "text": "An MTR device behind a corporate firewall is unable to establish a media connection. Signalling works and the meeting is joined, but audio and video are absent. What is the most likely cause?",
+      "answers": [
+        "The resource account password has expired.",
+        "UDP ports 3478–3481 are blocked outbound on the firewall, preventing the Teams client from reaching STUN/TURN relay servers.",
+        "The DSCP markings on audio packets are set to 46 instead of the required 34.",
+        "The MTR device is on the wrong VLAN and cannot reach the domain controller."
+      ],
+      "correct": 1,
+      "explanation": "When signalling succeeds but media fails, the classic cause is blocked UDP media ports (3478–3481). The Teams client can fall back to TCP 443 for media relay as a last resort, but if this is also blocked or restricted, there will be no audio or video despite the meeting being joined."
+    },
+    {
+      "id": 8,
+      "text": "What is the purpose of split tunnelling in the context of MTR devices connected via VPN?",
+      "answers": [
+        "Split tunnelling sends all traffic through the VPN to maximise security.",
+        "Split tunnelling applies QoS DSCP markings inside the VPN encapsulation header.",
+        "Split tunnelling is a method for assigning static IP addresses to MTR devices at remote sites.",
+        "Split tunnelling routes Microsoft 365 and Teams media traffic directly to the internet, bypassing the VPN tunnel, to reduce latency and avoid saturating VPN concentrators with real-time media."
+      ],
+      "correct": 3,
+      "explanation": "Split tunnelling allows Microsoft 365 traffic (including Teams media) to exit directly to the internet rather than hairpinning through the corporate VPN. This dramatically reduces latency for real-time media and prevents VPN concentrator saturation — Microsoft recommends this configuration."
+    },
+    {
+      "id": 9,
+      "text": "Which Microsoft tool is specifically designed to assess network readiness for Teams by measuring bandwidth, packet loss, jitter, and round-trip time from a client machine?",
+      "answers": [
+        "Microsoft Network Monitor (NetMon)",
+        "Wireshark with the Teams protocol dissector",
+        "Teams Network Assessment Tool (NTA)",
+        "Microsoft Message Analyzer"
+      ],
+      "correct": 2,
+      "explanation": "The Teams Network Assessment Tool (NTA) is Microsoft's purpose-built utility that simulates Teams media flows to measure packet loss, jitter, and round-trip time between the client and Microsoft's media edge nodes — providing a direct readiness assessment before deploying MTR devices."
+    },
+    {
+      "id": 10,
+      "text": "In Teams' ICE (Interactive Connectivity Establishment) architecture, what is the role of a TURN server?",
+      "answers": [
+        "TURN servers authenticate resource accounts and issue short-lived tokens for media sessions.",
+        "TURN servers act as media relays when a direct peer-to-peer connection or STUN-discovered path is blocked, allowing media to traverse NAT and firewalls via a relay.",
+        "TURN servers apply DSCP markings to outbound media packets before they reach the network switch.",
+        "TURN servers are on-premises servers that cache Teams meeting recordings for local playback."
+      ],
+      "correct": 1,
+      "explanation": "In the ICE framework, STUN is first used to discover public IP/port bindings. If direct connectivity fails (e.g., due to symmetric NAT or firewall restrictions), the client falls back to a TURN relay server, which relays media between endpoints. Microsoft operates TURN servers at its media edge infrastructure."
+    }
+  ]
+}

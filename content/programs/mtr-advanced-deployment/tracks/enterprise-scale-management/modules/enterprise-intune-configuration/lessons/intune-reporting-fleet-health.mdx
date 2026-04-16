@@ -1,0 +1,231 @@
+---
+id: "p3-t1-m1-l5"
+slug: "intune-reporting-fleet-health"
+title: "Intune Reporting and Fleet Health Visibility"
+shortTitle: "Intune Reporting"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 1
+moduleSlug: "enterprise-intune-configuration"
+moduleTitle: "Enterprise Intune and Configuration Management"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Use Intune built-in reports to produce a fleet health summary for MTR devices covering compliance, update status, and configuration"
+  - "Export Intune device data and combine with TAC and Pro Management data for a unified MTR fleet report"
+  - "Identify devices requiring intervention from Intune reporting data before they create operational incidents"
+
+prerequisites:
+  - "p3-t1-m1-l4"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "intune"
+  - "reporting"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l4"
+  - "p3-t1-m2-l1"
+
+metaDescription: "Intune reporting for MTR fleet health — compliance reports, configuration profile status, Windows Update rollout reports, device inventory export, combining Intune with TAC and Pro Management data for unified fleet visibility."
+
+keywords:
+  - "Intune reporting MTR fleet"
+  - "Teams Rooms Intune health report"
+  - "MTR fleet visibility Intune"
+  - "Intune device compliance report Teams Rooms"
+  - "MTR Intune monitoring"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Intune provides reporting data on device compliance, configuration profile status, update rollout progress, and device inventory. For large MTR fleets, this data is essential for proactive management — identifying devices that are out of compliance, behind on updates, or not receiving their configuration policies before these gaps create incidents. This lesson covers the key Intune reports for MTR, how to export and combine data with other management portals, and how to build a weekly fleet health review workflow.
+
+---
+
+## Key Intune Reports for MTR
+
+**Navigate:** Intune → Reports
+
+**1. Device Compliance Report:**
+Shows compliance status per device across all assigned compliance policies.
+
+- Filter by device group (MTR device group) to see only MTR devices
+- Key columns: Device name, OS version, Compliance status, Last check-in time, Non-compliant reason
+- Action trigger: Any device in "Not compliant" status after grace period requires investigation
+
+**2. Configuration Profiles — Device Status:**
+For each configuration profile assigned to MTR devices, view per-device application status.
+
+- Navigate: Devices → Windows → Configuration Profiles → select profile → Device Status
+- Key statuses: Succeeded (policy applied), Error (application failed), Conflict (setting conflict with another policy), Not applicable (policy doesn't apply to this device type)
+- Action trigger: Devices with "Error" status require investigation — click device to see specific error
+
+**3. Windows Update Reports:**
+Navigate: Reports → Windows Update → Update Rings:
+- Report per update ring: shows how many devices have installed, are pending, or have errors
+- Key metric: All Ring 0 devices should reach "Installed" within 5–7 days of patch release
+- Action trigger: Any device showing "Error" for a quality update requires investigation; device with persistent "Pending" may have active hours configuration or disk space issue
+
+**4. Device Inventory:**
+Navigate: Devices → Windows → export the device list (Export button):
+- Provides CSV of all Windows devices with: device name, serial number, OS version, last check-in, enrolled date, compliance status, manufacturer, model
+- Filter by device group or OS version range for MTR-specific inventory
+- Use this export to reconcile Intune enrollment against the physical room inventory
+
+---
+
+## Building a Weekly MTR Fleet Health Review
+
+A structured weekly review using Intune reports creates a proactive management cadence:
+
+**Monday morning review (30 minutes):**
+
+1. **Compliance status:** Filter compliance report to MTR device group
+   - Count of Compliant devices: should be >95%
+   - Non-compliant count: investigate each — is it in grace period or past grace period?
+   - Not evaluated (no check-in): is the device offline? Cross-reference with Pro Management
+
+2. **Update status:** Review Windows Update report for the current patch cycle
+   - All Ring 0 and Ring 1 devices should have installed last Patch Tuesday's update
+   - Identify any Ring 2 devices that haven't installed after 21+ days — investigate
+
+3. **Configuration profile errors:** Review all MTR configuration profiles
+   - Any new "Error" statuses since last week?
+   - Any new "Conflict" statuses?
+
+4. **Last check-in time:** Devices that haven't checked into Intune for >7 days may be offline or network-isolated
+   - Cross-reference with Pro Management Offline devices — these should match
+
+**Output:** Brief summary for IT management: "185/200 MTR devices compliant, 12 in grace period (investigating), 3 offline (tickets raised). Update ring at 94% current — 12 devices pending Ring 2 update."
+
+---
+
+## Combining Intune, TAC, and Pro Management Data
+
+No single portal provides a complete picture of MTR fleet health:
+
+| Data Source | Provides |
+|-------------|---------|
+| Intune | Windows OS compliance, update status, configuration policy status |
+| TAC | Teams app health, peripheral status, meeting policy assignment, Teams app version |
+| Pro Management | Incident history, meeting quality, utilization, room readiness (Pro licensed) |
+
+For enterprise reporting, combine these data sources:
+
+**Method 1 — Manual CSV export and Excel consolidation:**
+1. Export Intune device list (CSV) — device name, serial, OS version, compliance status
+2. Export TAC device list (CSV) — device name, health status, Teams app version, last sign-in
+3. Export Pro Management analytics (CSV or PDF) — room readiness, incident count, MTTR
+4. Join on device name in Excel to create a unified view
+
+**Method 2 — PowerShell automation (covered in Track 3):**
+Use Graph API and PowerShell to query all three sources and generate a unified fleet health report automatically. This eliminates manual export/join steps and enables scheduled weekly reports.
+
+**Key joined metrics for fleet health reporting:**
+
+| Metric | Source | Target |
+|--------|--------|--------|
+| Compliant devices | Intune | >95% |
+| OS version current | Intune | >90% within 30 days of Patch Tuesday |
+| Teams app version current | TAC | >90% on current release |
+| Device health — Healthy | TAC | >90% |
+| Room readiness (Pro) | Pro Management | >99% |
+| Devices not checked in >7 days | Intune | 0 (investigate all) |
+
+---
+
+## Identifying At-Risk Devices Before Incidents
+
+Proactive monitoring from Intune data can identify at-risk devices before they generate incidents in Pro Management:
+
+**Pre-incident indicators from Intune:**
+- Device last check-in: >3 days indicates potential network connectivity issue
+- OS version significantly behind minimum: device may have a Windows Update block
+- Compliance grace period expiry approaching: if not resolved, device will be blocked by CA
+- Configuration profile error: policy not applying means device may have incorrect security settings
+
+**Response cadence:**
+- Check-in >3 days: Verify Pro Management shows device Online; if offline, raise support ticket
+- OS version behind: Check Windows Update report for error; push manual sync via Intune
+- Grace period expiry 2 days out: Escalate to urgent — investigate and remediate before room is blocked
+
+---
+
+<KnowledgeCheck id="p3-t1-m1-l5-kc">
+  <Question>
+    During the weekly fleet health review, the Intune compliance report shows
+    18 out of 200 MTR devices in "Not evaluated" status — none of them show
+    as "Not compliant." The Pro Management portal shows all 200 devices as
+    "Online" and "Healthy." What does this discrepancy indicate and what
+    action is appropriate?
+  </Question>
+  <Answer>The 18 devices have been removed from the MTR device group and are no longer receiving the compliance policy</Answer>
+  <Answer>The compliance policy has a configuration error that prevents evaluation on 18 devices</Answer>
+  <Answer correct>"Not evaluated" in Intune means the compliance policy has not completed an evaluation cycle on those devices — typically because the devices have not checked into Intune recently enough, or the compliance policy was recently assigned and hasn't been evaluated yet. The fact that Pro Management shows these rooms as Online and Healthy indicates the Teams application is functioning, but the Intune management agent (MDM) check-in may be delayed. The appropriate action is to trigger a manual Intune sync on the affected devices (Intune → Devices → select device → Sync) and verify their compliance status after sync. If "Not evaluated" persists after sync attempts, investigate the Intune enrollment status on those specific devices</Answer>
+  <Answer>This is expected behavior — Intune does not evaluate compliance on room devices, only user devices</Answer>
+  <Explanation>
+    "Not evaluated" is distinct from "Non-compliant" — it means the compliance
+    assessment hasn't run yet on those devices, not that they have failed
+    compliance. Common causes: the device hasn't checked into Intune's MDM
+    channel within the evaluation interval (typically 8 hours for active
+    devices), the compliance policy was recently assigned and the devices
+    haven't completed an assessment cycle, or the Intune MDM agent has a
+    check-in issue. The fact that Pro Management shows the devices healthy
+    confirms the Teams application and its network connectivity are fine —
+    the issue is specific to the Intune MDM check-in. Triggering a manual
+    Sync from Intune forces the device to check in and re-evaluate compliance.
+    If sync doesn't resolve the "Not evaluated" status, the Intune enrollment
+    itself should be investigated.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Key reports:** Compliance (per device status), Configuration Profiles (per policy status), Windows Update (rollout progress), Device Inventory (export for reconciliation).
+- **Weekly review:** Monday health check — compliance rate, update currency, configuration errors, last check-in dates.
+- **Unified reporting:** Combine Intune + TAC + Pro Management data for a complete fleet health picture; automate with PowerShell (Track 3).
+- **Pre-incident signals:** Check-in >3 days, OS version lag, approaching grace period expiry — act before they become incidents.
+
+---
+
+## What's Next
+
+[Pro Management at Enterprise Scale →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/pro-management-enterprise/lessons/multi-site-pro-management/)

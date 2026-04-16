@@ -1,0 +1,283 @@
+---
+id: "p3-t3-m3-l5"
+slug: "managed-services-automation-platform"
+title: "Building a Managed Services Automation Platform"
+shortTitle: "Managed Services Automation Platform"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 3
+moduleSlug: "advanced-automation-integration"
+moduleTitle: "Advanced Automation and Integration"
+
+lessonIndex: 5
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "evaluate"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design a complete MSP automation architecture connecting Pro Management, Graph API, ITSM, Azure Monitor, and Power BI via Logic Apps and Azure Functions"
+  - "Define a phased implementation roadmap for the automation platform from initial webhook integration to predictive maintenance"
+  - "Quantify the ROI of automation in a managed services context and identify the governance controls needed to operate automation safely at scale"
+
+prerequisites:
+  - "p3-t3-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "automation"
+  - "integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m3-l4"
+
+metaDescription: "Building a complete MSP MTR automation platform — architecture, data flow, phased implementation, ROI measurement, automation governance, and the human layer that automation supports rather than replaces."
+
+keywords:
+  - "MTR managed services automation platform"
+  - "Teams Rooms MSP automation architecture"
+  - "MTR automation ROI"
+  - "Teams Rooms automation governance"
+  - "MTR automation platform design"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The individual automation components built across this track — PowerShell scripts, Graph API integrations, webhook handlers, ITSM connectors, Azure Monitor pipelines, and Power BI dashboards — become exponentially more valuable when they are assembled into a coherent platform rather than operated as isolated scripts. A managed services automation platform is the integration layer that connects those components: defining data flows, enforcing governance, enabling phased rollout, and creating the operational model where automation handles the high-frequency routine work so human engineers can focus on the high-value complex work. This lesson synthesizes the full program into a platform architecture and leaves you with the design principles and implementation roadmap to build it.
+
+---
+
+## Complete Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    DATA SOURCES                          │
+│  Pro Management  │  Microsoft Graph  │  Azure Monitor    │
+│  (incidents,     │  (devices, rooms, │  (Windows events, │
+│   health alerts) │   calendar, calls)│   security logs)  │
+└────────┬─────────┴────────┬──────────┴────────┬──────────┘
+         │                  │                   │
+         ▼                  ▼                   ▼
+┌─────────────────────────────────────────────────────────┐
+│              INTEGRATION LAYER                           │
+│  Azure Service Bus  │  Logic Apps  │  Azure Functions    │
+│  (event queue,      │  (routing,   │  (PowerShell        │
+│   dead-letter)      │   workflows) │   automation)       │
+└────────┬────────────┴──────┬───────┴────────┬────────────┘
+         │                   │                │
+         ▼                   ▼                ▼
+┌─────────────────────────────────────────────────────────┐
+│                 DESTINATIONS                             │
+│  ServiceNow/ITSM  │  SharePoint List  │  Power BI        │
+│  (incidents,      │  (fleet registry, │  (dashboards,     │
+│   CMDB, changes)  │   health snapshot)│   stakeholders)   │
+└─────────────────────────────────────────────────────────┘
+```
+
+Every component in this architecture has been built in this track. What makes it a platform rather than a collection of scripts is the **shared data store** (SharePoint List or Azure SQL as the canonical fleet state), the **event bus** (Service Bus as the reliable message layer between components), and the **governance layer** (change control, testing pipeline, rollback procedures described in this lesson).
+
+---
+
+## Data Flow: What Moves Between Systems
+
+| Data Flow | Frequency | Trigger | From → To |
+|-----------|-----------|---------|-----------|
+| Fleet health snapshot | Daily 06:30 | Azure Automation (scheduled) | Graph API / TAC → SharePoint List |
+| Compliance state | Daily 07:00 | Azure Automation (scheduled) | Intune Graph API → SharePoint List |
+| Pro Management alert | Real-time | Webhook | Pro Management → Service Bus → Logic App |
+| New ITSM incident | On alert | Logic App action | Logic App → ServiceNow Table API |
+| Incident resolution sync | On resolution | Pro Management webhook | Pro Management → Logic App → ServiceNow PATCH |
+| Automated restart | On specific alert types | Logic App action | Logic App → TAC remote action API |
+| Windows event telemetry | Continuous | AMA (per-event) | MTR device → Log Analytics |
+| Azure Monitor alert | On threshold breach | Scheduled query rule | Log Analytics → Action Group → Logic App |
+| Power BI refresh | Daily 07:30 | Power Automate | SharePoint List → Power BI dataset |
+| Weekly HTML report | Weekly Monday 08:00 | Azure Automation (scheduled) | Graph API + TAC → Email |
+
+---
+
+## Phased Implementation Roadmap
+
+Build the platform incrementally — each phase delivers value independently and provides a foundation for the next:
+
+**Phase 1: Webhook to ITSM (Weeks 1-4)**
+- Deploy Azure Function or Logic App to receive Pro Management webhooks
+- Create ServiceNow incidents automatically from Critical alerts
+- Populate CMDB CIs for all rooms
+- Deliverable: zero manual SNOW ticket creation for Critical MTR alerts
+
+**Phase 2: Automated Restart on Camera Incidents (Weeks 5-8)**
+- Add remediation logic to the webhook handler
+- Implement duplicate prevention and restart frequency circuit breaker
+- Add post-restart health verification (re-query TAC after 10 minutes)
+- Deliverable: >50% of camera incidents resolved without human intervention
+
+**Phase 3: Scheduled Reporting and Proactive Maintenance (Weeks 9-14)**
+- Deploy weekly HTML health report (automated email)
+- Deploy Power BI dashboard with scheduled refresh
+- Deploy maintenance window restart script (nights and weekends)
+- Deliverable: weekly reporting automated; maintenance windows hands-off
+
+**Phase 4: Predictive Maintenance from Trend Data (Weeks 15+)**
+- Deploy Azure Monitor Agent to all MTR devices via Intune
+- Build KQL queries identifying devices with escalating crash frequency
+- Create predictive alert: device with >3 crashes in 7 days → proactive SNOW ticket before it becomes a user-facing failure
+- Deliverable: proactive field interventions triggered before user-reported failures
+
+---
+
+## Measuring ROI
+
+Quantifying the value of automation makes the investment visible to leadership and justifies further platform development:
+
+```powershell
+# ROI tracking: compare pre- and post-automation metrics
+
+# Metric 1: MTTR (Mean Time to Resolution) reduction
+# Pre-automation: average TAC incident → SNOW ticket creation time = 45 minutes (human review lag)
+# Post-automation: TAC incident → SNOW ticket creation time = 45 seconds (webhook processing)
+# MTTR reduction for Critical incidents: measure in ServiceNow reporting
+
+# Metric 2: Incidents resolved without human intervention
+$totalIncidents        = 847   # Last 90 days
+$autoResolvedIncidents = 312   # Automated restart succeeded, incident cleared
+$autoResolutionRate    = [Math]::Round(($autoResolvedIncidents / $totalIncidents) * 100, 1)
+Write-Host "Automated resolution rate: $autoResolutionRate%"
+
+# Metric 3: Report generation time savings
+# Pre-automation: weekly fleet report = 3 hours manual data gathering
+# Post-automation: 0 hours (fully automated)
+# Annual saving: 3 hours × 52 weeks = 156 engineer-hours/year
+
+# Metric 4: Proactive vs reactive incident ratio
+$proactiveIncidents = 45   # Azure Monitor triggered before user reported
+$reactiveIncidents  = 289  # User or Pro Management reported first
+$proactiveRate = [Math]::Round(($proactiveIncidents / ($proactiveIncidents + $reactiveIncidents)) * 100, 1)
+Write-Host "Proactive detection rate: $proactiveRate%"
+```
+
+Present these metrics in the Power BI dashboard alongside operational KPIs — a dedicated "Automation Value" page showing resolution rate trends and MTTR over time demonstrates platform maturity to stakeholders.
+
+---
+
+## Governance of Automation
+
+Automation that touches production infrastructure at scale requires the same change control discipline as any other production system:
+
+**Change control for automation scripts:**
+- All automation code lives in a Git repository (Azure DevOps or GitHub)
+- Changes require a peer review pull request before merging to `main`
+- Production deployments are triggered by CI/CD pipeline, not manual script execution
+- Each automation component has an owner listed in the repository
+
+**Testing pipeline:**
+- Maintain a **dev environment**: a test tenant with a small number of real or simulated MTR devices
+- All new automation runs in dev for at least one week before production rollout
+- Bulk change scripts are always tested against a single-room scope before fleet execution
+- Azure Functions and Logic Apps have staging slots — deploy to staging, verify, then swap to production
+
+**Rollback procedures:**
+- Bulk Exchange changes (Set-CalendarProcessing, Set-Mailbox): the log CSV from the bulk change script contains the previous values for rollback
+- Logic App / Function deployments: previous versions available in deployment history; rollback via ARM template redeployment
+- DCR changes: Azure Resource Manager tracks previous DCR versions; revert via portal or CLI
+
+**Kill switch for automation:**
+- Every automated remediation action (restarts, policy changes) has a feature flag in a config file or Azure App Configuration
+- Setting `AutomatedRestarts = false` disables the restart logic without changing any code
+- Document the kill switch locations and test the disable path quarterly
+
+---
+
+## The Human Layer
+
+Automation handles volume — humans handle complexity. Understanding this boundary prevents both under-automation (doing by hand what a script should do) and over-automation (sending a script to do what only a person can do):
+
+**What automation excels at:**
+- High-frequency, low-complexity actions (create SNOW ticket, send notification, collect data)
+- Actions that must happen faster than humans can respond (< 60-second remediation)
+- Consistent execution of well-defined procedures without fatigue or error
+- Monitoring at scale (200 rooms cannot be manually reviewed daily)
+
+**What humans must own:**
+- Site visits for hardware replacement, cable inspection, and physical AV work
+- Client communication during major incidents — empathy, context, and relationship management
+- Root cause analysis for novel failure patterns the automation has not seen before
+- Training end users and educating room bookers on booking practices
+- Reviewing automation telemetry to identify gaps in the automation's coverage
+
+A mature managed services team uses the time freed by automation for higher-value activities: quarterly business reviews with client stakeholders, proactive room design consulting for new spaces, and developing the next generation of automation from the patterns identified in incident data.
+
+---
+
+<KnowledgeCheck id="p3-t3-m3-l5-kc">
+  <Question>
+    Your automation platform has been running for 6 months. Automated restarts are resolving 60% of camera incidents without human intervention. A client raises a concern: "We've noticed our rooms are restarting frequently — sometimes during meetings. Can you guarantee the automation is safe?" How do you respond, and what evidence from your platform would you present?
+  </Question>
+  <Answer>Disable the automated restart feature entirely until a full audit can be completed — client concerns always take priority over automation efficiency</Answer>
+  <Answer>Explain that calendar checks make restarts impossible during meetings — the client is mistaken and no action is needed</Answer>
+  <Answer correct>The correct response is to take the concern seriously and investigate before responding. Pull the maintenance log for the past 30 days and check for any entries where RestartSent = true during meeting times — verify whether the calendar check is functioning correctly for all rooms, or whether there are rooms where the resource account UPN used in the calendar check does not match the actual booking account. Also check the restart frequency circuit breaker logs: if any room was restarted more than the threshold, review whether the restarts were appropriate. Present the client with the log showing calendar check results, times of restarts, and pre/post health status. If the investigation finds the automation is working correctly, share the evidence. If it finds a gap (e.g., rooms where the calendar check returned false positives), fix it and share the remediation plan</Answer>
+  <Answer>Increase the calendar lookahead window from 2 hours to 4 hours to provide more buffer before meetings — this will eliminate any possibility of restarts near meeting times</Answer>
+  <Explanation>
+    A client concern about automation behavior is a trust issue, not just a technical issue. The correct response is to investigate with the evidence the platform produces — not to dismiss the concern or over-correct by disabling automation entirely. The maintenance log is the primary evidence artifact: it records every restart decision, the calendar check result that justified it, and the health state before and after. If the log shows clean decision-making, that is reassuring evidence. If it shows a gap in the calendar check logic (e.g., the room books via a different account than the one queried), that is a real finding that needs to be fixed. The ability to produce this evidence — quickly and precisely — is itself a demonstration of the platform's maturity.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Architecture:** Pro Management + Graph API + Azure Monitor feed a Service Bus event bus, processed by Logic Apps and Azure Functions, with ServiceNow, SharePoint List, and Power BI as destinations.
+- **Phased rollout:** Phase 1 (webhook to ITSM) → Phase 2 (automated restart) → Phase 3 (scheduled reporting) → Phase 4 (predictive maintenance from trend data).
+- **ROI metrics:** MTTR reduction, automated resolution rate, engineer-hours saved on reporting, and proactive-to-reactive incident ratio are the four primary value measurements.
+- **Governance:** Git-based code management, dev environment testing, rollback procedures per component, and kill switches for every automated remediation action.
+- **Human layer:** Automation handles volume and speed; humans own client relationships, physical interventions, novel problem-solving, and automation development.
+
+---
+
+## Program Complete
+
+You have completed **MTR Advanced Deployment** — the most technically demanding program in the MTR Pro Series. Across three tracks and fifteen modules, you have built expertise in:
+
+- **Enterprise Scale Management:** Intune-based fleet management, enterprise App Registration, conditional access for room accounts, and advanced TAC administration at scale
+- **Troubleshooting and Diagnostics:** Systematic diagnostic methodology, network-layer troubleshooting, audio and video quality analysis, authentication failure resolution, and post-incident review
+- **PowerShell and Graph API Automation:** Fleet inventory scripts, compliance reporting, bulk configuration changes, maintenance automation, webhook-driven remediation, Graph API integration, and the complete MSP automation platform architecture
+
+The skills in this program represent the top tier of MTR technical expertise in the industry. You can design, deploy, manage, and automate enterprise MTR environments that operate reliably at scale — and you can build the automation platform that makes that reliability consistent and auditable.
+
+**What comes next:** MTR Practice Leadership (Program 4) covers the business and leadership dimensions of running an MTR practice: building a service catalog, pricing managed services engagements, developing and certifying your team, and positioning your practice for growth. The technical foundation built in this program is the prerequisite — Program 4 teaches you how to turn that expertise into a sustainable business.
+
+---
+
+## What's Next
+
+[MTR Practice Leadership →](/programs/mtr-practice-leadership/)

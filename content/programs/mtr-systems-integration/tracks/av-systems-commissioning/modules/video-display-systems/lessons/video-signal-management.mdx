@@ -1,0 +1,216 @@
+---
+id: "p2-t3-m2-l3"
+slug: "video-signal-management"
+title: "Video Signal Management"
+shortTitle: "Video Signal Management"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 2
+moduleSlug: "video-display-systems"
+moduleTitle: "Video and Display Systems"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Select the appropriate video signal distribution method for a given room requirement (direct, matrix, HDBaseT)"
+  - "Identify HDCP compatibility requirements for MTR video signal paths"
+  - "Configure HDMI input selection and display control for an MTR room with a video distribution system"
+
+prerequisites:
+  - "p2-t3-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+
+topicTags:
+  - "video"
+  - "signal-management"
+
+vendorTags:
+  - "crestron"
+  - "extron"
+  - "kramer"
+  - "atlona"
+
+relatedLessons:
+  - "p2-t3-m2-l2"
+  - "p2-t3-m2-l4"
+
+metaDescription: "Video signal management for Teams Rooms MTR — HDMI direct connection, HDBaseT extension, matrix switchers, HDCP compatibility, display control (RS-232, CEC, IP), input selection for local content sharing in MTR."
+
+keywords:
+  - "Teams Rooms video signal distribution"
+  - "MTR HDMI video management"
+  - "HDBaseT conference room"
+  - "video matrix switcher Teams Rooms"
+  - "HDCP Teams Rooms"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Simple conference rooms with a single display and one input source have straightforward video wiring — an HDMI cable from the MTR compute unit to the display. As rooms grow in complexity — multiple displays, additional local input sources (HDMI ingest), or displays in separate zones — video signal management becomes a distinct engineering consideration. This lesson covers signal types, extension methods, switching, and display control for MTR installations.
+
+---
+
+## Signal Types and Standards
+
+**HDMI (High-Definition Multimedia Interface):**
+The primary display connection for MTR devices. HDMI carries both video and audio in a single cable. MTR Windows compute units typically have 1–2 HDMI outputs (some have DisplayPort).
+
+- HDMI 2.0: 4K @ 60Hz, 18 Gbps bandwidth
+- HDMI 2.1: 4K @ 120Hz, 8K @ 60Hz, 48 Gbps bandwidth — used in latest displays; backward compatible with HDMI 2.0 sources
+
+**DisplayPort:**
+DisplayPort outputs are common on compute units (Intel NUC, Lenovo ThinkSmart Hub, Crestron Flex). DP-to-HDMI adapters allow connection to HDMI displays. Multi-stream Transport (MST) allows a single DisplayPort output to drive two displays using a daisy-chain or hub configuration.
+
+**HDBaseT:**
+HDBaseT extends HDMI, USB, RS-232, and power over a single Cat6/Cat6A cable to distances up to 100m. This is the standard technology for running video from an AV equipment rack to displays that are too far from the source for HDMI cables (>10m).
+
+*HDBaseT transmitter and receiver:*
+- Transmitter: at the source (MTR rack) — converts HDMI to HDBaseT for cable run
+- Receiver: at the display — converts HDBaseT back to HDMI for display connection
+- Examples: Crestron DM-TX/RX, Extron XTP, Atlona AT-HDVS, Kramer TP series
+
+*Note on HDCP with HDBaseT:* HDBaseT extenders must be HDCP 2.2 compliant to pass copy-protected content (streaming video). For MTR deployments where the display shows meeting content, HDCP is relevant — verify that the extender chain supports the HDCP version required by the source.
+
+---
+
+## HDCP (High-Bandwidth Digital Content Protection)
+
+HDCP is a content protection protocol that prevents copying of digital video. All components in the HDMI signal path (source → extenders → display) must support the same HDCP version:
+
+- HDCP 1.4: Supports HD (1080p) content — most legacy extenders and displays
+- HDCP 2.2: Required for 4K UHD content — required in any path carrying 4K streaming
+
+**MTR and HDCP:**
+Microsoft Teams video conferences do not use HDCP — meeting video is unprotected. However, if the MTR device is also used for general Windows use (or if streaming video apps are installed), HDCP 2.2 capability in the signal path ensures no content blocking.
+
+**HDCP handshake failures:**
+When HDCP negotiation fails between a source and display, the screen typically shows a black image or a "HDCP error" message. To diagnose:
+- Swap cables (bad HDMI cables cause HDCP handshake failures)
+- Check that extenders in the path are all HDCP 2.2 if the source requires it
+- Test with a direct HDMI connection bypassing extenders to isolate the fault
+
+---
+
+## Video Switching and Distribution
+
+**Direct connection (no switcher):**
+A single HDMI cable from MTR compute unit to display. Used in simple rooms with no local input sources. The MTR device manages video output — when content is shared in Teams, the MTR device sends the appropriate signal to the display.
+
+**HDMI matrix switcher:**
+A matrix switcher has multiple HDMI inputs and multiple outputs — any input can be routed to any output. Used in rooms with:
+- Multiple input sources (MTR device, local HDMI input at the table, laptop guest input)
+- Multiple display zones (main display + secondary display in a different location, overflow room)
+
+*Control:* Matrix switchers are controlled via RS-232, LAN (Telnet/REST API), or a room control system (Crestron, Extron, AMX). For MTR rooms, input selection can be triggered by the touch panel or by the control system automatically (e.g., "when a meeting starts, route MTR output to displays; when a laptop is plugged into the table input, route laptop to displays").
+
+**HDMI distribution amplifier (DA):**
+A DA has one HDMI input and multiple identical HDMI outputs — used to distribute one source to multiple displays simultaneously. Common in training rooms where the same MTR output needs to go to multiple screens in the same zone.
+
+---
+
+## Local Content Sharing (HDMI Ingest)
+
+Teams Rooms supports HDMI ingest — a local HDMI input on the MTR compute unit that allows a guest laptop or presenter to share their screen into the meeting without joining on their own device.
+
+**HDMI ingest connection:**
+- The HDMI ingest port on the MTR compute unit (or MTR-certified video bar) accepts a local source
+- The source's content appears as a shared screen in the Teams meeting
+- In some room designs, the table HDMI input passes through a wall plate → cable to the rack → into the MTR HDMI ingest port
+
+**Ingest at the table:**
+For cable management, route an HDMI cable from an AV wall plate at the table to the MTR ingest port. Include cable retraction or connection panels to manage the cable neatly.
+
+*Content camera vs. HDMI ingest:* The Teams Rooms content camera (for whiteboard capture) is different from HDMI ingest. The content camera captures the whiteboard as a dedicated camera stream; HDMI ingest captures a laptop's screen output directly.
+
+---
+
+## Display Control
+
+MTR rooms benefit from automated display control — the display powers on when a meeting starts and off when the room is unoccupied. Display control options:
+
+**RS-232 control:**
+Commercial displays have an RS-232 serial port for control commands. A room control system or the MTR device itself can send RS-232 commands to control power, input selection, and volume. Most commercial displays publish RS-232 command sets in their installation manuals.
+
+*MTR built-in display control:* The Teams Rooms Windows app can control displays directly via RS-232 using the built-in display control feature. Configure the COM port and display model in the Teams Rooms app configuration (SkypeSettings.xml or TAC profile). This eliminates the need for a separate control system for basic display control in simple rooms.
+
+**HDMI CEC (Consumer Electronics Control):**
+CEC is a control protocol embedded in the HDMI signal that can send power on/off and input selection commands without a separate control cable. CEC is unreliable in commercial installations — it is vendor-specific and inconsistent between display manufacturers. Use RS-232 or LAN control for commercial deployments rather than relying on CEC.
+
+**LAN (IP) control:**
+Many commercial displays support control via TCP/IP. Commands are sent as Telnet or HTTP API calls. LAN control does not require a physical RS-232 connection — useful when the display is far from the AV rack. Requires the display to be on the same network as the control device.
+
+---
+
+<KnowledgeCheck id="p2-t3-m2-l3-kc">
+  <Question>
+    An MTR boardroom has a main display 12m from the AV rack (too far for
+    passive HDMI), a secondary display 2m from the rack (direct HDMI), and
+    a local HDMI table input for guest laptops. The client wants the room
+    control system to switch between the MTR output and the guest laptop
+    input on both displays. What is the minimum signal distribution
+    infrastructure required?
+  </Question>
+  <Answer>An HDMI DA (distribution amplifier) with one input and two outputs</Answer>
+  <Answer>A direct HDMI run using active HDMI cables for both displays — no switcher needed</Answer>
+  <Answer correct>An HDBaseT transmitter/receiver pair for the 12m run to the main display, plus an HDMI matrix switcher with at least 2 inputs (MTR output + guest laptop input) and 2 outputs (main display via HDBaseT transmitter + secondary display via direct HDMI). The matrix switcher handles input selection between MTR and guest laptop, with output 1 feeding the HDBaseT transmitter for the long run and output 2 going directly to the secondary display. The room control system connects to the matrix switcher for input routing commands</Answer>
+  <Answer>Two HDBaseT runs — one per display — with no switching required</Answer>
+  <Explanation>
+    This room requires two capabilities: signal extension (12m to main display,
+    beyond passive HDMI limits) and input switching (between MTR and guest
+    laptop for two displays). An HDMI DA cannot switch — it only duplicates one
+    input to multiple outputs. Two HDBaseT runs without a switcher would not
+    allow input selection. The correct solution combines an HDMI matrix switcher
+    (for input routing) with an HDBaseT TX/RX pair for the long run to the main
+    display. The secondary display, being only 2m from the rack, can be driven
+    directly via HDMI from the switcher output. The room control system
+    integrates with the matrix switcher API to change inputs based on which
+    source is active.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Extension:** HDBaseT over Cat6/Cat6A for runs beyond 10m (to 100m); includes video, USB, RS-232, and power in one cable.
+- **HDCP:** Verify HDCP 2.2 compliance across all components in the signal path; failures show as black screen.
+- **Switching:** Matrix switcher for multiple inputs/outputs; DA for one-to-many distribution; direct HDMI for simple single-display rooms.
+- **HDMI ingest:** Table HDMI plate → MTR ingest port for local content sharing.
+- **Display control:** RS-232 or LAN preferred over CEC; MTR Windows can control displays natively via RS-232.
+
+---
+
+## What's Next
+
+[Video Quality Validation →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/video-display-systems/lessons/video-quality-validation/)

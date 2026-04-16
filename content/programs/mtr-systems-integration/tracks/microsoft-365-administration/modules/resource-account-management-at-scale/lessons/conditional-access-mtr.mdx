@@ -1,0 +1,231 @@
+---
+id: "p2-t2-m1-l3"
+slug: "conditional-access-mtr"
+title: "Conditional Access Policy Design for MTR Devices"
+shortTitle: "Conditional Access for MTR"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 1
+moduleSlug: "resource-account-management-at-scale"
+moduleTitle: "Resource Account Management at Scale"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Explain why MTR resource accounts must be excluded from MFA Conditional Access policies"
+  - "Design a Conditional Access policy structure that applies appropriate controls to MTR accounts without MFA"
+  - "Implement the named location and service account exclusion pattern that secures MTR accounts while maintaining sign-in reliability"
+
+prerequisites:
+  - "p2-t2-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "entra-id"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "conditional-access"
+  - "resource-accounts"
+  - "security"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-l3-ca-policy-design-guide.pdf"
+    label: "Conditional Access Design Guide for MTR"
+    sizeKb: 55
+
+relatedLessons:
+  - "p1-t1-m2-l4"
+  - "p2-t2-m1-l5"
+
+metaDescription: "Conditional Access policy design for MTR — why MFA cannot be applied to room accounts, exclusion group approach, named location policy for trusted corporate IP, service account CA policy, and sign-in risk monitoring for MTR accounts."
+
+keywords:
+  - "Teams Rooms Conditional Access"
+  - "MTR MFA exclusion"
+  - "Teams Rooms resource account Conditional Access"
+  - "MTR Entra ID policy"
+  - "Teams Rooms sign-in policy"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Conditional Access is how Entra ID enforces authentication policies — requiring MFA, restricting access to compliant devices, blocking sign-ins from risky locations. These controls are essential for user accounts and should be applied broadly. For MTR resource accounts, however, the same policies that protect user accounts will break device sign-in if applied without careful exemption design. MTR devices cannot complete an interactive MFA challenge — there is no user present to approve a push notification. This lesson builds the Conditional Access policy structure that applies appropriate security controls to MTR accounts without preventing them from signing in.
+
+---
+
+## Why MFA Breaks MTR Sign-In
+
+Teams Rooms sign-in uses OAuth 2.0 device authentication. The sign-in flow:
+
+1. Device presents resource account UPN and password to Entra ID
+2. Entra ID evaluates Conditional Access policies for the account
+3. If no MFA policy applies — authentication token issued, device signs in
+4. If MFA policy applies — Entra ID requires an additional verification step
+5. The device displays the sign-in screen waiting for MFA completion
+6. No user is present to complete MFA → sign-in times out → device remains unsigned-in
+
+This failure produces a persistent "Sign in" prompt on the Teams home screen with no error message, or a generic "MFA required" error that the room occupant cannot resolve.
+
+---
+
+## The Exclusion Group Approach
+
+The standard and Microsoft-recommended approach: create a dedicated Entra ID security group for MTR resource accounts, then exclude that group from all MFA Conditional Access policies.
+
+**Step 1 — Create the MTR service accounts group:**
+
+```powershell
+# Create a group for MTR resource accounts
+New-MgGroup -DisplayName "MTR Resource Accounts" `
+            -Description "Teams Rooms resource accounts — excluded from MFA CA policies" `
+            -MailEnabled $false `
+            -SecurityEnabled $true `
+            -MailNickname "mtr-resource-accounts"
+```
+
+**Step 2 — Add all room accounts to the group:**
+
+```powershell
+$groupId = (Get-MgGroup -Filter "DisplayName eq 'MTR Resource Accounts'").Id
+$rooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited
+
+foreach ($room in $rooms) {
+    $user = Get-MgUser -UserId $room.UserPrincipalName -ErrorAction SilentlyContinue
+    if ($user) {
+        New-MgGroupMember -GroupId $groupId -DirectoryObjectId $user.Id
+    }
+}
+```
+
+**Step 3 — Exclude the group from MFA policies:**
+
+In Entra ID → Security → Conditional Access → for each MFA policy:
+1. Click the policy to edit
+2. Under **Users → Exclude**, add the "MTR Resource Accounts" group
+3. Save the policy
+
+---
+
+## What Security Controls Can Apply to MTR Accounts
+
+While MFA cannot be applied, other Conditional Access controls are appropriate and recommended for MTR accounts:
+
+**Named Location restriction:** Create a Conditional Access policy that restricts MTR account sign-ins to trusted corporate IP ranges (the organization's internet egress IPs). This prevents the MTR accounts from being used to sign in from external locations — if an account credential is compromised, the attacker cannot sign in from outside the corporate network.
+
+**Policy design:**
+- **Target users:** MTR Resource Accounts group
+- **Cloud apps:** Microsoft Teams
+- **Conditions:** Named Locations → Exclude trusted locations (invert: block from NON-trusted locations)
+- **Grant:** Block access (sign-in from outside corporate IP is blocked)
+
+**Session risk policy:** Apply a Conditional Access policy that evaluates sign-in risk (Entra ID Identity Protection) for MTR accounts. While you cannot require MFA in response to risk (it would break the device), you can configure the policy to block high-risk sign-ins or send an alert to the security team when a risky sign-in is detected.
+
+**Password policy:** Ensure the MTR account passwords are strong (complex, 20+ characters) and rotate them on a schedule. The password is stored on the device and not entered by a user — complexity does not cause operational difficulty.
+
+<Callout type="warning">
+  The MTR exclusion group must be kept current. Every newly provisioned room
+  account must be added to the exclusion group before the device signs in.
+  A room account not in the exclusion group will fail sign-in if MFA is
+  required by the existing CA policies. Include group membership in the
+  provisioning script (as shown in the previous lesson) to ensure this
+  is never missed.
+</Callout>
+
+---
+
+## Monitoring MTR Account Sign-Ins
+
+Even without MFA, MTR account sign-ins should be monitored. Use Entra ID sign-in logs to establish a baseline for normal sign-in behavior:
+
+- Expected sign-in IP range: corporate MTR VLAN egress IPs
+- Expected sign-in frequency: one sign-in per device per session (not repeated hourly)
+- Expected client application: Teams Rooms on Windows / Teams Rooms on Android
+
+Anomalies to alert on:
+- Sign-in from unexpected IP address
+- Sign-in using a non-Teams Rooms client application (indicates credential use outside the room device)
+- Multiple failed sign-in attempts
+
+Configure Entra ID Identity Protection or a SIEM alert for these patterns.
+
+<DownloadButton
+  file="p2-t2-m1-l3-ca-policy-design-guide.pdf"
+  label="Conditional Access Design Guide for MTR"
+  sizeKb={55}
+  description="Conditional Access policy design guide for MTR deployments — MFA exclusion group setup, named location restriction policy, sign-in risk monitoring configuration, PowerShell group management scripts, and policy audit checklist."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m1-l3-kc">
+  <Question>
+    A new MTR device was installed yesterday. The device shows "Sign in" on
+    screen and cannot authenticate. The IT team confirms the resource account
+    credentials are correct. The sign-in logs show the authentication attempt
+    is being blocked by a Conditional Access policy requiring MFA. What is
+    the resolution?
+  </Question>
+  <Answer>Enable MFA on the MTR Windows device to complete the authentication challenge</Answer>
+  <Answer>Change the resource account to use passwordless authentication instead of a password</Answer>
+  <Answer correct>Add the resource account to the MTR exclusion group that is excluded from MFA Conditional Access policies — the account was provisioned but not added to the exclusion group before the device attempted sign-in</Answer>
+  <Answer>Disable MFA for the entire tenant to allow the device to sign in</Answer>
+  <Explanation>
+    The most common cause of a new device failing to sign in despite correct
+    credentials is that the account was not added to the MFA CA exclusion group
+    before the device attempted authentication. The existing MFA CA policy
+    applies to the new account (not yet excluded) and blocks sign-in because
+    the device cannot complete an interactive MFA challenge. The resolution:
+    add the account to the "MTR Resource Accounts" exclusion group in Entra ID,
+    then retry sign-in on the device. This reinforces the importance of
+    including exclusion group membership in the provisioning script.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **MFA exclusion required:** MTR devices cannot complete interactive MFA — exclude room accounts from all MFA CA policies via a dedicated security group.
+- **Applicable controls:** Named location restriction (corporate IP only), sign-in risk policy (block high-risk, alert on anomalies), strong passwords on rotation schedule.
+- **Keep group current:** Add new accounts to exclusion group during provisioning — include in provisioning script.
+- **Monitor sign-ins:** Establish baseline; alert on unexpected IPs, client applications, or high-frequency sign-in attempts.
+
+---
+
+## What's Next
+
+[Exchange Online Calendar Policies and Delegation →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/exchange-calendar-policies/)

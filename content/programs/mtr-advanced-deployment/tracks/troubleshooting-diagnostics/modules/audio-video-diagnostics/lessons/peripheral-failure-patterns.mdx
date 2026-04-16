@@ -1,0 +1,312 @@
+---
+id: "p3-t2-m2-l3"
+slug: "peripheral-failure-patterns"
+title: "Peripheral Failure Patterns in MTR"
+shortTitle: "Peripheral Failure Patterns"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 2
+moduleSlug: "audio-video-diagnostics"
+moduleTitle: "Audio and Video Diagnostics"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify USB hub failure patterns and distinguish power delivery failures from bandwidth saturation"
+  - "Recognize camera and microphone failure signatures in Pro Management health data and Device Manager"
+  - "Execute the USB peripheral diagnosis sequence to isolate the failing component"
+  - "Diagnose display control failures across RS-232 and LAN control protocols"
+  - "Use the Pro Management peripheral health timeline to distinguish hardware failure from intermittent failure"
+
+prerequisites:
+  - "p3-t2-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "troubleshooting"
+  - "peripherals"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m2-l2"
+  - "p3-t2-m2-l4"
+
+metaDescription: "Peripheral failure patterns for Microsoft Teams Rooms — USB hub failures, camera and microphone failure signatures, display control troubleshooting, the USB peripheral diagnosis sequence, and Pro Management peripheral health timeline analysis."
+
+keywords:
+  - "MTR peripheral troubleshooting"
+  - "Teams Rooms USB issues"
+  - "MTR camera failure"
+  - "Teams Rooms display control"
+  - "USB hub MTR"
+  - "Pro Management peripheral health"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Peripheral failures account for a significant proportion of Teams Rooms incidents — a camera that drops off USB mid-meeting, a microphone that fails to enumerate after a device restart, or a display that ignores power-on commands from the compute unit all produce a poor room experience despite the Teams app and network being completely healthy. The diagnostic challenge is that many peripheral failures are intermittent, appearing in the Pro Management health timeline as a device that was detected, then lost, then detected again. This lesson covers the common failure patterns for each peripheral category, the USB peripheral diagnosis sequence that systematically isolates the failing component, display control failure scenarios, and how to read the Pro Management peripheral health history to distinguish hardware failure from an intermittent connection issue.
+
+---
+
+## USB Hub Failure Patterns
+
+Most MTR rooms use a USB hub or USB switcher to connect multiple peripherals (camera, microphone, speaker system) to a single USB port on the compute unit. Hub failures are a common cause of peripheral issues and exhibit distinct patterns.
+
+**Power delivery failure:**
+
+Self-powered USB hubs provide 5V power to each downstream port from an external power supply. When the hub's power supply fails or degrades:
+- Peripherals that are bus-powered (draw their operating power from USB rather than an external source) lose power intermittently
+- The failure often appears as the camera or microphone dropping off USB and then recovering when the hub power stabilizes
+- Pro Management health shows a pattern of peripheral detected → peripheral lost → peripheral detected in rapid succession
+
+Verify: check the hub's power supply with a multimeter or swap the power supply with a known-good unit. Many MTR-grade USB hubs have an LED power indicator on the enclosure — verify it is lit and solid.
+
+**Bandwidth saturation:**
+
+A USB 2.0 hub provides a maximum of 480 Mbps shared across all ports. A 1080p30 uncompressed USB camera uses approximately 140 Mbps; two such cameras plus a USB audio device can approach the hub's limit, causing frame drops, audio artifacts, or device disconnections during simultaneous use.
+
+- USB 3.0 hubs (5 Gbps) are required for multiple high-resolution cameras
+- Verify the compute unit's USB port connected to the hub is a USB 3.0 port (not USB 2.0) — a USB 3.0 hub connected to a USB 2.0 port operates at USB 2.0 speed
+
+**Hub firmware issues:**
+
+Some USB hubs used in AV installations have had firmware bugs that cause a port reset when a specific sequence of USB enumeration messages is received (typically after the Teams Rooms app restarts). Symptoms: peripherals work normally on first connection after a cold boot, then fail to enumerate after a Teams Rooms app restart without a full device power cycle.
+
+- Check the hub manufacturer's website for known firmware updates
+- Verify the hub model is on the Microsoft Teams Rooms certified peripheral list
+
+**Bus-powered vs. self-powered hub importance:**
+
+A bus-powered hub (one that draws all its power from the upstream USB port) cannot reliably power multiple peripherals simultaneously. The compute unit's USB port provides a maximum of 900 mA (USB 3.0) or 500 mA (USB 2.0). A single PTZ camera can draw 400–600 mA alone. Always use self-powered USB hubs in production MTR installations.
+
+---
+
+## Camera Failure Patterns
+
+**USB disconnect/reconnect loop:**
+
+The camera appears in Pro Management TAC peripheral health, disappears, reappears — cycling over minutes or hours. This is the most common camera failure pattern in the field. Causes:
+
+| Cause | Distinguishing Evidence | Remediation |
+|---|---|---|
+| USB cable fault (bent connector, damaged shielding) | Failure correlates with slight cable movement or vibration; failure stops when cable is held stationary | Replace USB cable with a certified, length-appropriate cable |
+| USB hub power delivery fault | Multiple peripherals affected simultaneously; hub power LED flickering | Replace hub power supply or hub |
+| Camera firmware bug | Failure occurs at a specific interval after camera powers on; specific camera model/firmware version | Update camera firmware |
+| USB host controller driver issue on compute unit | Failure affects only devices on one specific USB port group | Update chipset/USB drivers on compute unit; move camera to different USB controller |
+
+**Camera firmware bug causing driver crash:**
+
+Some camera models have firmware bugs that cause the Windows USB driver to crash when certain video format or resolution negotiation sequences occur — typically when the Teams app requests a specific resolution not handled correctly by the firmware.
+
+Symptoms: camera appears in Device Manager then immediately shows a yellow warning; Windows Event Log Application log shows Event ID 1000 with `usbvideo.sys` as the faulting module. Resolution: update camera firmware from the manufacturer's support site.
+
+**Overheating and thermal throttling:**
+
+PTZ cameras and high-resolution USB cameras generate heat. In enclosed ceiling or wall mounting enclosures without airflow, cameras can reach thermal throttling temperatures within 30–60 minutes of operation.
+
+Symptoms: video quality degrades gradually over the first hour of a meeting; camera may reset or disconnect after extended operation. After reset, quality is temporarily good before degrading again.
+
+Verify: touch the camera housing after an hour of operation (if safely accessible). If extremely hot, the mounting enclosure needs ventilation. Check the camera's event log via its web interface if available — most enterprise cameras record thermal events.
+
+**Lens contamination:**
+
+Over months, dust, fingerprints, and ambient particles accumulate on the camera lens. The result is a gradual degradation in image sharpness and contrast that is often not noticed until a side-by-side comparison with a clean camera reveals the difference.
+
+Verify: capture a still image from the camera's RTSP stream or a snapshot from the management software. Compare sharpness at the edges of the frame vs. the center. Remediation: clean the lens with an appropriate optical cleaning cloth.
+
+---
+
+## Microphone Failure Patterns
+
+**USB audio device enumeration failure:**
+
+An external DSP (Biamp Tesira, QSC Q-SYS, Shure ANIUSB) presents itself to the Windows compute unit as a USB audio device. If this device fails to enumerate:
+- Teams Rooms app shows no microphone detected on startup
+- Device Manager shows no USB audio device (or shows it with a yellow warning)
+- Teams app log `*_PluginHost.txt` shows "Microphone not detected"
+
+Enumeration failure causes:
+- DSP not powered on when the compute unit boots (power sequencing issue — DSP must be powered before compute unit)
+- USB cable fault between DSP and compute unit
+- DSP firmware issue causing delayed USB enumeration (DSP takes longer to present the USB audio device than the compute unit's enumeration timeout)
+
+**Dante network issue:**
+
+In Dante-networked microphone systems (e.g., Shure MXA910 ceiling array connected to a Dante network, then to an ANIUSB that connects to the compute unit), a Dante network problem causes the microphone to disconnect from the Dante audio network while the USB audio device (the ANIUSB) may still be visible to Windows.
+
+Symptoms: USB audio device appears healthy in Device Manager and Teams app shows microphone detected, but the microphone captures silence.
+
+Verify using Dante Controller (the Dante network management application): check that the microphone device is present on the Dante network, that the audio route from the microphone to the ANIUSB is active, and that no Dante clock synchronization errors are present.
+
+**Physical damage:**
+
+Microphone arrays mounted in the ceiling are subject to physical damage from cleaning crews, maintenance personnel, and accidental contact. Symptoms range from complete failure (cable cut or connector broken) to partial failure (one microphone capsule in an array is damaged, reducing coverage in part of the room).
+
+Test for partial array damage: ask a person to walk slowly around the room while speaking at a consistent volume during a test call, while the remote end monitors for dead spots in the audio coverage.
+
+---
+
+## Display Control Failure Scenarios
+
+**RS-232 control not responding:**
+
+RS-232 is used to send power commands (on/off), input selection, and status queries to displays and projectors. Common failure causes:
+
+| Cause | Diagnosis | Fix |
+|---|---|---|
+| Wrong baud rate in compute unit configuration | Check the display's RS-232 specification; compare against the configured baud rate in Teams Rooms XML config | Correct the baud rate in SkypeSettings.xml |
+| Wrong RS-232 command syntax | Verify the specific command string against the display's RS-232 command specification | Update command strings in configuration |
+| RS-232 cable wiring mismatch | Null modem vs. straight-through cable — confirm which is required by the display | Replace with the correct cable type |
+| Physical RS-232 port issue | Test the port with a terminal emulator (PuTTY at the correct baud rate) — if no response to any command, the port may be faulty | Try a different RS-232 port or use LAN control instead |
+
+**LAN control not responding:**
+
+Many modern displays support LAN control via TCP/IP (often using PJLink protocol or the manufacturer's proprietary protocol on a specific TCP port). Failure causes:
+
+- Display IP address changed via DHCP: verify the display's current IP using an IP scanner on the LAN, compare to the IP configured in the Teams Rooms device settings. Assign a static IP or DHCP reservation to prevent recurrence.
+- Display LAN control disabled after a firmware update: log into the display's web interface (if available) and verify LAN control / network control is enabled.
+- VLAN segmentation: the compute unit is on the MTR VLAN; the display is on the AV VLAN; no routing between VLANs. Verify from the compute unit: `Test-NetConnection -ComputerName <display-IP> -Port <control-port>` — if connection fails, add a firewall/routing rule or move the display to the same VLAN.
+
+**CEC inconsistency:**
+
+HDMI CEC (Consumer Electronics Control) allows the compute unit to power the display on/off via the HDMI connection. CEC behavior is notoriously inconsistent across display manufacturers and HDMI switch generations.
+
+If CEC commands are unreliable:
+- Verify CEC is enabled in the display's HDMI settings
+- Verify CEC is enabled on the HDMI switch (if one is in the signal path) — many commercial switches pass CEC; some block it
+- Fall back to RS-232 or LAN control as the primary control method; CEC should be a secondary or backup control method in production MTR installations
+
+---
+
+## The USB Peripheral Diagnosis Sequence
+
+When a USB peripheral (camera, microphone adapter, USB audio device) is reporting issues, follow this sequence before replacing hardware. Each step eliminates one failure point.
+
+**Step 1: Check Device Manager.**
+
+Verify the device appears in Device Manager without a warning icon. If it appears with a yellow triangle, note the error code in the device Properties → Events tab. If it does not appear at all, the device has failed to enumerate.
+
+**Step 2: Check USB root hub power.**
+
+In Device Manager → Universal Serial Bus controllers → USB Root Hub → Properties → Power tab: verify the device is listed and note the power draw. Compare against the hub's rated output current.
+
+**Step 3: Bypass the hub — connect directly to the compute unit.**
+
+Disconnect the peripheral from the USB hub and connect it directly to a USB port on the compute unit itself. Wait 30 seconds for enumeration. If the problem resolves, the issue is in the hub (power, bandwidth, or firmware). If the problem persists, the issue is in the peripheral or the compute unit's USB subsystem.
+
+**Step 4: Try a different USB port.**
+
+If the problem persists when connected directly, try a different physical USB port on the compute unit. Different ports may belong to different USB host controllers — this isolates whether the issue is port-specific (partial hardware fault on one controller) or affects all USB ports.
+
+**Step 5: Try a different cable.**
+
+USB cables, especially those running through walls or installed with tight bends near connectors, fail from conductor fatigue. Substitute a known-good USB cable of appropriate length and specification. USB 3.0 cables should be used for cameras; USB 2.0 cables are acceptable for USB audio devices with lower bandwidth requirements.
+
+**Step 6: Try a different device.**
+
+If the problem persists across multiple ports with a known-good cable, the peripheral hardware itself is the failure point. Substitute a spare unit of the same model to confirm.
+
+---
+
+## Pro Management Peripheral Health Timeline
+
+Pro Management records peripheral health state changes with timestamps, creating a timeline that enables pattern analysis for intermittent failures.
+
+**How to access:**
+
+In the Pro Management portal: **Rooms → [Room Name] → Peripherals tab**. Each listed peripheral has a health history accessible by clicking the peripheral entry.
+
+**Distinguishing hardware failure from intermittent failure:**
+
+| Pattern in Health Timeline | Interpretation | Action |
+|---|---|---|
+| Peripheral never detected (always showing as missing since room was enrolled) | Never-detected failure — peripheral was never successfully connected or enumerated | Check cabling and enumeration from Device Manager; hardware DOA possible |
+| Peripheral detected at enrollment, then lost, never recovered | Permanent failure after initial operation — hardware failed or cable failed | Follow USB diagnosis sequence; likely hardware replacement |
+| Peripheral detected → lost → detected repeatedly at irregular intervals | Intermittent connection failure — USB cable, hub power, or peripheral firmware | USB diagnosis sequence; focus on hub and cable |
+| Peripheral lost at consistent time intervals (e.g., every 24 hours at 03:00) | Triggered failure — likely correlates with a scheduled event (maintenance restart, Windows Update) | Investigate the scheduled event; likely a power-sequencing or enumeration timing issue |
+| Peripheral always detected as healthy but meeting quality issues reported | Peripheral is connected but may be malfunctioning at the signal level — USB enumeration does not validate signal quality | Proceed to audio/video quality diagnostics; the device is visible but not performing correctly |
+
+The peripheral health timeline is the key differentiator between "the hardware is broken" and "the hardware is intermittently disconnecting" — two scenarios that have completely different resolutions and urgency levels.
+
+---
+
+<KnowledgeCheck id="p3-t2-m2-l3-kc">
+  <Question>
+    A Pro Management alert fires: "Camera not detected" for room TEC-201.
+    The support engineer checks the peripheral health timeline and sees the
+    following pattern over the past 7 days: the camera is detected as healthy
+    for approximately 23 hours, then shows as not detected for approximately
+    1 hour, then detected again — this cycle has repeated 6 times at
+    approximately the same time each night between 02:00 and 03:00. The
+    room has no scheduled meetings during this window. What is the most likely
+    cause and what should the engineer investigate first?
+  </Question>
+  <Answer>The camera hardware is failing — the consistent 23-hour operational period before failure indicates the camera's internal components are aging and fail after sustained use, then self-recover after cooling</Answer>
+  <Answer correct>The 02:00–03:00 window aligns with the Teams Rooms app nightly maintenance window, during which the device performs a scheduled restart and updates. The pattern of camera loss during this window strongly suggests a USB enumeration or power-sequencing issue: after the maintenance restart, the camera fails to enumerate correctly within the Teams Rooms app's peripheral detection timeout, then recovers when the app or USB subsystem retries. The engineer should investigate the maintenance window restart sequence: check whether the hub or camera powers on fast enough for the compute unit's post-restart USB enumeration; check whether a hub firmware issue causes enumeration failure after a controlled restart (as opposed to a cold boot); and consider adding a power-sequencing delay or upgrading the hub firmware</Answer>
+  <Answer>The room's network connection drops during the maintenance window, causing Pro Management to falsely report the camera as not detected because the health data cannot be transmitted</Answer>
+  <Answer>The camera's auto-sleep feature activates after 23 hours of standby and is not being correctly woken by the Teams Rooms app — update the camera firmware to fix the sleep/wake behavior</Answer>
+  <Explanation>
+    The highly consistent timing — 02:00 to 03:00, recurring nightly for 6 days —
+    is the critical diagnostic signal. Random hardware failures do not occur at
+    the same clock time each day. The 02:00–03:00 window is the default Teams
+    Rooms maintenance window for nightly updates and restarts. A camera that
+    fails to enumerate after a controlled restart but is consistently healthy
+    during normal operation is a power-sequencing or enumeration-timing issue,
+    not a hardware failure. Network connectivity loss during the maintenance
+    window would affect all peripheral health data, not just the camera.
+    Camera auto-sleep behavior would produce a different pattern — gradual
+    degradation within a meeting, not a clean disconnection at the same time
+    each night.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **USB hub failures:** Power delivery failure (use self-powered hubs only), bandwidth saturation (USB 3.0 required for multiple HD cameras), firmware bugs (check certified peripheral list), and bus-powered hubs in production (never acceptable).
+- **Camera failure patterns:** USB disconnect/reconnect loop (cable, hub power, firmware, or host controller); firmware driver crash (Event ID 1000, usbvideo.sys); overheating (mounting enclosure airflow); lens contamination (gradual blur).
+- **Microphone failure patterns:** USB enumeration failure (power sequencing, cable, DSP firmware); Dante network issue (audio silence despite healthy USB device — check Dante Controller); partial array damage (coverage dead spots).
+- **Display control:** RS-232 failures commonly caused by wrong baud rate or cable type; LAN control failures by DHCP IP change or VLAN segmentation; CEC is unreliable — use as secondary control only.
+- **USB diagnosis sequence:** Device Manager → USB root hub power → bypass hub → different port → different cable → different device. Each step eliminates one failure point.
+- **Pro Management timeline:** Never-detected = failed connection; detected then lost permanently = hardware failure; intermittent = cable/hub; consistent time-of-day loss = scheduled event trigger.
+
+---
+
+## What's Next
+
+[Teams App Crash Diagnostics →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/audio-video-diagnostics/lessons/teams-app-crash-diagnostics/)

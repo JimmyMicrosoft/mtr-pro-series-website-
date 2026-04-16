@@ -1,0 +1,242 @@
+---
+id: "p2-t3-m2-l4"
+slug: "video-quality-validation"
+title: "Video Quality Validation"
+shortTitle: "Video Validation"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 2
+moduleSlug: "video-display-systems"
+moduleTitle: "Video and Display Systems"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+
+objectives:
+  - "Execute a structured video quality validation process for an MTR room"
+  - "Diagnose common video quality problems (color, exposure, focus, framing) using a systematic approach"
+  - "Complete video system acceptance criteria and document results in the commissioning record"
+
+prerequisites:
+  - "p2-t3-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+
+topicTags:
+  - "video"
+  - "commissioning"
+  - "testing"
+
+vendorTags:
+  - "logitech"
+  - "poly"
+
+relatedLessons:
+  - "p2-t3-m2-l3"
+  - "p2-t3-m3-l3"
+
+metaDescription: "Video quality validation for MTR conference rooms — camera framing verification, exposure and white balance, display calibration, video call quality test procedure, and video acceptance criteria documentation."
+
+keywords:
+  - "Teams Rooms video quality validation"
+  - "MTR video commissioning checklist"
+  - "conference room camera calibration"
+  - "Teams Rooms display calibration"
+  - "video acceptance testing MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Video quality validation confirms that the camera, displays, and signal path deliver a high-quality visual experience to both local and remote participants. Unlike audio testing, video validation relies primarily on visual inspection — comparing what the camera captures against defined acceptance criteria — supplemented by a test call to validate the end-to-end experience.
+
+---
+
+## Camera Validation
+
+**Framing:**
+Verify that the camera captures the intended view — all seated positions visible, no participants cut off at the edges.
+
+Checklist:
+- [ ] All seat positions within the camera field of view
+- [ ] No participants cut off at frame edges (with people seated at all positions)
+- [ ] Camera height appropriate — camera near eye level; no extreme upward or downward angle
+- [ ] Camera centered horizontally on the table (not offset to one side)
+- [ ] For PTZ cameras: all presets confirmed and labeled on touch panel; auto-tracking verified with people present
+
+**Exposure:**
+Camera exposure should produce clear, correctly-exposed images under the room's actual lighting conditions.
+
+- [ ] No overexposure on faces (washed out) — check with room lighting on
+- [ ] No underexposure (silhouette effect) — check if window behind participants creates backlight
+- [ ] Camera auto-exposure active and adapting to occupant movement
+
+*Backlight issue:* If a window is behind the conference table and the camera faces the window, the camera will expose for the bright background, leaving participants as dark silhouettes. Remediation:
+1. Adjust camera auto-exposure to compensate (if supported)
+2. Add window treatment (blinds) to reduce backlight
+3. Add fill lighting to raise the face level to match the background
+
+**White balance:**
+Colors should appear natural under the room's lighting.
+
+- [ ] Skin tones appear neutral (not orange under warm lighting, not blue under cool)
+- [ ] White surfaces appear white on camera
+- [ ] White balance is consistent as participants move (auto-white balance adapting correctly)
+
+*Tip:* Place a white sheet of paper in the center of the table and verify it appears white in the camera preview on the Teams Rooms touch panel or Teams desktop client during a test call.
+
+**Focus:**
+- [ ] Camera in focus at the table distance — no motion blur or soft focus at seated positions
+- [ ] For AI-framing cameras: individual cropped frames are in focus (AI framing relies on correct optical focus)
+
+**Pan/tilt/zoom (PTZ specific):**
+- [ ] All presets reach programmed positions accurately
+- [ ] No mechanical noise audible during PTZ movement
+- [ ] Auto-tracking (if enabled) smoothly follows active speakers without erratic movement
+
+---
+
+## Display Calibration
+
+Commercial displays are often shipped with default settings optimized for showroom brightness (very high) and oversaturated colors. For conference room use, calibrate displays to accurate, stable settings.
+
+**Brightness:**
+- Target: 100–160 cd/m² for a room with controlled ambient light; 200–300 cd/m² for rooms with significant ambient light
+- Use the display's built-in brightness control; measure with a colorimeter (X-Rite i1Display, Datacolor Spyder) if precise calibration is required
+- *Common default setting issue:* Factory-default commercial displays often ship at 300–400 cd/m² — this is too bright for close viewing, causes eye strain, and reduces panel life
+
+**Color temperature:**
+- Target: 6500K (D65) for general video viewing
+- Some displays default to 9300K or "cool white" — verify and adjust to 6500K
+
+**Contrast:**
+- Set contrast so that white content (presentation slides, text documents) is clearly legible but not harsh
+- Avoid maximum contrast setting — it compresses highlight detail
+
+**Display mode:**
+- Set to a standard mode: "sRGB," "Standard," or "Presentation" mode
+- Avoid "Vivid," "Dynamic," or "Sports" modes — these use exaggerated color and are not appropriate for meeting rooms
+
+---
+
+## Video Signal Path Validation
+
+Before the test call, verify the full signal path from source to display:
+
+- [ ] MTR device output resolution matches display native resolution (1080p → 1080p, 4K → 4K) — verify in Windows Display Settings
+- [ ] No overscan or underscan (display edges not cut off; Windows desktop not larger than display area)
+- [ ] Dual display mode correctly assigning participant video to Display 1 and content to Display 2 (if applicable)
+- [ ] HDMI ingest port passes local source to the Teams meeting correctly — test with a laptop connected to the table input
+- [ ] Display powers on and input selects automatically when MTR wakes (verify display control RS-232 or LAN commands working)
+- [ ] Display powers off correctly after room vacancy timeout
+
+---
+
+## Test Call: Video Quality Verification
+
+Conduct a test call to validate end-to-end video performance. Have a remote participant review the video from the room's camera while the technician verifies the far-end video on the room's display.
+
+**Test call video checklist — camera (what far end sees):**
+- [ ] All seated participants visible and correctly framed
+- [ ] No compression artifacts at normal lighting (macroblocking, pixelation)
+- [ ] Camera framing stable — no judder or excessive image stabilization artifacts
+- [ ] For IntelliFrame: individual participant tiles shown correctly for all seat positions
+- [ ] For content sharing: HDMI ingest content shares cleanly, readable text in shared presentation
+
+**Test call video checklist — display (what local participants see):**
+- [ ] Far-end participant video on display is clear, no freeze or pixelation
+- [ ] Participant thumbnails in gallery view are identifiable
+- [ ] Content sharing from far end is readable (text legibility at all seat positions — connect to viewing distance validation)
+- [ ] Display response time adequate — no visible latency in video movement
+
+**Network quality during test call:**
+While the test call is in progress, verify network quality metrics from the MTR device:
+- Open the Teams call quality indicator (in-call settings)
+- Confirm no packet loss, jitter, or latency indicators appearing
+- If quality alerts appear, cross-reference with network validation from Track 1
+
+---
+
+## Common Video Quality Problems and Diagnosis
+
+| Problem | Symptom | Likely Cause | Diagnosis |
+|---------|---------|--------------|-----------|
+| Backlit participants | Faces appear dark/silhouette | Window behind table, camera facing window | Check camera direction vs. window position |
+| Overexposed display | Washed-out, harsh image | Brightness setting too high | Measure brightness with colorimeter |
+| Color cast (orange/yellow) | Skin tones appear warm | White balance set to warm, or warm room lighting | Adjust display color temperature to 6500K |
+| Pixelation during motion | Blocks appear in video when someone moves | Network packet loss, insufficient bandwidth | Check CQD/TNAT data |
+| Camera freeze frame | Video freezes periodically | USB connection issue, camera driver issue, network | Check USB device in Device Manager; restart camera |
+| Incorrect framing on PTZ | PTZ returns to wrong preset position | Preset not saved correctly | Re-set and save PTZ preset |
+| HDBaseT display — no image | Display shows no signal | HDCP handshake failure, cable termination | Bypass extender with direct HDMI to isolate |
+
+---
+
+<KnowledgeCheck id="p2-t3-m2-l4-kc">
+  <Question>
+    During a video test call, the far-end participant reports that the camera
+    image from the room appears correctly framed and clear, but every 20–30
+    seconds the image briefly pixelates (blocks appear) and then clears.
+    The MTR device shows a Wi-Fi connection. What is the most likely cause?
+  </Question>
+  <Answer>The camera's USB connection is intermittent — replace the USB cable</Answer>
+  <Answer correct>The periodic pixelation is the characteristic symptom of network packet loss or bandwidth fluctuation causing video codec compression artifacts (macroblocking). The MTR device is on Wi-Fi, which is subject to intermittent interference, signal variation, and competing traffic. The 20–30 second cycle may correlate with Wi-Fi access point association cycles or competing device transmissions. Validate using the Teams in-call quality indicator for packet loss/jitter, review Wi-Fi RSSI and SNR at the MTR device location, and check Wi-Fi channel utilization. For a boardroom, consider migrating the MTR device to a wired Ethernet connection</Answer>
+  <Answer>The display refresh rate is mismatched with the camera frame rate — adjust the camera to 30fps</Answer>
+  <Answer>IntelliFrame is processing too many participants — disable IntelliFrame</Answer>
+  <Explanation>
+    Periodic pixelation — specifically compression artifacts (macroblocking)
+    that appear and clear — is the canonical symptom of video codec stress from
+    network packet loss or bandwidth variation. When packets are lost, the video
+    codec must reconstruct missing frames from available data, producing visible
+    artifacts. The 20–30 second cycle is consistent with Wi-Fi characteristics
+    rather than hardware failure (which would be more constant or random). USB
+    cable issues typically cause camera dropout (no signal) rather than
+    pixelation. Display-camera frame rate mismatch causes judder or tearing,
+    not pixelation. IntelliFrame is server-side processing and would not cause
+    this pattern. The fix is to address the network quality — either resolving
+    the Wi-Fi issues (interference, signal strength, channel congestion) or
+    connecting the MTR device to wired Ethernet.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Camera validation:** Framing (all seats visible), exposure (no backlight issues), white balance (neutral colors), focus (sharp at table distance).
+- **Display calibration:** 100–160 cd/m² brightness, 6500K color temperature, standard mode — not factory showroom defaults.
+- **Signal path:** Verify native resolution, no overscan, dual display assignment, HDMI ingest, display control.
+- **Test call:** Far end reviews camera; local verifies display; check in-call quality indicator for network issues.
+
+---
+
+## What's Next
+
+[Room Control Systems Overview →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/integrated-room-commissioning/lessons/room-control-systems/)

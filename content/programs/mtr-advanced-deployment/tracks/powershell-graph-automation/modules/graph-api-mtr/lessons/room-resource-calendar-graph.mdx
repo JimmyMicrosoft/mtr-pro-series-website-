@@ -1,0 +1,347 @@
+---
+id: "p3-t3-m2-l2"
+slug: "room-resource-calendar-graph"
+title: "Room Resource and Calendar Management via Graph"
+shortTitle: "Room Resource and Calendar via Graph"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 2
+moduleSlug: "graph-api-mtr"
+moduleTitle: "Microsoft Graph API for MTR"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Query and update room resource properties via the Graph Places API"
+  - "Retrieve room calendar events and calculate utilization metrics from calendar data"
+  - "Use Graph batch requests to query multiple rooms efficiently without N+1 API call patterns"
+
+prerequisites:
+  - "p3-t3-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "graph-api"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m2-l1"
+  - "p3-t3-m2-l3"
+
+metaDescription: "Room resource and calendar management via Microsoft Graph API — querying Places API, updating room properties, calendar availability, utilization metrics, and batch requests for fleet-scale efficiency."
+
+keywords:
+  - "Graph API room resource management"
+  - "Teams Rooms calendar Graph API"
+  - "Microsoft Graph Places API rooms"
+  - "room utilization Graph API PowerShell"
+  - "Graph batch requests rooms"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Graph Places API and the user Calendar API together give you programmatic access to two distinct layers of room data: the resource directory (what a room is — its name, building, capacity, features) and the booking layer (when a room is in use). Combining both layers enables utilization reporting, availability checking, and resource directory management from a single API. This lesson covers querying and updating room resource properties, building a calendar-based utilization report, and using Graph batch requests to query an entire floor of rooms in a single HTTP call.
+
+---
+
+## Querying Room Resources via the Places API
+
+The Graph Places API returns the organizational room directory — this is the data behind the room finder in Outlook:
+
+```powershell
+# Get all rooms in the directory
+$rooms = Invoke-GraphRequest `
+    -Uri     "https://graph.microsoft.com/v1.0/places/microsoft.graph.room" `
+    -Headers $headers
+
+# Each room object contains:
+foreach ($room in $rooms) {
+    [PSCustomObject]@{
+        DisplayName            = $room.displayName
+        EmailAddress           = $room.emailAddress
+        Building               = $room.building
+        FloorNumber            = $room.floorNumber
+        Capacity               = $room.capacity
+        IsWheelChairAccessible = $room.isWheelChairAccessible
+        # Equipment / features
+        AudioDeviceName        = $room.audioDeviceName
+        VideoDeviceName        = $room.videoDeviceName
+        DisplayDeviceName      = $room.displayDeviceName
+        # Tags (free-form labels set by admins)
+        Tags                   = $room.tags -join ", "
+        PlaceId                = $room.id
+    }
+}
+```
+
+The `building`, `floorNumber`, `capacity`, and accessibility fields are the room directory attributes visible in the Outlook room finder. Keeping these accurate matters operationally because end users rely on them for room selection.
+
+---
+
+## Updating Room Resource Properties
+
+PATCH the Places endpoint to update room properties programmatically — useful when a room is physically renovated, renumbered, or gains new AV equipment:
+
+```powershell
+function Update-GraphRoom {
+    param(
+        [string]$RoomEmail,      # Room resource account email
+        [hashtable]$Properties,  # Key-value pairs to update
+        [hashtable]$Headers
+    )
+
+    # First get the room's place ID
+    $room   = Invoke-GraphRequest `
+        -Uri     "https://graph.microsoft.com/v1.0/places/$RoomEmail/microsoft.graph.room" `
+        -Headers $Headers
+    $placeId = $room.id
+
+    # PATCH with the updated properties
+    $body = $Properties | ConvertTo-Json -Depth 5
+
+    Invoke-RestMethod `
+        -Uri     "https://graph.microsoft.com/v1.0/places/$placeId/microsoft.graph.room" `
+        -Method  PATCH `
+        -Headers $Headers `
+        -Body    $body `
+        -ContentType "application/json"
+}
+
+# Example: update capacity and accessibility after a room refit
+Update-GraphRoom `
+    -RoomEmail  "conf-lon-12@contoso.com" `
+    -Properties @{
+        capacity               = 12
+        isWheelChairAccessible = $true
+        building               = "LON-HQ"
+        floorNumber            = 3
+        floorLabel             = "3rd Floor"
+    } `
+    -Headers $headers
+```
+
+<Callout type="note">
+PATCH to the Places API requires the `Place.ReadWrite.All` permission (application). This permission grants broad write access to the room directory — limit its use to provisioning and maintenance scripts, not general operational automation.
+</Callout>
+
+---
+
+## Querying Room Calendar Availability
+
+The Calendar API returns scheduled events for a room's resource account. The `calendarView` endpoint is preferred over `/events` for time-bounded queries because it expands recurring meetings:
+
+```powershell
+function Get-RoomCalendarEvents {
+    param(
+        [string]$RoomUPN,
+        [datetime]$Start,
+        [datetime]$End,
+        [hashtable]$Headers
+    )
+
+    $startStr = $Start.ToUniversalTime().ToString("o")
+    $endStr   = $End.ToUniversalTime().ToString("o")
+
+    $uri = "https://graph.microsoft.com/v1.0/users/$RoomUPN/calendarView" +
+           "?startDateTime=$startStr&endDateTime=$endStr" +
+           "&`$select=subject,start,end,organizer,attendees,isAllDay"
+
+    return Invoke-GraphRequest -Uri $uri -Headers $Headers
+}
+
+# Check if Conf-LON-01 is free for the next 2 hours
+$events = Get-RoomCalendarEvents `
+    -RoomUPN "conf-lon-01@contoso.com" `
+    -Start   (Get-Date) `
+    -End     (Get-Date).AddHours(2) `
+    -Headers $headers
+
+if ($events.Count -eq 0) {
+    Write-Host "Room is available"
+} else {
+    $next = $events | Sort-Object { $_.start.dateTime } | Select-Object -First 1
+    Write-Host "Room occupied — next meeting: $($next.subject) at $($next.start.dateTime)"
+}
+```
+
+---
+
+## Calculating Utilization from Calendar Data
+
+Before Pro Management analytics are available for newly deployed rooms, calendar event counts over 30 days provide a lightweight utilization proxy:
+
+```powershell
+function Get-RoomUtilization30Days {
+    param(
+        [string]$RoomUPN,
+        [hashtable]$Headers
+    )
+
+    $start  = (Get-Date).AddDays(-30)
+    $end    = Get-Date
+    $events = Get-RoomCalendarEvents -RoomUPN $RoomUPN -Start $start -End $end -Headers $Headers
+
+    # Working hours: Mon-Fri, 08:00-18:00 = 10 hours/day, 22 working days in 30-day period
+    $workingHoursPerDay = 10
+    $workingDays        = 22
+    $totalWorkingHours  = $workingHoursPerDay * $workingDays
+
+    $bookedMinutes = 0
+    foreach ($event in $events) {
+        if ($event.isAllDay) { continue }
+        $eventStart = [datetime]$event.start.dateTime
+        $eventEnd   = [datetime]$event.end.dateTime
+        if ($eventStart.DayOfWeek -in @("Saturday","Sunday")) { continue }
+        $bookedMinutes += ($eventEnd - $eventStart).TotalMinutes
+    }
+
+    $bookedHours     = $bookedMinutes / 60
+    $utilizationPct  = [Math]::Round(($bookedHours / $totalWorkingHours) * 100, 1)
+
+    return [PSCustomObject]@{
+        RoomUPN        = $RoomUPN
+        TotalEvents    = $events.Count
+        BookedHours    = [Math]::Round($bookedHours, 1)
+        UtilizationPct = $utilizationPct
+        PeriodDays     = 30
+    }
+}
+```
+
+Utilization percentages by building can highlight rooms that are significantly under- or over-utilized, informing decisions about room resizing or AV investment.
+
+---
+
+## Graph Batch Requests
+
+Querying 50 rooms one by one generates 50 API calls. Graph's `$batch` endpoint allows up to 20 requests in a single HTTP call:
+
+```powershell
+function Invoke-GraphBatch {
+    param(
+        [array]$RoomUPNs,       # List of room UPNs to query
+        [string]$StartDateTime,
+        [string]$EndDateTime,
+        [hashtable]$Headers
+    )
+
+    $allEvents = [System.Collections.Generic.List[PSObject]]::new()
+
+    # Process in batches of 20 (Graph batch limit)
+    for ($i = 0; $i -lt $RoomUPNs.Count; $i += 20) {
+        $batch = $RoomUPNs[$i..([Math]::Min($i + 19, $RoomUPNs.Count - 1))]
+
+        $requests = @()
+        $reqId    = 1
+        foreach ($upn in $batch) {
+            $requests += @{
+                id     = "$reqId"
+                method = "GET"
+                url    = "/users/$upn/calendarView?startDateTime=$StartDateTime&endDateTime=$EndDateTime&`$select=subject,start,end"
+            }
+            $reqId++
+        }
+
+        $batchBody = @{ requests = $requests } | ConvertTo-Json -Depth 10
+
+        $batchResponse = Invoke-RestMethod `
+            -Uri         "https://graph.microsoft.com/v1.0/`$batch" `
+            -Method      POST `
+            -Headers     $Headers `
+            -Body        $batchBody `
+            -ContentType "application/json"
+
+        # Map responses back to rooms
+        for ($j = 0; $j -lt $batch.Count; $j++) {
+            $resp    = $batchResponse.responses | Where-Object id -eq "$($j + 1)"
+            $roomUpn = $batch[$j]
+
+            if ($resp.status -eq 200) {
+                foreach ($event in $resp.body.value) {
+                    $allEvents.Add([PSCustomObject]@{
+                        RoomUPN = $roomUpn
+                        Subject = $event.subject
+                        Start   = $event.start.dateTime
+                        End     = $event.end.dateTime
+                    })
+                }
+            } else {
+                Write-Warning "[$roomUpn] Batch request failed: HTTP $($resp.status)"
+            }
+        }
+    }
+
+    return $allEvents
+}
+```
+
+| Approach | API Calls for 100 rooms | Approximate time |
+|----------|------------------------|-----------------|
+| Sequential GET per room | 100 | ~30-60 seconds |
+| Batch requests (20/batch) | 5 | ~2-5 seconds |
+| Batch + parallel batches | 1-2 | <2 seconds |
+
+---
+
+<KnowledgeCheck id="p3-t3-m2-l2-kc">
+  <Question>
+    You query the calendar for all 200 rooms in your fleet using sequential GET /calendarView calls. The script takes 8 minutes to run. You switch to Graph batch requests. How many HTTP calls does the optimized version make, and what is a realistic time estimate?
+  </Question>
+  <Answer>10 HTTP calls — approximately 45 seconds</Answer>
+  <Answer correct>10 HTTP calls (200 rooms ÷ 20 per batch = 10 batch requests), and a realistic time estimate is 5-15 seconds — the primary variable is Graph API response latency per batch call, typically 0.5-2 seconds each. The batch approach reduces both the number of network round trips and the total time spent waiting for API responses by roughly 20-40x compared to sequential individual calls</Answer>
+  <Answer>20 HTTP calls — approximately 2 minutes</Answer>
+  <Answer>The batch API does not support calendarView — you must use sequential calls for calendar queries</Answer>
+  <Explanation>
+    Graph batch requests pack up to 20 sub-requests into a single HTTP POST. For 200 rooms, that produces ceiling(200/20) = 10 batch calls. Each batch call takes roughly the same time as 1-2 individual calls rather than 20, so the overall reduction is dramatic. The `/users/{id}/calendarView` endpoint is fully supported in batch requests — it is a standard GET endpoint and any GET can be included in a batch body.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Places API:** `GET /places/microsoft.graph.room` returns the full room directory with building, capacity, floor, and feature attributes; `PATCH` updates them (requires `Place.ReadWrite.All`).
+- **CalendarView:** Use `/users/{upn}/calendarView?startDateTime=...&endDateTime=...` in preference to `/events` for time-bounded queries — it correctly expands recurring meetings.
+- **Utilization proxy:** Count booked minutes over 30 days and divide by available working hours for a lightweight utilization percentage before Pro Management analytics are available.
+- **Batch requests:** The `$batch` endpoint handles up to 20 sub-requests per call — essential for fleet-scale calendar queries; reduces 200 API calls to 10.
+
+---
+
+## What's Next
+
+[Teams Rooms Device Management via Graph →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/graph-api-mtr/lessons/device-management-graph/)

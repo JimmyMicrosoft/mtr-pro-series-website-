@@ -1,0 +1,190 @@
+---
+id: "p4-t3-m1-l4"
+slug: "managed-service-financial-model"
+title: "Managed Service Financial Model"
+shortTitle: "Financial Model"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 3
+trackSlug: "practice-operations"
+trackTitle: "Practice Operations"
+
+module: 1
+moduleSlug: "service-delivery-model"
+moduleTitle: "Managed Service Delivery Model"
+
+lessonIndex: 4
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas: ["practice-manager", "account-manager"]
+
+objectives:
+  - "Model the unit economics of an MTR managed service to determine breakeven and target scale"
+  - "Understand how fixed and variable costs behave as the managed service base grows"
+  - "Identify the metrics that determine whether a managed service is financially healthy"
+  - "Apply pricing decisions that improve profitability as scale increases"
+
+prerequisites:
+  - "p4-t3-m1-l1"
+  - "p4-t2-m3-l3"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management"]
+roleTags: ["practice-manager", "account-manager"]
+topicTags: ["financial-model", "managed-service", "unit-economics", "practice-operations"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Managed Service Financial Model Template"
+    filename: "mtr-managed-service-financial-model.xlsx"
+
+relatedLessons:
+  - "p4-t3-m1-l1"
+  - "p4-t3-m3-l4"
+  - "p4-t2-m3-l3"
+
+metaDescription: "Learn to model the unit economics of an MTR managed service, understand fixed and variable cost behaviour at scale, and identify the financial metrics that determine service health."
+keywords: ["MTR managed service financial model", "managed service unit economics", "Teams Rooms MSP model", "practice profitability"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## The Economics of Managed Services
+
+Managed services have a fundamentally different financial structure from project work. Projects are lumpy — revenue arrives in bursts tied to project completion. Managed services are smooth — revenue arrives monthly, predictably, regardless of how busy the team is.
+
+The critical insight about managed services is that the cost to deliver does not scale linearly with the number of rooms managed. A service desk engineer who can manage 50 rooms can manage 100 rooms with the same tooling and similar effort — because monitoring is automated and most rooms require little intervention. This creates the opportunity for margin expansion as the managed service base grows.
+
+---
+
+## Cost Structure
+
+### Fixed Costs
+
+Costs that exist regardless of how many rooms are under management:
+
+| Fixed Cost | Monthly | Notes |
+|---|---|---|
+| Service desk staff (1 junior engineer) | £3,500 | At 50%+ occupancy on MTR; shared with other work |
+| Pro Management tooling | £0 | Included in Teams Rooms Pro license; no additional cost |
+| ITSM platform | £200 | e.g., Freshdesk, Zendesk, or ServiceNow |
+| RMM tooling (optional) | £150 | e.g., Datto RMM, NinjaRMM |
+| Practice management overhead | £500 | Account management, reporting, QBRs |
+| **Total fixed cost per month** | **£4,350** | |
+
+### Variable Costs
+
+Costs that increase with room count:
+
+| Variable Cost | Per Room Per Month | Notes |
+|---|---|---|
+| Teams Rooms Pro license | £37.50 | £450/year ÷ 12 |
+| On-site visit allowance | £8.33 | 1 visit per room per year at £100 average cost |
+| Spares holding (amortised) | £5.00 | Replacement devices amortised over expected failure rate |
+| **Total variable cost per room per month** | **£50.83** | |
+
+### Total Cost Model
+
+```
+Monthly cost at N rooms:
+Total cost = Fixed cost + (Variable cost per room × N)
+           = £4,350 + (£50.83 × N)
+
+Breakeven: Revenue = Costs
+PRPM sell price × N = £4,350 + £50.83 × N
+(PRPM - £50.83) × N = £4,350
+N = £4,350 / (PRPM - £50.83)
+```
+
+**Breakeven at different PRPM prices:**
+
+| PRPM Price | Variable cost | Contribution per room | Breakeven rooms |
+|---|---|---|---|
+| £75 | £50.83 | £24.17 | 180 rooms |
+| £100 | £50.83 | £49.17 | 88 rooms |
+| £125 | £50.83 | £74.17 | 59 rooms |
+| £150 | £50.83 | £99.17 | 44 rooms |
+
+At £125 PRPM, the service becomes profitable at 59 rooms managed by a single service desk engineer. Adding a second engineer (incremental fixed cost: ~£3,000/month) raises the breakeven by approximately 40 rooms for the tier 2 engineer.
+
+---
+
+## Margin at Scale
+
+The power of the managed service model is that margin improves as room count grows, because fixed costs are spread over more rooms.
+
+| Rooms Managed | Monthly Revenue (£125) | Monthly Cost | Monthly Profit | Margin |
+|---|---|---|---|---|
+| 50 rooms | £6,250 | £6,892 | -£642 | Negative |
+| 100 rooms | £12,500 | £9,433 | £3,067 | 24.5% |
+| 150 rooms | £18,750 | £11,975 | £6,775 | 36.1% |
+| 200 rooms | £25,000 | £14,516 | £10,484 | 41.9% |
+| 300 rooms | £37,500 | £19,599 | £17,901 | 47.7% |
+
+**Key insight**: The breakeven in this model is around 90 rooms. Below 90 rooms, the managed service is loss-making at £125 PRPM with this cost structure. Above 90 rooms, every additional room generates increasing margin.
+
+This is why scale matters for managed services. A practice with 50 rooms under management should be investing aggressively in growing to 100+ rooms — the profitability inflection point is significant.
+
+---
+
+## Key Financial Metrics
+
+### Managed Service KPIs
+
+| Metric | Definition | Target |
+|---|---|---|
+| Recurring Revenue | Total monthly MSA value | Growing; predictable |
+| Average PRPM | Total MRR ÷ Total rooms managed | >£100 and growing |
+| Gross margin | (Revenue - Variable cost) ÷ Revenue | >50% at scale |
+| Net margin (managed service P&L) | Profit after all costs ÷ Revenue | >35% at 200+ rooms |
+| Churn rate | Rooms/contracts lost per month | <5% annually |
+| Average contract duration | Mean length of managed service contracts | >24 months |
+| NPS (Net Promoter Score) | Client satisfaction metric | >50 |
+
+### Revenue Quality
+
+Not all recurring revenue is equal. Assess revenue quality:
+
+- **Contracted vs rolling**: Annual contracts are more valuable than monthly rolling
+- **Tier distribution**: A high proportion of Gold/Premium clients is better than a base of Bronze clients (higher revenue per room; stickier relationships)
+- **Client concentration**: If one client represents >30% of managed service revenue, that is a concentration risk
+
+---
+
+## Investment Decisions for Growth
+
+Growing the managed service from 50 to 200 rooms requires investment. Key decisions:
+
+**Additional service desk capacity**: When service desk occupancy on MTR exceeds 80%, hire or allocate more capacity before quality degrades.
+
+**Spares inventory**: As room count grows, increase spares holding. A next-business-day hardware swap SLA at 200 rooms requires at least 5–10 spare compute units, depending on geographic distribution of clients.
+
+**Sales and account management**: Growth requires either account expansion (selling more to existing clients) or new client acquisition — both require investment in account manager or business development resource.
+
+**Partner deal registration**: Ensure Microsoft partner deal registration is in place to protect MTR project and license margin.
+
+---
+
+<KnowledgeCheck>
+  <Question text="Your managed service is at 75 rooms with a PRPM of £125. Monthly revenue is £9,375. Monthly cost is £8,212. Is the service profitable, and what is the approximate margin?">
+    <Answer>Not profitable — costs exceed revenue</Answer>
+    <Answer correct>Marginally profitable: profit = £9,375 - £8,212 = £1,163; margin = £1,163 / £9,375 = 12.4% — but well below sustainable target margin and approaching breakeven in this cost model</Answer>
+    <Answer>Highly profitable at 40%+ margin</Answer>
+    <Answer>Cannot calculate without knowing exact fixed costs</Answer>
+    <Explanation>At 75 rooms the service is just past breakeven in this cost model (breakeven ~59 rooms at £125 PRPM), generating a thin 12% margin. This is not yet a sustainable business at this margin — the practice needs to grow to 150+ rooms to achieve the target 35%+ net margin. The data supports investing in growth rather than optimising costs at this stage.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Managed Service Financial Model Template" filename="mtr-managed-service-financial-model.xlsx" />

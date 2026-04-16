@@ -1,0 +1,201 @@
+---
+id: "p4-t3-m1-l3"
+slug: "incident-escalation-management"
+title: "Incident and Escalation Management"
+shortTitle: "Incident Management"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 3
+trackSlug: "practice-operations"
+trackTitle: "Practice Operations"
+
+module: 1
+moduleSlug: "service-delivery-model"
+moduleTitle: "Managed Service Delivery Model"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["practice-manager", "it-administrator"]
+
+objectives:
+  - "Define incident severity levels and the corresponding escalation paths for each"
+  - "Apply a structured escalation process that protects SLA performance and client relationships"
+  - "Manage major incidents (multi-room or site-wide failures) effectively"
+  - "Conduct post-incident reviews that prevent recurrence"
+
+prerequisites:
+  - "p4-t3-m1-l1"
+  - "p4-t3-m1-l2"
+
+technologyTags: ["MTR", "Teams Rooms", "Pro Management"]
+roleTags: ["practice-manager", "it-administrator"]
+topicTags: ["incident-management", "escalation", "managed-service", "operations"]
+vendorTags: ["Microsoft"]
+
+relatedLessons:
+  - "p4-t3-m1-l1"
+  - "p4-t3-m1-l2"
+  - "p4-t3-m1-l4"
+
+metaDescription: "Learn to design and operate incident and escalation management processes for MTR managed services, including severity levels, escalation paths, major incident management, and post-incident review."
+keywords: ["MTR incident management", "escalation management", "major incident", "Teams Rooms support"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Incident Management as SLA Protection
+
+Every managed service SLA is tested by incidents. The difference between a practice that retains clients and one that loses them is not the absence of incidents — all systems fail sometimes — it is how those incidents are managed.
+
+Effective incident management is characterised by:
+- Fast detection (via automated monitoring, not client calls)
+- Clear ownership (one engineer owns each ticket from open to close)
+- Proactive client communication (client knows what is happening before they ask)
+- Fast resolution (via well-documented SOPs and appropriate escalation)
+- Post-incident learning (the same fault does not recur)
+
+---
+
+## Escalation Paths
+
+### Tier 1: Service Desk (First Response)
+
+**Who**: Junior engineers or operations staff with Pro Management and Teams Admin Centre access.
+
+**Capabilities**:
+- Identify the fault from monitoring alerts
+- Perform remote restart of device (Teams Admin Centre)
+- Verify sign-in status and resource account
+- Check for site-wide network issues (correlate multiple device alerts)
+- Apply known-good SOPs for common faults
+
+**Escalates to Tier 2 when**:
+- SOP does not resolve the issue within 30 minutes
+- Multiple devices at same client affected simultaneously (potential major incident)
+- Fault requires Intune policy investigation or advanced diagnostics
+- Issue appears to be network-related and requires coordination with client IT
+
+### Tier 2: Senior Engineer (Technical Escalation)
+
+**Who**: Experienced MTR engineers with full diagnostic capability (log analysis, Intune, network tools).
+
+**Capabilities**:
+- Advanced log collection and analysis (MTR logs, Event Viewer, Teams diagnostic logs)
+- Intune configuration investigation and policy remediation
+- Network trace and QoS verification
+- Coordination with client's IT team for infrastructure changes
+- Remote session on MTR device via TAC remote access or TeamViewer (if enabled)
+
+**Escalates to Tier 3 when**:
+- Fault cannot be resolved remotely; on-site visit required
+- Microsoft product bug suspected; Microsoft support case needed
+- Hardware failure confirmed; RMA process required
+
+### Tier 3: Specialist / Vendor (Advanced Escalation)
+
+**Who**: Most senior technical resource; vendor support channels.
+
+**Capabilities**:
+- On-site diagnosis and repair
+- Microsoft support case management (escalation through TAC)
+- Hardware RMA coordination with OEM (Logitech, Poly, Yealink support)
+- Emergency hardware swap from spares holding
+
+---
+
+## Major Incident Management
+
+A major incident is a fault that affects multiple rooms, multiple clients, or a business-critical event (e.g., a board meeting or client presentation).
+
+### Major Incident Declaration Criteria
+
+Declare a major incident when any of the following apply:
+- 5 or more rooms at a single client site are simultaneously offline or impaired
+- A P1 fault affects a room during a known high-stakes meeting (pre-registered critical events)
+- A fault is caused by a change that affects the entire fleet (Microsoft update, Intune policy change)
+
+### Major Incident Process
+
+1. **Declare**: Service desk or monitoring identifies qualifying condition; major incident is declared in ITSM; incident commander assigned (usually senior engineer or practice manager)
+
+2. **Communicate**: Incident commander notifies client IT contact (phone, not email for P1) within 15 minutes of declaration. Script: "We've identified an issue affecting [X] rooms at your site. We're investigating now. I'll update you every 30 minutes until resolved."
+
+3. **Investigate**: Assemble appropriate technical resource. Senior engineer begins investigation. Parallel track: is this a Microsoft platform issue? Check Microsoft 365 Service Health Dashboard immediately.
+
+4. **Update**: Provide client updates at agreed intervals (every 30 minutes for P1 major incidents). Even if there is nothing new to report: "We're still investigating. No resolution yet. Next update in 30 minutes."
+
+5. **Resolve**: Apply fix; verify across all affected rooms; confirm all devices are operational.
+
+6. **Close**: Close ITSM ticket with full incident timeline documented. Notify client of resolution.
+
+7. **Post-incident review**: Within 48 hours (see below).
+
+<Callout type="warning">
+**The worst thing you can do in a major incident is go silent.** Clients who stop getting updates assume the worst — that the practice has lost control. Regular updates, even "no change" updates, maintain trust. A client who receives updates every 30 minutes throughout a 3-hour major incident will often rate the service experience positively — because they were communicated with and felt in control.
+</Callout>
+
+---
+
+## Pre-Registered Critical Events
+
+High-stakes events (board meetings, investor presentations, annual all-hands) should be pre-registered in the managed service ITSM.
+
+When a critical event is registered:
+- Engineer checks room health 60 minutes before the event
+- Any fault detected triggers an immediate P1 response regardless of severity classification
+- A standby engineer is identified for on-site response if needed
+- Client contact is on standby to provide physical access if required
+
+Offer pre-registered critical event coverage as a differentiator in the Gold/Premium service tier.
+
+---
+
+## Post-Incident Review
+
+For every P1 incident and every major incident, conduct a post-incident review (PIR) within 48 hours.
+
+### PIR Questions
+
+1. **What happened?** Timeline of detection, escalation, and resolution
+2. **Why did it happen?** Root cause (not the symptom — the underlying cause)
+3. **How was it detected?** Via monitoring or via client call? (Client-reported incidents indicate a monitoring gap)
+4. **Was the SLA met?** If not, what caused the breach?
+5. **What could have been done faster?** Where was time lost?
+6. **What would prevent recurrence?** Specific, actionable changes
+
+### PIR Actions
+
+Assign an owner and due date to every action arising from a PIR. Common actions:
+- Add a new SOP for the fault type
+- Adjust monitoring alert thresholds
+- Update the client's network documentation if a misconfiguration was discovered
+- Raise a Microsoft support case if a product bug was identified
+- Update the spares holding if a hardware failure revealed a gap
+
+Share the PIR summary with the client for P1 incidents — not the internal technical detail, but the timeline, root cause, and actions taken to prevent recurrence. This demonstrates accountability and builds long-term trust.
+
+---
+
+<KnowledgeCheck>
+  <Question text="At 9:15am, monitoring alerts show that 8 rooms across a client's London site have gone offline simultaneously. What is the correct immediate response?">
+    <Answer>Begin investigating each room individually and open 8 separate tickets</Answer>
+    <Answer>Wait 30 minutes to see if the rooms come back online on their own</Answer>
+    <Answer correct>Declare a major incident; assign an incident commander; immediately call the client IT contact to notify them; check the Microsoft 365 Service Health Dashboard and the client's network status simultaneously; open a single major incident ticket covering all affected rooms</Answer>
+    <Answer>Send the client an email and wait for their response</Answer>
+    <Explanation>8 simultaneous offline rooms is a major incident by any definition. It requires immediate declaration, phone notification (not email), investigation for a common root cause (network issue or Microsoft platform incident are the two most likely causes), and a single coordinating ticket. Individual investigation of 8 rooms will be slower and miss the systemic cause.</Explanation>
+  </Question>
+</KnowledgeCheck>

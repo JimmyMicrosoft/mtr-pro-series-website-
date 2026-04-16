@@ -1,0 +1,363 @@
+---
+# ─────────────────────────────────────
+# IDENTITY
+# ─────────────────────────────────────
+
+id: "p1-t1-m1-l1"
+slug: "what-is-mtr"
+title: "What Is Microsoft Teams Rooms? History, Positioning, and Market Context"
+shortTitle: "What Is MTR?"
+
+# ─────────────────────────────────────
+# HIERARCHY
+# ─────────────────────────────────────
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 1
+moduleSlug: "introduction-to-teams-rooms"
+moduleTitle: "Introduction to Microsoft Teams Rooms"
+
+lessonIndex: 1
+
+# ─────────────────────────────────────
+# CONTENT METADATA
+# ─────────────────────────────────────
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+# ─────────────────────────────────────
+# AUDIENCE
+# ─────────────────────────────────────
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+  - "casey"
+
+# ─────────────────────────────────────
+# LEARNING DESIGN
+# ─────────────────────────────────────
+
+objectives:
+  - "Explain the origin and evolution of Microsoft Teams Rooms from its Lync Room System and Skype Room System predecessors"
+  - "Compare MTR with Zoom Rooms and Cisco Webex Rooms across criteria relevant to AV integrators, including hardware openness, admin tooling, and ecosystem integration"
+  - "Describe why enterprise clients standardized on Microsoft 365 choose MTR and how that decision shapes an integrator's deployment approach"
+
+prerequisites: []
+
+# ─────────────────────────────────────
+# TAXONOMY TAGS
+# ─────────────────────────────────────
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-rooms-app"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "overview"
+  - "fundamentals"
+
+vendorTags:
+  - "microsoft"
+  - "cisco"
+
+# ─────────────────────────────────────
+# MEDIA
+# ─────────────────────────────────────
+
+videoId: ""
+thumbnailAlt: ""
+
+# ─────────────────────────────────────
+# ASSETS
+# ─────────────────────────────────────
+
+downloads:
+  - file: "p1-t1-m1-l1-platform-comparison-matrix.pdf"
+    label: "Platform Comparison Matrix"
+    sizeKb: 245
+
+# ─────────────────────────────────────
+# CROSS-REFERENCES
+# ─────────────────────────────────────
+
+relatedLessons:
+  - "p1-t1-m1-l2"
+  - "p1-t1-m1-l3"
+  - "p1-t1-m1-l4"
+
+# ─────────────────────────────────────
+# SEO
+# ─────────────────────────────────────
+
+metaDescription: "Learn what Microsoft Teams Rooms is, its history from Lync Room System, and how it compares to Zoom Rooms and Cisco Webex for AV integrators. MTR Foundations."
+keywords:
+  - "Microsoft Teams Rooms"
+  - "MTR history"
+  - "Teams Rooms vs Zoom Rooms"
+  - "Cisco Webex comparison"
+  - "AV integrator MTR training"
+
+# ─────────────────────────────────────
+# PUBLISHING & VERSIONING
+# ─────────────────────────────────────
+
+published: true
+lastUpdated: "2026-04-12"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-12"
+---
+
+## Overview
+
+A client walks into a sales meeting and asks why they should choose Microsoft Teams Rooms over Zoom Rooms or Cisco Webex. Or a project manager sends you a deployment scope for "a Teams Rooms system" and you realize the IT team is using terminology loosely — the infrastructure might support any of three competing platforms. Or a device you installed six months ago on a Skype Room System project is now referred to as an "MTR legacy unit" and nobody can tell you what that means. These are the situations this lesson prepares you for.
+
+Microsoft Teams Rooms is the dominant enterprise room platform in the market, and for integrators who work in Microsoft 365 environments, it is the single most important platform to understand at depth. But understanding it begins with context: where it came from, how it is positioned relative to competitors, and why clients choose it. That context is not peripheral knowledge — it shapes every scoping conversation, every SOW, and every recommendation you make on an MTR project.
+
+By the end of this lesson, you will be able to explain what MTR is, describe its lineage from predecessor platforms, compare it credibly to Zoom Rooms and Cisco Webex Rooms, and articulate the business drivers that lead enterprise clients to deploy it. These are not academic concepts — they are the foundation of every client-facing conversation you will have on an MTR project.
+
+---
+
+## What is Microsoft Teams Rooms?
+
+<GlossaryTerm slug="microsoft-teams-rooms">Microsoft Teams Rooms</GlossaryTerm> (MTR) is a purpose-built conferencing application that runs on certified hardware and transforms physical conference spaces into first-class Microsoft Teams meeting endpoints. It is not a general-purpose Windows PC with Teams installed. The OS and application are locked into a kiosk-style experience: the device boots directly into the Teams Rooms interface, all standard Windows functions are removed from the user experience, and the application is managed through a combination of Microsoft's cloud services, the Teams Admin Center, and device management platforms like Intune.
+
+What MTR actually does in a room is straightforward: it provides a large-format touch console that shows upcoming meetings from a room's calendar, allows one-touch join for scheduled meetings, enables HDMI content sharing from laptops, and routes audio and video through certified peripherals to Microsoft Teams meeting infrastructure. The room appears in meeting invites as a location, and meeting attendees can book it the same way they book any conference room.
+
+The integration with Microsoft 365 is the differentiating characteristic. Because MTR uses Exchange Online resource accounts, Azure Active Directory, Teams meeting policies, and Intune device management, the room becomes a managed, identifiable endpoint in the same ecosystem that manages every other Microsoft 365 service in the organization. For IT teams already operating in that ecosystem, this matters — it means one management plane, one identity system, one policy framework.
+
+<Callout type="note">
+  Throughout this curriculum, "MTR" refers specifically to Microsoft Teams Rooms running
+  on either the Windows or Android platform. Both platforms run the Teams Rooms application
+  and are administered through the Teams Admin Center, but they have meaningful architectural
+  differences that are covered in Lesson 1.1.2.
+</Callout>
+
+---
+
+## Platform lineage: from Lync to Teams Rooms
+
+Understanding where MTR came from matters for two practical reasons. First, many enterprise environments still have legacy hardware from earlier platform generations, and integrators need to know what they are looking at and how it relates to current MTR. Second, some configuration artifacts from earlier platforms — most notably the `SkypeSettings.xml` configuration file format — persist in current MTR deployments, and their origin explains their structure.
+
+The Microsoft room system platform evolved through three distinct generations:
+
+**Lync Room System (2013).** Microsoft's first purpose-built room endpoint, designed for Skype for Business on-premises. Proprietary hardware from a small set of certified partners (Crestron, Polycom, SMART, Logitech). Tightly coupled to on-premises Skype for Business Server. Hardware from this era is end-of-life and not supported on current MTR.
+
+**Skype Room System v1 and v2 (2015–2019).** The Skype for Business room platform that evolved through v1 (also called "Lync Room System version 2" in some documentation) and v2. The v2 platform introduced the XML-based `SkypeSettings.xml` configuration file that still exists — in a significantly expanded form — as the XML configuration schema for MTR Windows today. If you encounter a reference to `SkypeSettings.xml` in current MTR documentation or support contexts, this is the origin.
+
+**Microsoft Teams Rooms (2019–present).** The current platform, renamed from "Skype Room System" following the broader Microsoft rename from Skype for Business to Microsoft Teams. MTR was introduced as a Teams-native platform in 2019 and has evolved substantially since then, adding Android support, the Teams Rooms Pro license tier, the Intelligent Speaker feature, and a new device management experience in the Teams Admin Center.
+
+{/* MEDIA: platform-timeline — Visual timeline of Microsoft room system evolution
+     from Lync Room System (2013) through MTR current release. Annotated with major
+     milestones including Teams launch (2017), MTR rename (2019), MTR Android introduction,
+     and Teams Rooms Pro license launch. Width: 1200px, Format: PNG.
+     Filename: p1-t1-m1-l1-platform-timeline.png */}
+
+<Callout type="tip">
+  When you encounter an installed system that a client refers to as a "Skype Room" or
+  "SRS," check the hardware and software version before assuming it is an MTR system.
+  Skype Room System v2 hardware may be upgradeable to MTR if it is on the certified
+  hardware list, but v1 hardware is not. The Teams Admin Center will not recognize
+  hardware that is not running a supported MTR application version.
+</Callout>
+
+---
+
+## MTR vs. Zoom Rooms vs. Cisco Webex Rooms
+
+You will encounter clients who ask why they should use MTR instead of Zoom Rooms or Cisco Webex. You will also encounter environments where the choice has already been made and your job is to deploy within it. Either way, you need to understand the meaningful differences between these platforms — not just as talking points but as technical realities that affect how you scope and deliver projects.
+
+{/* MEDIA: ecosystem-comparison-diagram — Side-by-side architecture block diagrams for
+     MTR, Zoom Rooms, and Cisco Webex Rooms. Each shows hardware layer, OS layer,
+     application layer, and cloud service connections. Width: 1400px, Format: PNG.
+     Filename: p1-t1-m1-l1-ecosystem-comparison-diagram.png */}
+
+**Microsoft Teams Rooms vs. Zoom Rooms**
+
+Zoom Rooms and MTR share the most architectural similarities of the three platforms. Both use a certified hardware model (though Zoom's certification list is wider and less restrictive), both support a compute-plus-peripherals configuration model, and both are cloud-managed through their respective admin consoles. The key differentiators for AV integrators are:
+
+- **Ecosystem integration.** MTR integrates natively with Exchange Online calendaring, SharePoint, Whiteboard, and the full Microsoft 365 stack. Zoom Rooms integrates with Zoom's calendar connectors (which support Exchange and Google Workspace) but does not have native Microsoft 365 integration at the same depth. For organizations where Microsoft 365 is the primary productivity stack, MTR reduces integration complexity.
+- **Hardware ecosystem management.** Zoom's certification requirements are less restrictive, which means a wider range of hardware can be certified and that firmware updates may come from the device OEM rather than Zoom. MTR's tighter certification program means a smaller hardware catalog but more predictable update behavior.
+- **Admin tooling.** Zoom has the Zoom Device Management console; MTR uses the Teams Admin Center. Both provide remote device management. The Teams Admin Center is integrated with the broader Microsoft 365 admin ecosystem, which matters for IT teams who already work in that environment.
+
+**Microsoft Teams Rooms vs. Cisco Webex Rooms**
+
+Cisco's room systems (Board, Desk, and Room series devices running RoomOS) are architecturally quite different from MTR. Cisco hardware is predominantly proprietary — the device, OS, and application are tightly coupled from Cisco. This gives Cisco deep control over the device experience and enables capabilities like advanced on-device AI processing, but it means clients who choose Cisco are choosing Cisco hardware specifically.
+
+The practical implications for integrators:
+
+- **Hardware choice.** MTR integrators choose from a broad catalog of certified compute units, cameras, audio devices, and consoles from multiple vendors. Cisco integrators are primarily selecting Cisco hardware.
+- **SIP/H.323 calling.** Cisco Webex Rooms support native SIP and H.323 dial plans without licensing add-ons — a significant differentiator in environments with legacy video conferencing infrastructure. MTR requires the Teams Phone license and specific configuration for PSTN calling, and native SIP/H.323 interoperability requires additional configuration (Cloud Video Interop or Direct Guest Join).
+- **AI capabilities.** Cisco's on-device AI processing (people counting, zone detection, intelligent audio) is deeply integrated at the hardware level. MTR's AI features (auto-framing, Intelligent Speaker, active speaker tracking) are strong but require Teams Rooms Pro licensing and are delivered through a combination of cloud processing and certified hardware.
+
+<Callout type="info">
+  In enterprise environments where both Microsoft Teams and Webex are deployed (common in
+  large organizations with multiple collaboration platforms), MTR supports Direct Guest Join
+  — the ability to join a Webex or Zoom meeting from an MTR room without needing a separate
+  Webex device. This is a frequently asked-about capability in mixed-platform environments.
+</Callout>
+
+**Where MTR wins**
+
+In enterprise environments standardized on Microsoft 365, MTR has a structural advantage that is difficult for competitors to overcome: the room becomes a native part of the same identity, calendar, and meeting infrastructure that governs every other user and device in the organization. IT administrators manage it from the same Tools they use to manage everything else. Meeting joins work from Exchange calendar invites the same way they work for desktop Teams. Room analytics feed into the same reporting framework.
+
+Market share data from research firms consistently shows MTR as the leading enterprise room platform by deployment volume. For commercial AV integrators, this translates directly to project volume — understanding MTR at depth is not optional for practices targeting the enterprise market.
+
+{/* MEDIA: market-share-chart — Bar chart of enterprise video room platform market share
+     (MTR, Zoom Rooms, Cisco Webex, others) sourced from publicly available analyst data.
+     Width: 800px, Format: PNG. Filename: p1-t1-m1-l1-market-share-chart.png */}
+
+---
+
+## How the platform choice shapes your work
+
+When a client has chosen MTR, the deployment has specific characteristics that are different from Zoom Rooms or Cisco Webex. Understanding these is part of scoping accurately.
+
+**You are deploying into a Microsoft 365 environment.** That means the IT team has an Exchange Online tenant, Azure Active Directory, and likely Intune. Your work depends on that environment being correctly configured. A misconfigured resource account, a missing Exchange license, or a Conditional Access policy that blocks the room's sign-in will prevent the room from working regardless of how correctly you installed the hardware. The IT team's readiness is a dependency you must assess and document.
+
+**You are not configuring a standalone appliance.** MTR is not a self-contained system. It is a hardware endpoint connected to a cloud service. That means the system is not "done" when you leave the site — it is done when it is successfully signed in, showing the room's calendar, joining test meetings, and appearing correctly in the Teams Admin Center. Your commissioning checklist must include verification steps that require the Microsoft 365 environment to be functional.
+
+**Your scope has a clear boundary.** You are responsible for the hardware installation, network connectivity, device configuration, and successful sign-in. You are not responsible for the Microsoft 365 tenant configuration, the Exchange Online resource account, or the Teams meeting policies. The dividing line between integrator scope and IT administrator scope is a topic covered in detail in Lesson 1.1.5, but you should understand from the start that this boundary exists and that your SOW must reflect it.
+
+---
+
+## Hands-on exercise
+
+Complete the Platform Comparison Matrix worksheet. The worksheet presents eight criteria relevant to AV integrators (hardware openness, admin console, cloud dependency, BYOD support, native content sharing, licensing model, firmware control, and interop capability) and asks you to complete a three-column comparison across MTR, Zoom Rooms, and Cisco Webex Rooms. Use the lesson content and the linked reference pages to complete your answers, then review the answer key included in the worksheet.
+
+<DownloadButton
+  file="p1-t1-m1-l1-platform-comparison-matrix.pdf"
+  label="Platform Comparison Matrix"
+  sizeKb={245}
+  description="Three-column comparison worksheet covering MTR, Zoom Rooms, and Cisco Webex Rooms across eight AV integrator criteria. Includes answer key."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m1-l1-kc">
+  <Question>
+    Which Microsoft room system platform first introduced the XML configuration file format
+    that persists in current MTR Windows deployments?
+  </Question>
+  <Answer>Lync Room System (2013)</Answer>
+  <Answer correct>Skype Room System v2 (2015–2019)</Answer>
+  <Answer>Microsoft Teams Rooms (2019)</Answer>
+  <Answer>Microsoft Surface Hub</Answer>
+  <Explanation>
+    Skype Room System v2 introduced the SkypeSettings.xml configuration file format. This
+    schema was carried forward and significantly expanded when the platform was renamed to
+    Microsoft Teams Rooms in 2019. Lync Room System (2013) predates this configuration
+    approach; MTR inherited rather than created the XML schema.
+  </Explanation>
+
+  <Question>
+    An enterprise client is standardized on Microsoft 365 E3 and wants room systems that
+    integrate natively with their Exchange Online calendaring and Intune device management.
+    Which platform most directly addresses this requirement?
+  </Question>
+  <Answer>Cisco Webex Rooms (RoomOS)</Answer>
+  <Answer>Zoom Rooms</Answer>
+  <Answer correct>Microsoft Teams Rooms</Answer>
+  <Answer>All three platforms provide equivalent Microsoft 365 integration</Answer>
+  <Explanation>
+    MTR integrates natively with Exchange Online, Azure Active Directory, Teams, and Intune
+    because it is built on the Microsoft 365 stack. Zoom Rooms supports Exchange calendar
+    connectors but does not have native Microsoft 365 integration at the same depth. Cisco
+    Webex Rooms use Cisco's own cloud services and management tools, not Microsoft's.
+  </Explanation>
+
+  <Question>
+    Compared to Cisco Webex Rooms, what is a key hardware advantage of Microsoft Teams Rooms
+    for AV integrators?
+  </Question>
+  <Answer>MTR provides deeper on-device AI processing capabilities</Answer>
+  <Answer>MTR supports native SIP/H.323 calling without additional licensing</Answer>
+  <Answer correct>MTR integrators select from a broad catalog of certified hardware from multiple vendors</Answer>
+  <Answer>MTR devices are exclusively manufactured by Microsoft</Answer>
+  <Explanation>
+    Cisco Webex Rooms are predominantly proprietary Cisco hardware — integrators primarily
+    select from Cisco's own device lineup. MTR uses an open certified hardware model where
+    compute units, cameras, audio devices, and consoles come from many vendors (Lenovo, Poly,
+    Yealink, Logitech, Crestron, and others). SIP/H.323 without add-ons and deeper on-device
+    AI are actually Cisco advantages over MTR, not the other way around.
+  </Explanation>
+
+  <Question>
+    Which of the following best describes the correct commissioning endpoint for an MTR
+    installation — the point at which the room is considered complete?
+  </Question>
+  <Answer>When all physical hardware is installed and cabled</Answer>
+  <Answer>When the Teams Rooms application launches on the compute unit</Answer>
+  <Answer>When the room appears in the Teams Admin Center inventory</Answer>
+  <Answer correct>When the room is signed in, showing its calendar, joining test meetings, and verified in the Teams Admin Center</Answer>
+  <Explanation>
+    MTR is a cloud-connected endpoint. Physical installation is only the first phase.
+    The room is not functionally complete until it has successfully signed in with its
+    resource account, is displaying scheduled meetings from the Exchange calendar, can
+    join a Teams meeting, and is showing as healthy in the Teams Admin Center. Any of
+    these steps can fail due to configuration issues in the Microsoft 365 environment
+    — not the hardware.
+  </Explanation>
+
+  <Question>
+    A client asks why Microsoft Teams Rooms leads in enterprise market share compared to
+    Zoom Rooms and Cisco Webex. Which of the following is the most accurate explanation?
+  </Question>
+  <Answer>MTR hardware is less expensive than Zoom Rooms or Cisco hardware</Answer>
+  <Answer correct>Organizations standardized on Microsoft 365 gain structural integration advantages — one management plane, one identity system, and native calendar and meeting integration</Answer>
+  <Answer>MTR supports more hardware vendors than any other room platform</Answer>
+  <Answer>MTR does not require cloud connectivity for core meeting functionality</Answer>
+  <Explanation>
+    MTR's market position is driven primarily by ecosystem integration: in organizations
+    already using Exchange Online, Azure AD, Teams, and Intune, adding MTR extends the
+    existing management and identity infrastructure rather than introducing a separate
+    system. Price varies by configuration and is not a consistent differentiator. MTR's
+    hardware catalog is broad but not necessarily larger than Zoom's. MTR requires cloud
+    connectivity — it is a cloud-dependent platform.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Describe what MTR is:** A purpose-built, kiosk-mode conference room application running on certified hardware, integrated natively with Microsoft 365 services including Exchange Online, Azure Active Directory, Teams, and Intune.
+- **Explain its lineage:** MTR evolved from Lync Room System (2013) through Skype Room System v2 (which introduced the SkypeSettings.xml configuration format) to the current Teams Rooms platform (2019–present).
+- **Compare MTR to Zoom Rooms:** Both use certified hardware models and cloud admin consoles, but MTR has deeper native Microsoft 365 integration. Zoom's certification requirements are less restrictive.
+- **Compare MTR to Cisco Webex:** Cisco uses predominantly proprietary hardware and offers native SIP/H.323 and stronger on-device AI. MTR offers a broader multi-vendor hardware catalog and tighter Microsoft 365 integration.
+- **Explain MTR's market position:** MTR leads in enterprise deployments because organizations standardized on Microsoft 365 gain structural advantages from native integration across identity, calendaring, management, and meeting infrastructure.
+- **Define the commissioning endpoint:** An MTR installation is complete when the device is signed in, calendar is visible, test meetings are joinable, and the device is verified healthy in the Teams Admin Center — not when hardware is physically installed.
+
+---
+
+## What's next
+
+You now have a working model of what MTR is and why it exists in the form it does. The next lesson builds on this foundation by going inside the platform: the architectural differences between MTR running on Windows versus MTR running on Android, and what those differences mean for the rooms you design and the features you can promise clients.
+
+[MTR Windows vs. MTR Android — Platform Differences and Feature Gaps →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/introduction-to-teams-rooms/lessons/mtr-windows-vs-android/)

@@ -1,0 +1,184 @@
+---
+id: "p2-t2-m3-l1"
+slug: "pro-management-overview"
+title: "Teams Rooms Pro Management Portal Overview"
+shortTitle: "Pro Management Overview"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 3
+moduleSlug: "teams-rooms-pro-management"
+moduleTitle: "Teams Rooms Pro Management"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Access the Teams Rooms Pro Management portal and navigate its main sections"
+  - "Explain the relationship between Pro Management and Teams Admin Center and describe what each platform provides"
+  - "Identify which rooms appear in Pro Management and the license requirement for access"
+
+prerequisites:
+  - "p2-t2-m2-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "pro-management"
+  - "monitoring"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p2-t2-m2-l5"
+  - "p2-t2-m3-l2"
+
+metaDescription: "Teams Rooms Pro Management portal overview — access requirements, portal navigation, relationship to Teams Admin Center, rooms and buildings structure, and Pro Management access for managed service providers."
+
+keywords:
+  - "Teams Rooms Pro Management portal"
+  - "MTR Pro Management access"
+  - "Teams Rooms Pro Management overview"
+  - "Pro Management vs TAC"
+  - "Teams Rooms Pro portal navigation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams Rooms Pro Management is a separate portal from Teams Admin Center, with a distinct URL and purpose. It exists because managing a room estate at scale — particularly under a managed services model — requires more than the basic health indicators TAC provides. Pro Management adds incident management, AI-powered anomaly detection, detailed room-level analytics, and a workflow designed around proactive service delivery rather than reactive break/fix support.
+
+---
+
+## Accessing Pro Management
+
+**URL:** `portal.rooms.microsoft.com`
+
+**Access requirements:**
+- The accessing user must have a Teams Rooms Pro license or be a delegated managed service operator
+- Access roles within Pro Management:
+  - **Managed Services Administrator:** Full access to all portal features
+  - **Managed Services Operator:** Operational access (incidents, remote management); no policy configuration
+  - **Managed Services Viewer:** Read-only; dashboards and reports only
+
+**Relationship to licensing:** Pro Management is included with the Teams Rooms Pro license. Each room with a Pro license automatically appears in Pro Management. Rooms with Basic licenses do not appear.
+
+---
+
+## Portal Structure
+
+The Pro Management portal is organized into the following main sections:
+
+**Rooms:** The primary view — a list of all enrolled rooms with their current health status, incident count, and last activity. Rooms can be filtered by building, health status, or tags (synchronized from TAC).
+
+**Buildings:** Groups rooms by physical location. Build the building structure in Pro Management to enable building-level health summaries and filtered views. Buildings are configured under Settings → Buildings.
+
+**Incidents:** The incident management feed — all automatically detected issues across the fleet, organized by severity, room, and incident type. Each incident has a status (Open, In Progress, Resolved) and can be assigned to a support team member.
+
+**Tickets:** Integration with external ITSM tools (ServiceNow, Jira) if configured. Pro Management can automatically create tickets in the connected ITSM system when an incident is detected.
+
+**Analytics:** Meeting quality data, room utilization metrics, and trend reports at the room, building, and fleet level.
+
+**Settings:** Portal configuration including building setup, notification rules, delegated access (for managed service providers), and ITSM integration.
+
+---
+
+## TAC vs. Pro Management
+
+| Capability | TAC | Pro Management |
+|------------|-----|----------------|
+| Device health status | ✓ Basic (Healthy/Non-urgent/Critical/Offline) | ✓ Detailed with AI analysis |
+| Peripheral health | ✓ Per peripheral | ✓ Per peripheral with trend |
+| Automated incidents | ✗ | ✓ AI-detected, categorized |
+| Remote restart | ✓ | ✓ |
+| Log collection | ✓ | ✓ |
+| Meeting quality data | ✗ (via CQD separately) | ✓ Room-level quality |
+| Utilization analytics | ✗ | ✓ |
+| ITSM integration | ✗ | ✓ |
+| Multi-tenant management (MSP) | ✗ | ✓ |
+
+Use TAC for: device configuration profiles, update policies, meeting policy assignment, and basic monitoring without Pro licenses.
+
+Use Pro Management for: proactive incident detection, detailed investigation, managed services delivery, utilization reporting, and multi-tenant MSP operations.
+
+---
+
+## Multi-Tenant Access for Managed Service Providers
+
+For integrators delivering managed services across multiple client tenants, Pro Management supports delegated multi-tenant access:
+
+- The MSP creates a managed service operator account
+- Each client tenant grants the MSP operator account access to their Pro Management portal
+- The MSP operator sees all managed clients in a unified view at `portal.rooms.microsoft.com`
+- Incidents, rooms, and analytics from all managed tenants are accessible from a single portal login
+
+This eliminates the need to maintain separate admin credentials for each client tenant — a single operator login provides cross-tenant visibility appropriate for managed service delivery.
+
+---
+
+<KnowledgeCheck id="p2-t2-m3-l1-kc">
+  <Question>
+    A client has 80 rooms — 30 with Teams Rooms Pro licenses and 50 with
+    Teams Rooms Basic licenses. How many rooms appear in the Teams Rooms
+    Pro Management portal?
+  </Question>
+  <Answer>All 80 rooms — Pro Management shows all rooms regardless of license</Answer>
+  <Answer correct>30 rooms — only rooms with Teams Rooms Pro licenses appear in the Pro Management portal. Basic-licensed rooms appear in TAC but not in Pro Management</Answer>
+  <Answer>50 rooms — the 50 Basic rooms appear in Pro Management as unlicensed; the 30 Pro rooms require separate TAC management</Answer>
+  <Answer>None — Pro Management requires all rooms to have Pro licenses before any appear in the portal</Answer>
+  <Explanation>
+    Teams Rooms Pro Management only shows rooms with Teams Rooms Pro licenses.
+    The 30 Pro-licensed rooms appear with full incident detection, analytics,
+    and remote management capabilities. The 50 Basic-licensed rooms are managed
+    through TAC only — they appear in the TAC device list but not in Pro
+    Management. This is a common planning consideration: organizations with
+    mixed license deployments use both portals simultaneously, with Pro
+    Management for the higher-visibility Pro rooms and TAC for all rooms.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Access:** `portal.rooms.microsoft.com`; Pro license required per room; Managed Services roles for granular access control.
+- **Structure:** Rooms → Buildings → Incidents → Analytics → Settings.
+- **vs. TAC:** Pro Management adds AI incident detection, meeting quality data, utilization analytics, ITSM integration, and multi-tenant MSP access.
+- **MSP access:** Delegated multi-tenant operator account provides unified view across all managed client tenants.
+
+---
+
+## What's Next
+
+[Automated Incident Detection and Alert Management →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/teams-rooms-pro-management/lessons/incident-detection-alerts/)

@@ -1,0 +1,283 @@
+---
+id: "p3-t3-m3-l2"
+slug: "power-automate-mtr-workflows"
+title: "Power Automate for MTR Workflows"
+shortTitle: "Power Automate MTR Workflows"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 3
+moduleSlug: "advanced-automation-integration"
+moduleTitle: "Advanced Automation and Integration"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Build Power Automate flows for four common MTR workflow patterns: alert notification, daily health summary, room onboarding, and incident resolution"
+  - "Apply Power Automate error handling patterns using scope and configure run after to notify on flow failures"
+  - "Evaluate Power Automate licensing requirements for HTTP connector usage in MTR automation workflows"
+
+prerequisites:
+  - "p3-t3-m3-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "automation"
+  - "integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m3-l1"
+  - "p3-t3-m3-l3"
+
+metaDescription: "Power Automate for MTR workflows — building no-code alert notification, daily health summary, room onboarding, and incident resolution flows, with error handling patterns and licensing guidance."
+
+keywords:
+  - "Power Automate MTR workflows"
+  - "Teams Rooms Power Automate automation"
+  - "MTR alert notification Power Automate"
+  - "Teams Rooms onboarding Power Automate"
+  - "Power Automate MTR reporting"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Not every MTR automation needs to be a PowerShell script or an Azure Function. Power Automate occupies a valuable middle tier: it handles the straightforward event-driven and scheduled workflows that would otherwise sit in a PowerShell script running on a server that someone has to maintain. For non-developer team members who need to contribute to automation, Power Automate's visual designer is far more approachable than writing `Invoke-RestMethod` calls. This lesson builds four practical MTR workflows in Power Automate and covers the error handling and licensing considerations that determine whether Power Automate is the right tool for each scenario.
+
+---
+
+## Workflow 1: Pro Management Alert → Teams Notification
+
+**Trigger:** HTTP trigger (Premium connector — When an HTTP request is received)
+**Action:** Post a formatted message to the `#mtr-alerts` Teams channel
+
+Flow design:
+
+```
+[HTTP Trigger]
+    │
+    ▼
+[Parse JSON] ── schema from Pro Management webhook payload
+    │
+    ▼
+[Condition] ── Severity equals "Critical"?
+    ├── YES → [Post message (Teams)] with red color card
+    └── NO  → [Post message (Teams)] with amber/grey card
+```
+
+The Teams message card should include:
+- Room name (bold)
+- Incident type
+- Severity with color coding (use Adaptive Card `style` or emoji prefix)
+- Time of alert
+- Direct link to the room in Pro Management (if available)
+- Action button: "View in TAC" → deep link to TAC device page
+
+The **Parse JSON** action uses a schema derived from a sample Pro Management webhook payload. Once the schema is defined, subsequent actions can reference `incidentType`, `severity`, and `deviceDisplayName` as dynamic content without manual string parsing.
+
+<Callout type="tip">
+Generate the JSON schema automatically: paste a sample Pro Management webhook payload into the Parse JSON action's "Generate from sample" feature. Power Automate infers all field types from the sample.
+</Callout>
+
+---
+
+## Workflow 2: Daily Critical Health Summary
+
+**Trigger:** Recurrence — daily at 07:00
+**Actions:** HTTP GET to Graph API, filter, post Teams summary
+
+```
+[Recurrence: Daily 07:00]
+    │
+    ▼
+[HTTP] ── GET https://graph.microsoft.com/beta/teamwork/devices
+         Authorization: Bearer [token from Key Vault]
+    │
+    ▼
+[Parse JSON] ── parse teamwork/devices response
+    │
+    ▼
+[Filter Array] ── where healthStatus equals "critical"
+    │
+    ▼
+[Condition] ── length(body('Filter_Array')) > 0?
+    ├── YES → [Create HTML Table] from filtered array
+    │          └── [Post message (Teams)] to #mtr-on-call with table
+    └── NO  → [Post message (Teams)] "All rooms healthy — no action needed ✓"
+```
+
+For the Graph API call, store the access token in **Azure Key Vault** and retrieve it using the Key Vault connector (premium) — do not hardcode the client secret in the flow. Alternatively, use the Microsoft Graph connector (available as a built-in connector in Power Automate for some M365 plans).
+
+---
+
+## Workflow 3: New Room Onboarding Automation
+
+**Trigger:** When a new mailbox is created (Office 365 Outlook — trigger on new contact/mailbox event, or use a SharePoint List as the trigger source)
+
+A practical approach uses a SharePoint List as the room registry. When a new room is added to the list (by the provisioning team), the flow triggers:
+
+```
+[SharePoint: When item is created] ── on "MTR-Room-Registry" list
+    │
+    ▼
+[HTTP] ── POST to Graph API: add user to MTR Entra ID group
+          POST /v1.0/groups/{groupId}/members/$ref
+          Body: {"@odata.id": "https://graph.microsoft.com/v1.0/directoryObjects/{userId}"}
+    │
+    ▼
+[Send email (Outlook)] ── to IT admin email from SharePoint item
+    Subject: "New MTR Room Onboarding Checklist — [RoomName]"
+    Body: HTML checklist with onboarding tasks
+    ├── ☐ Verify Intune enrollment
+    ├── ☐ Confirm TAC health is Healthy
+    ├── ☐ Test AV from room
+    ├── ☐ Add room to building's Entra group
+    └── ☐ Update room CMDB CI in ServiceNow
+    │
+    ▼
+[Post message (Teams)] ── notify #mtr-onboarding channel
+```
+
+The SharePoint List trigger approach is more reliable than trying to detect mailbox creation events directly, because mailbox creation events are not directly available as a Power Automate trigger.
+
+---
+
+## Workflow 4: Incident Resolution → Data Update
+
+**Trigger:** HTTP trigger receiving Pro Management resolution webhook
+**Actions:** Update SharePoint List, trigger Power BI refresh
+
+```
+[HTTP Trigger] ── Pro Management "incident resolved" webhook
+    │
+    ▼
+[Parse JSON] ── extract incidentId, deviceDisplayName, resolvedDateTime
+    │
+    ▼
+[SharePoint: Get items] ── filter list where Title equals deviceDisplayName
+    │
+    ▼
+[SharePoint: Update item] ── set HealthStatus = "Healthy", LastIncidentResolved = resolvedDateTime
+    │
+    ▼
+[HTTP] ── POST to Power BI dataset refresh API
+          PATCH /v1.0/myorg/datasets/{datasetId}/refreshes
+    │
+    ▼
+[Condition] ── HTTP status 202?
+    ├── YES → [Log: success]
+    └── NO  → [Send email] ── notify admin that Power BI refresh failed
+```
+
+---
+
+## Error Handling in Power Automate
+
+Power Automate flows fail silently by default — if an HTTP call fails, the flow stops and nothing is reported unless you configure error handling explicitly.
+
+The standard pattern is **Scope + Configure run after**:
+
+1. Wrap the main flow logic in a **Scope** action named "Main Logic"
+2. After the scope, add a **Send email** or **Post Teams message** action
+3. Configure its **run after** settings to run when "Main Logic" has **failed** or **timed out**
+4. In the error notification, include the flow name, failed action name, and error message using `result('Main_Logic')[0]['error']['message']`
+
+This pattern ensures that any failure in the flow triggers an alert to the operations team, preventing silent failures where automation appears to be running but is actually broken.
+
+```
+[Scope: Main Logic]
+    ├── HTTP call
+    ├── Parse JSON
+    ├── SharePoint update
+    └── Teams notification
+    │
+[Configure run after: failed, timed out]
+    └── [Send email: Flow Error Alert]
+        Subject: "MTR Automation Flow Failed: [flow name]"
+        Body: @{result('Main_Logic')[0]['error']['message']}
+```
+
+---
+
+## Licensing Considerations
+
+| Connector / Feature | License Required |
+|--------------------|-----------------|
+| HTTP trigger (webhook receiver) | Power Automate Per Flow or Per User (premium) |
+| HTTP action (call any REST API) | Power Automate Per Flow or Per User (premium) |
+| SharePoint, Teams, Outlook | Standard — included in M365 E3/E5 |
+| Key Vault connector | Premium |
+| Microsoft Graph connector (built-in) | Depends on availability in your M365 plan |
+| Recurrence trigger | Standard |
+| Power BI dataset refresh action | Standard |
+
+For MTR automation that uses HTTP triggers and HTTP actions (i.e., connecting to Graph API or Pro Management webhooks), you need either:
+- **Power Automate Per Flow plan** — $500/flow/year, recommended when the flow is truly shared infrastructure
+- **Power Automate Per User (with attended RPA)** — per user; appropriate when one person is the designated flow owner
+
+Flows that use only standard connectors (SharePoint, Teams, Outlook) run on the Power Automate capacity included with M365 E3/E5 at no additional cost.
+
+---
+
+<KnowledgeCheck id="p3-t3-m3-l2-kc">
+  <Question>
+    You build Workflow 1 (Pro Management webhook → Teams alert) using the HTTP trigger connector. Your organization uses M365 E3 licenses. The flow runs successfully for two weeks, then stops triggering. The flow run history shows no recent runs at all. What is the most likely cause?
+  </Question>
+  <Answer>The Pro Management webhook URL changed — update the webhook registration in Pro Management with the new endpoint URL</Answer>
+  <Answer>The Teams connector token expired — reconnect the Teams connection in Power Automate and re-enable the flow</Answer>
+  <Answer correct>The most likely cause is that the Power Automate Per Flow or Per User premium license expired or was not properly assigned. The HTTP trigger is a premium connector — if the associated premium license expires or is unassigned, Power Automate disables flows that use premium connectors. The flow run history showing zero recent runs (rather than failed runs) is consistent with the flow being turned off by the platform, not failing mid-execution. Check the flow's connection status and the license assigned to the flow owner's account in the Power Platform admin center</Answer>
+  <Answer>HTTP triggers time out after 14 days and must be manually re-registered — delete and recreate the flow</Answer>
+  <Explanation>
+    When a Power Automate flow uses premium connectors and the associated license lapses, Microsoft disables the flow — it stops triggering entirely rather than failing with an error. This produces the symptom of zero run history entries, which is easy to misread as a webhook registration issue. The first diagnostic step for a flow with no run history is always to check the flow's status in the Power Automate portal (it may show as "Suspended" or "Off"), then verify the premium license status for the flow owner.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Workflow 1 (Alert notification):** HTTP trigger → Parse JSON → Teams adaptive card with severity-based formatting.
+- **Workflow 2 (Daily health summary):** Recurrence trigger → Graph API HTTP call → filter array → conditional Teams message.
+- **Workflow 3 (Room onboarding):** SharePoint List item creation trigger → Graph group member add → email checklist → Teams notification.
+- **Workflow 4 (Incident resolution):** HTTP trigger → SharePoint update → Power BI dataset refresh → error notification.
+- **Error handling:** Scope + Configure run after (failed/timed out) is the standard pattern for catching and reporting flow failures.
+- **Licensing:** HTTP trigger and HTTP action connectors require Per Flow or Per User premium license; standard M365 connectors (SharePoint, Teams, Outlook) are included with E3/E5.
+
+---
+
+## What's Next
+
+[Logic Apps and Event-Driven MTR Automation →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/advanced-automation-integration/lessons/logic-apps-event-driven/)

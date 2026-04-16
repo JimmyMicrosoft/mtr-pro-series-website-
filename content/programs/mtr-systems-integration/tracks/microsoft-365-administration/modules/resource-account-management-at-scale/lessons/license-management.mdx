@@ -1,0 +1,232 @@
+---
+id: "p2-t2-m1-l2"
+slug: "license-management"
+title: "License Management — Assignment, Validation, and Cost Optimization"
+shortTitle: "License Management"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 1
+moduleSlug: "resource-account-management-at-scale"
+moduleTitle: "Resource Account Management at Scale"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Differentiate Teams Rooms Basic and Teams Rooms Pro licenses and identify which rooms require each tier"
+  - "Audit a tenant's MTR license assignments and identify incorrectly licensed or unlicensed devices"
+  - "Propose a license optimization strategy that minimizes cost while preserving required room functionality"
+
+prerequisites:
+  - "p2-t2-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "entra-id"
+
+roleTags:
+  - "architect"
+  - "support"
+  - "pre-sales"
+
+topicTags:
+  - "licensing"
+  - "resource-accounts"
+  - "powershell"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m1-l2-license-audit-script.ps1"
+    label: "MTR License Audit Script"
+    sizeKb: 8
+
+relatedLessons:
+  - "p2-t2-m1-l1"
+  - "p2-t2-m1-l3"
+
+metaDescription: "MTR license management — Teams Rooms Basic vs. Pro feature comparison, license assignment, PowerShell license audit, unlicensed device identification, and room-by-room license optimization strategy."
+
+keywords:
+  - "Teams Rooms Basic vs Pro license"
+  - "MTR license management"
+  - "Teams Rooms Pro license features"
+  - "MTR license audit PowerShell"
+  - "Teams Rooms license optimization"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Microsoft Teams Rooms licensing has two tiers — Basic and Pro — with meaningfully different feature sets and price points. The decision of which license to assign to each room type is not purely technical — it involves matching room usage patterns and required capabilities against license cost. For a 100-room deployment, the difference between licensing all rooms at Pro vs. a mixed Basic/Pro strategy can represent substantial annual cost. This lesson provides the framework for making that decision and the PowerShell tools for auditing and maintaining the license estate.
+
+---
+
+## Teams Rooms Basic vs. Pro
+
+Microsoft provides Teams Rooms Basic at no additional cost (up to 25 rooms per tenant) and Teams Rooms Pro as a paid per-room-per-month subscription. Basic provides core meeting functionality; Pro adds advanced management and AI features.
+
+**Teams Rooms Basic — included features:**
+- One-touch join, proximity join, manual join
+- Gallery, Large Gallery, Together Mode layouts
+- Direct Guest Join (Zoom, Webex)
+- Content sharing (HDMI ingest)
+- Teams Panels integration
+- Teams Admin Center visibility (basic)
+- In-meeting controls
+
+**Teams Rooms Pro — additional features (beyond Basic):**
+- Teams Rooms Pro Management portal (automated incident detection, insights)
+- IntelliFrame (individual AI participant framing — Windows only)
+- Intelligent Speaker (speaker identification — Windows only)
+- Front Row layout
+- TAC configuration profiles (remote XML deployment)
+- Enhanced analytics and utilization reports
+- AI-powered noise suppression enhancements
+- Support for coordinated meetings (advanced scenarios)
+- Content camera AI enhancement
+
+**Decision framework:**
+
+| Room Type | Recommended License | Rationale |
+|-----------|--------------------|-|
+| Huddle rooms (1–4 people) | Basic | Standard meetings; no AI features needed; cost optimization |
+| Standard conference rooms (4–8 people) | Basic or Pro | Pro if IntelliFrame or Intelligent Speaker are requirements |
+| Executive boardrooms | Pro | AI features, Front Row, managed support via Pro Management |
+| Large conference rooms (8+ people) | Pro | IntelliFrame, front-row layout, Pro Management monitoring |
+| Rooms managed under a managed service | Pro | Pro Management portal required for proactive monitoring |
+
+**The 25 free Basic rooms:** Microsoft includes 25 Teams Rooms Basic licenses at no cost per tenant. Assign these to huddle rooms and low-priority conference rooms first. Rooms beyond 25 require either a paid Basic or Pro license.
+
+---
+
+## License Audit with PowerShell
+
+Periodically audit the tenant's MTR license assignments to confirm all room accounts are correctly licensed and identify anomalies (unlicensed accounts, incorrect license tiers, duplicate assignments).
+
+```powershell
+# MTR License Audit Script
+
+# Get all room mailboxes in the tenant
+$rooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited
+
+# Get license SKU IDs for MTR licenses
+$ProSkuId    = (Get-MgSubscribedSku | Where-Object { $_.DisplayName -like "*Teams Rooms Pro*" }).SkuId
+$BasicSkuId  = (Get-MgSubscribedSku | Where-Object { $_.DisplayName -like "*Teams Rooms Basic*" }).SkuId
+
+$report = foreach ($room in $rooms) {
+    $user = Get-MgUser -UserId $room.UserPrincipalName -Property "DisplayName,AssignedLicenses,AccountEnabled" -ErrorAction SilentlyContinue
+    if ($user) {
+        $licenses = $user.AssignedLicenses | Select-Object -ExpandProperty SkuId
+
+        $licenseStatus = if ($licenses -contains $ProSkuId) { "Teams Rooms Pro" }
+                         elseif ($licenses -contains $BasicSkuId) { "Teams Rooms Basic" }
+                         else { "UNLICENSED" }
+
+        [PSCustomObject]@{
+            DisplayName   = $room.DisplayName
+            UPN           = $room.UserPrincipalName
+            License       = $licenseStatus
+            AccountEnabled = $user.AccountEnabled
+        }
+    }
+}
+
+# Output results
+$report | Sort-Object License | Format-Table -AutoSize
+
+# Summary
+Write-Output "`nSummary:"
+Write-Output "  Teams Rooms Pro:    $($report | Where-Object License -eq 'Teams Rooms Pro' | Measure-Object | Select-Object -Exp Count)"
+Write-Output "  Teams Rooms Basic:  $($report | Where-Object License -eq 'Teams Rooms Basic' | Measure-Object | Select-Object -Exp Count)"
+Write-Output "  UNLICENSED:         $($report | Where-Object License -eq 'UNLICENSED' | Measure-Object | Select-Object -Exp Count)"
+
+# Export to CSV for review
+$report | Export-Csv "C:\Temp\mtr-license-audit-$(Get-Date -Format 'yyyyMMdd').csv" -NoTypeInformation
+```
+
+---
+
+## Cost Optimization Analysis
+
+For existing deployments where all rooms were provisioned with Pro licenses by default, a license optimization review can identify rooms where Basic is sufficient:
+
+1. Pull CQD usage data to identify rooms with low meeting activity (≤2 meetings/week average) — low-use rooms are strong candidates for downgrade to Basic
+2. Review rooms against the IntelliFrame/Intelligent Speaker requirement — if the organization doesn't use these features, they don't justify Pro
+3. Identify rooms not in scope for managed service delivery — Pro Management is the key Pro feature for managed services; rooms outside the managed service scope may not need Pro
+4. Calculate the cost difference: (Pro rooms eligible for Basic) × monthly Pro price difference × 12 = annual savings
+
+Document the optimization analysis and get client sign-off before reassigning licenses — some clients have committed to Pro for all rooms in their procurement and need to evaluate whether the savings justify the service-level change.
+
+<DownloadButton
+  file="p2-t2-m1-l2-license-audit-script.ps1"
+  label="MTR License Audit Script"
+  sizeKb={8}
+  description="PowerShell script for MTR license audit — reports all room mailboxes with their license status (Pro/Basic/Unlicensed), exports to CSV, and provides summary counts. Includes unlicensed account identification and account-enabled status check."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m1-l2-kc">
+  <Question>
+    A client has 80 conference rooms. 15 are executive boardrooms where
+    IntelliFrame and Intelligent Speaker are required. 25 are standard medium
+    conference rooms. 40 are huddle rooms used for informal calls. What is
+    the most cost-effective license strategy?
+  </Question>
+  <Answer>Assign Teams Rooms Pro to all 80 rooms for consistency</Answer>
+  <Answer>Assign Teams Rooms Basic to all 80 rooms — Pro features are not widely used</Answer>
+  <Answer correct>Assign Pro to the 15 executive boardrooms (IntelliFrame/Intelligent Speaker required) and Basic to the remaining 65 rooms (25 medium + 40 huddle). Use the 25 free Basic licenses for 25 huddle rooms and purchase paid Basic for the remaining 40 rooms needing it</Answer>
+  <Answer>Assign Pro to the 40 executive and medium rooms; Basic to the 40 huddle rooms</Answer>
+  <Explanation>
+    The cost-effective strategy licenses rooms based on feature requirements.
+    The 15 executive boardrooms need IntelliFrame and Intelligent Speaker —
+    both Windows-only Pro features. The remaining 65 rooms have no stated
+    requirement for Pro-exclusive features, making Basic the correct choice.
+    Use the 25 free Basic licenses for 25 huddle rooms first (maximizing
+    the free allocation), then purchase paid Basic licenses for the
+    remaining 40 rooms. The 15 Pro licenses represent the smallest
+    possible Pro footprint that meets the requirements.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Basic:** Core meeting features, free up to 25 rooms. Appropriate for huddle rooms and standard conference rooms without AI feature requirements.
+- **Pro:** Adds IntelliFrame, Intelligent Speaker, Front Row, Pro Management, TAC config profiles. Required for managed services, AI features, and premium room types.
+- **Audit:** PowerShell audit identifies unlicensed and incorrectly licensed accounts — run quarterly.
+- **Optimize:** Match license tier to feature requirements; use CQD usage data and feature requirements to identify downgrade candidates.
+
+---
+
+## What's Next
+
+[Conditional Access Policy Design for MTR Devices →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/resource-account-management-at-scale/lessons/conditional-access-mtr/)

@@ -1,0 +1,249 @@
+---
+id: "p4-t1-m1-l3"
+slug: "network-readiness-assessment"
+title: "Network Readiness Assessment"
+shortTitle: "Network Readiness"
+
+program: 4
+programSlug: "mtr-practice-leadership"
+programTitle: "MTR Practice Leadership"
+
+track: 1
+trackSlug: "project-delivery-lifecycle"
+trackTitle: "Project Delivery Lifecycle"
+
+module: 1
+moduleSlug: "project-planning-scoping"
+moduleTitle: "Project Planning and Scoping"
+
+lessonIndex: 3
+type: "lesson"
+
+contentTypes: ["reading", "download"]
+duration: 25
+videoDuration: 0
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas: ["solutions-architect", "project-manager", "network-engineer"]
+
+objectives:
+  - "Define the network requirements that must be validated before an MTR deployment can be scoped"
+  - "Conduct a structured network readiness assessment using the Microsoft recommended checklist"
+  - "Identify and document the network changes required as a pre-condition to deployment"
+  - "Communicate network readiness findings to client IT teams in actionable terms"
+
+prerequisites:
+  - "p4-t1-m1-l1"
+  - "p2-t1-m1 (MTR Network Architecture)"
+
+technologyTags: ["MTR", "Teams Rooms", "QoS", "VLAN", "Network"]
+roleTags: ["solutions-architect", "network-engineer", "project-manager"]
+topicTags: ["network-readiness", "QoS", "firewall", "bandwidth", "project-planning"]
+vendorTags: ["Microsoft"]
+
+downloads:
+  - label: "Network Readiness Checklist"
+    filename: "mtr-network-readiness-checklist.xlsx"
+
+relatedLessons:
+  - "p4-t1-m1-l1"
+  - "p4-t1-m1-l2"
+  - "p2-t1-m1-l1"
+
+metaDescription: "Learn how to conduct a structured network readiness assessment for MTR deployments, validating bandwidth, QoS, firewall, and VLAN requirements before scoping the project."
+keywords: ["MTR network readiness", "Teams Rooms network", "QoS assessment", "bandwidth planning", "firewall requirements"]
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Network Readiness as a Project Gate
+
+Network readiness is the single most common cause of MTR deployment delays. Rooms may be physically installed and devices provisioned, but if the network is not ready — wrong VLAN, missing QoS, blocked firewall rules — the rooms cannot be commissioned.
+
+The network readiness assessment should be completed and issues resolved before the deployment schedule is locked. It is not a post-installation checklist.
+
+---
+
+## The Five Network Readiness Domains
+
+### 1. Bandwidth and Capacity
+
+Microsoft Teams Rooms requires sufficient bandwidth for simultaneous audio, video, and content sharing traffic. For planning purposes:
+
+| Traffic Type | Per Stream | Notes |
+|---|---|---|
+| Audio | ~0.1 Mbps | Very low; rarely a constraint |
+| 1080p video (receive) | ~4 Mbps | Per inbound stream |
+| 1080p video (send) | ~4 Mbps | Camera feed |
+| Content sharing | ~2 Mbps | Screen share / PowerPoint |
+| Total per room (active meeting) | ~8–12 Mbps | Typical; varies with codec |
+
+**Assessment questions:**
+- What is the WAN/internet bandwidth at this site?
+- How many rooms could be in concurrent use at peak (e.g., 09:30–10:00)?
+- Is bandwidth contended with other high-demand traffic (video surveillance, backup)?
+- Is there a bandwidth management policy that could throttle Teams traffic?
+
+Calculate: `Peak concurrent rooms × 12 Mbps` as the conservative bandwidth requirement for Teams traffic. If this approaches 50%+ of available bandwidth, a QoS policy is essential.
+
+### 2. VLAN Segmentation
+
+MTR devices should be on a dedicated VLAN, separate from general corporate PCs and general IoT/AV devices.
+
+**Assessment questions:**
+- Can a dedicated VLAN be created for MTR devices at each affected site?
+- Can DHCP be configured to assign the MTR VLAN based on switch port (for wired devices)?
+- Is inter-VLAN routing in place to allow MTR devices to reach the M365 authentication endpoints?
+
+**Recommended VLAN approach:**
+```
+VLAN 100 – Corporate PCs and laptops
+VLAN 200 – MTR devices (Teams Rooms compute units)
+VLAN 300 – AV control systems and peripherals (optional, site-dependent)
+```
+
+<Callout type="warning">
+MTR devices on the same VLAN as general corporate PCs inherit all the broadcast traffic, management overhead, and security policy constraints of that VLAN — including policies that break Teams. Dedicated VLAN is strongly recommended and is a requirement for any enterprise deployment.
+</Callout>
+
+### 3. QoS (Quality of Service)
+
+QoS ensures Teams real-time media traffic is prioritised over non-time-sensitive traffic under congestion conditions.
+
+**Teams DSCP marking requirements:**
+
+| Media Type | DSCP Value | Class | Port Range (Source) |
+|---|---|---|---|
+| Audio | EF (46) | Expedited Forwarding | 50000–50019 UDP |
+| Video | AF41 (34) | Assured Forwarding | 50020–50039 UDP |
+| Screen Sharing | AF21 (18) | Assured Forwarding | 50040–50059 UDP |
+
+**Assessment questions:**
+- Do switches support QoS DSCP trust/marking?
+- Are DSCP markings preserved across all switches on the path to the WAN edge?
+- Does the firewall trust DSCP markings inbound and outbound?
+- Is the WAN/MPLS circuit configured to prioritise EF and AF traffic?
+- Is QoS configured end-to-end, or only at selected points?
+
+<Callout type="tip">
+**QoS is only effective end-to-end.** Configuring QoS on the access switch but not the WAN router gives partial protection at best. Document every network hop and confirm QoS support at each stage.
+</Callout>
+
+### 4. Firewall and Proxy
+
+Microsoft Teams uses specific URL patterns and IP ranges. All of these must be reachable from the MTR VLAN without interception.
+
+**Critical requirements:**
+- Microsoft 365 Optimize-category endpoints must be **excluded** from SSL/TLS inspection
+- UDP 3478–3481 must be open outbound (Teams media transport)
+- TCP 443 must be open outbound (Teams signalling and fallback)
+- No HTTP proxy should intercept Teams media traffic
+
+**Assessment questions:**
+- Are the Microsoft 365 URL/IP ranges (published at aka.ms/o365ips) allowed outbound?
+- Is SSL inspection in place? If so, can Teams URLs be exempted?
+- Is UDP traffic permitted outbound on ports 3478–3481?
+- Is there a PAC file or WPAD that might route Teams traffic through a proxy?
+- Can the MTR VLAN be exempted from proxy requirements (direct internet breakout)?
+
+**How to test:**
+From a device on the prospective MTR VLAN, run the Microsoft Network Assessment Tool or use the Teams connectivity test (networktest.teams.microsoft.com). Document all results.
+
+### 5. DNS and NTP
+
+MTR devices are time-sensitive — incorrect time causes certificate validation failures.
+
+**Assessment questions:**
+- Can MTR devices resolve public DNS queries (*.microsoft.com, *.teams.microsoft.com)?
+- Is an internal DNS server configured to forward public queries correctly?
+- Is NTP accessible from the MTR VLAN? Microsoft recommends time.windows.com.
+
+---
+
+## Conducting the Assessment
+
+### Step 1: Review Existing Documentation
+
+Request from the client IT team:
+- Network topology diagram (with VLAN assignments if available)
+- Firewall policy summary (outbound rules)
+- WAN circuit specifications (bandwidth, SLA, QoS support)
+- Existing QoS configuration (if any)
+
+### Step 2: On-Site Validation
+
+Physically validate at each site:
+
+```bash
+# From a device on the proposed MTR VLAN:
+# Test DNS
+nslookup teams.microsoft.com
+nslookup login.microsoftonline.com
+
+# Test HTTPS connectivity
+curl -I https://teams.microsoft.com
+
+# Test UDP (requires a tool - use Microsoft Network Assessment Tool)
+# or test via Teams test call from an existing device
+```
+
+### Step 3: Document Findings
+
+For each domain, record:
+- Current state
+- Required state
+- Gap (if any)
+- Responsible party (client IT, ISP, contractor)
+- Estimated remediation timeline
+
+### Step 4: Communicate Findings
+
+Present findings in a structured report to the client IT team. Classify each finding:
+
+| Finding | Classification | Impact If Not Resolved |
+|---|---|---|
+| No dedicated VLAN available | Major | Device management complexity; potential policy conflicts |
+| SSL inspection on Teams traffic | Blocker | Media failure; sign-in failures |
+| No QoS configured | Major | Audio/video quality degradation under congestion |
+| UDP 3478-3481 blocked | Blocker | Media fallback to TCP; increased latency |
+| DNS working; NTP working | Pass | No action required |
+
+---
+
+## Network Readiness as a Deployment Gate
+
+The deployment schedule should not be confirmed until all Blockers are resolved and a remediation plan with owner and date exists for all Major findings.
+
+Build the following milestones into the project plan:
+
+1. **Network readiness assessment complete** (before proposal/SOW finalisation)
+2. **Client IT confirms VLAN/QoS/firewall remediation complete** (minimum 2 weeks before installation week)
+3. **Pre-deployment network validation** (on-site, day before installation)
+
+If the client IT team does not have resource to complete network changes within the required window, this should be escalated to the project sponsor. Network remediation is the most common reason MTR projects slip — and it is almost always outside the contractor's control.
+
+---
+
+<KnowledgeCheck>
+  <Question text="During a network readiness assessment you discover that the client's firewall performs SSL inspection on all outbound HTTPS traffic and the IT team cannot create an exemption policy. How should you classify this finding?">
+    <Answer>Minor — Teams has fallback mechanisms that work through SSL inspection</Answer>
+    <Answer>Watch — monitor after deployment and address if issues arise</Answer>
+    <Answer correct>Blocker — SSL inspection of Teams optimize-category endpoints causes media failure and sign-in failures; deployment cannot proceed until an exemption is in place</Answer>
+    <Answer>Major — it will degrade quality but rooms can still be used</Answer>
+    <Explanation>SSL/TLS inspection breaks Teams authentication and media negotiation for optimize-category endpoints. Microsoft explicitly requires these endpoints to be exempt from inspection. This is a hard Blocker — deployment will fail if not resolved.</Explanation>
+  </Question>
+  <Question text="What is the minimum conservative bandwidth estimate for a site with 8 meeting rooms that could all be in use simultaneously?">
+    <Answer>8 Mbps</Answer>
+    <Answer>48 Mbps</Answer>
+    <Answer correct>96 Mbps (8 rooms × 12 Mbps per room)</Answer>
+    <Answer>200 Mbps</Answer>
+    <Explanation>At 12 Mbps per room (conservative estimate for 1080p video + audio + sharing), 8 concurrent rooms requires 96 Mbps of Teams traffic bandwidth. This is the planning figure — actual usage will vary, but this is the capacity that must be available.</Explanation>
+  </Question>
+</KnowledgeCheck>
+
+<DownloadButton label="Network Readiness Checklist" filename="mtr-network-readiness-checklist.xlsx" />

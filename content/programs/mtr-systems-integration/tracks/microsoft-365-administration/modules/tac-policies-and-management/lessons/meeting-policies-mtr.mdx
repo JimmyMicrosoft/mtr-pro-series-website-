@@ -1,0 +1,223 @@
+---
+id: "p2-t2-m2-l3"
+slug: "meeting-policies-mtr"
+title: "Teams Meeting Policies for MTR Devices"
+shortTitle: "Meeting Policies for MTR"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 2
+trackSlug: "microsoft-365-administration"
+trackTitle: "Microsoft 365 Administration"
+
+module: 2
+moduleSlug: "tac-policies-and-management"
+moduleTitle: "TAC Policies and Fleet Management"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify which Teams meeting policy settings affect MTR room device behavior"
+  - "Create a dedicated meeting policy for MTR resource accounts and assign it to room accounts"
+  - "Configure meeting lobby, recording, and IP video policies appropriate for room devices"
+
+prerequisites:
+  - "p2-t2-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "tac-management"
+  - "meeting-policies"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t2-m2-l3-meeting-policy-reference.pdf"
+    label: "Meeting Policy Reference for MTR"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t2-m2-l2"
+  - "p2-t2-m2-l4"
+
+metaDescription: "Teams meeting policies for MTR room devices — dedicated room meeting policy, lobby bypass, recording permissions, IP video settings, meeting chat, and policy assignment to resource accounts at scale."
+
+keywords:
+  - "Teams Rooms meeting policy"
+  - "MTR Teams meeting policy assignment"
+  - "Teams Rooms lobby bypass"
+  - "MTR recording policy"
+  - "Teams meeting policy resource account"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams meeting policies control what participants can do in meetings — whether they wait in the lobby, whether they can record, whether video is enabled, whether they can share content. Meeting policies are assigned to user and device accounts, so they apply to whatever meetings those accounts participate in. For MTR devices, the default Global meeting policy often works fine, but enterprise deployments commonly need to adjust lobby behavior, recording permissions, and video settings for room devices to match organizational policy.
+
+---
+
+## Why a Dedicated Room Meeting Policy
+
+**Default Global policy issues for rooms:**
+
+1. **Lobby behavior:** The Global policy may require participants to wait in the lobby until admitted. Room devices frequently join meetings as the first participant — if the organizer hasn't joined yet, the room device sits in the lobby alone, which delays the meeting start.
+
+2. **IP video settings:** Some organizations restrict video to reduce bandwidth. A tenant-wide restriction would apply to room devices, disabling room camera video.
+
+3. **Recording:** Organizational policies may restrict who can initiate recordings. Room devices should not be initiating recordings — but they should be able to join meetings where recording is occurring without being blocked.
+
+4. **Meeting chat:** Chat behavior for room devices may differ from user policy.
+
+Creating a dedicated policy for room accounts decouples room device behavior from user behavior, allowing both to be configured optimally.
+
+---
+
+## Creating the Room Meeting Policy
+
+In Teams Admin Center:
+1. Navigate to **Meetings → Meeting policies**
+2. Click **+ Add**
+3. Name: `MTR Room Devices Policy`
+4. Configure the settings below
+5. Save
+
+**Recommended settings for the room meeting policy:**
+
+**Meeting join and lobby:**
+- Who can bypass the lobby: `People in my organization and guests` (allows room to join directly without waiting for organizer)
+- Automatically admit people: `Everyone in my organization`
+
+**Content sharing:**
+- Allow screen sharing: `Entire screen`
+- Allow third-party external app sharing: Org dependent (enable for presentations tools)
+
+**Video:**
+- Allow IP video: `On` — rooms need camera video
+- Allow video conferencing: `On`
+- Video filters mode: As appropriate for org policy
+
+**Recording and transcription:**
+- Allow cloud recording: `Off` for rooms (rooms should not initiate recordings — meeting organizer controls recording)
+- Allow transcription: `On` (useful for Intelligent Speaker feature on Windows Pro rooms)
+- Allow recording in 1:1 calls: `Off`
+
+**Calling:**
+- Allow private calling: Typically `Off` for room accounts — rooms participate in scheduled meetings, not ad hoc private calls
+
+---
+
+## Assigning the Policy to Room Accounts
+
+Assign the room meeting policy to all resource accounts using PowerShell:
+
+```powershell
+# Get all room accounts
+$rooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited
+
+# Assign the room meeting policy to all room accounts
+foreach ($room in $rooms) {
+    Grant-CsTeamsMeetingPolicy -PolicyName "MTR Room Devices Policy" `
+                               -Identity $room.UserPrincipalName
+    Write-Output "Policy assigned: $($room.UserPrincipalName)"
+}
+```
+
+**Verification:**
+```powershell
+# Verify policy assignment for a sample of rooms
+$rooms | Select-Object -First 10 | ForEach-Object {
+    $policy = Get-CsOnlineUser -Identity $_.UserPrincipalName | Select-Object TeamsMeetingPolicy
+    Write-Output "$($_.DisplayName): $($policy.TeamsMeetingPolicy)"
+}
+```
+
+Expected output: Each room should show `MTR Room Devices Policy` as the assigned policy. If `$null` appears, the account is using the Global default — reassign.
+
+---
+
+## IP Audio Conferencing Policy
+
+For rooms that will be used with PSTN calling capability (dial-in or dial-out from the room), also assign an audio conferencing policy:
+
+```powershell
+# Check if room needs audio conferencing license
+Get-CsOnlineUser -Identity "room@contoso.com" | Select-Object AudioConferencingAvailabilityStatus
+```
+
+If PSTN dial-out from the room is required, the resource account needs an Audio Conferencing add-on license and the appropriate dial-out policy.
+
+<DownloadButton
+  file="p2-t2-m2-l3-meeting-policy-reference.pdf"
+  label="Meeting Policy Reference for MTR"
+  sizeKb={35}
+  description="Teams meeting policy reference for MTR room devices — recommended settings for the dedicated room policy, lobby bypass configuration options, recording and transcription settings, and PowerShell assignment scripts."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t2-m2-l3-kc">
+  <Question>
+    A conference room device joins a meeting two minutes before the organizer.
+    The room device shows "Waiting for the meeting to start" and is stuck in
+    the lobby until the organizer joins. Which meeting policy setting resolves
+    this?
+  </Question>
+  <Answer>Set `Allow video conferencing: Off` to prevent the room from joining early</Answer>
+  <Answer correct>Set "Who can bypass the lobby" to `People in my organization and guests` and "Automatically admit people" to `Everyone in my organization` in the room meeting policy — this allows the room device to bypass the lobby and join directly without waiting for the organizer</Answer>
+  <Answer>Assign the Global policy to the room account — the Global policy does not have lobby restrictions</Answer>
+  <Answer>Configure the meeting in the room's Exchange calendar to disable the lobby for that specific meeting</Answer>
+  <Explanation>
+    The lobby behavior is controlled by meeting policy. When the room meeting
+    policy is set to bypass the lobby for organizational users, the room device
+    joins the meeting directly rather than waiting in the lobby. This is the
+    recommended configuration for room accounts — rooms frequently join before
+    the organizer and should not create a "waiting" delay for the first person
+    to enter the physical room. The setting is applied to the room account's
+    meeting policy, not the meeting invitation.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Dedicated policy:** Create `MTR Room Devices Policy` to decouple room behavior from user policy.
+- **Key settings:** Lobby bypass (join directly), IP video On, cloud recording Off (rooms don't initiate), transcription On.
+- **Bulk assignment:** `Grant-CsTeamsMeetingPolicy` foreach loop over all room mailboxes.
+- **Verify:** `Get-CsOnlineUser | Select TeamsMeetingPolicy` — confirm policy assigned to all rooms.
+
+---
+
+## What's Next
+
+[Update Policies and Maintenance Windows →](/programs/mtr-systems-integration/tracks/microsoft-365-administration/modules/tac-policies-and-management/lessons/update-policies/)

@@ -1,0 +1,298 @@
+---
+id: "p3-t3-m2-l4"
+slug: "analytics-reporting-graph"
+title: "Analytics and Reporting via Graph"
+shortTitle: "Analytics and Reporting via Graph"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 2
+moduleSlug: "graph-api-mtr"
+moduleTitle: "Microsoft Graph API for MTR"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Retrieve Microsoft 365 usage reports for Teams device types via the Graph Reports API"
+  - "Query the Call Records API to extract per-call quality metrics programmatically"
+  - "Aggregate call record session data into per-room quality scores and identify rooms with chronic quality issues"
+
+prerequisites:
+  - "p3-t3-m2-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "graph-api"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m2-l3"
+  - "p3-t3-m2-l5"
+
+metaDescription: "MTR analytics and reporting via Microsoft Graph API — Teams Reports API, Call Records API, per-room quality aggregation, packet loss and jitter analysis, and limitations of programmatic call quality data."
+
+keywords:
+  - "Graph API call records Teams Rooms"
+  - "Microsoft Graph Reports API Teams"
+  - "Teams Rooms call quality Graph API"
+  - "MTR analytics Graph API PowerShell"
+  - "Teams call records packet loss Graph"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The two Graph analytics APIs most relevant to MTR operations are the Reports API — which provides aggregate usage counts across device types — and the Call Records API — which provides detailed per-call quality metrics at the session and segment level. Together they enable programmatic quality reporting without requiring CQD portal access, allowing you to integrate quality data into your existing reporting pipeline. This lesson covers both APIs, with particular focus on the Call Records data model and how to aggregate it into actionable per-room quality metrics.
+
+---
+
+## Microsoft 365 Reports API for Teams
+
+The Reports API provides pre-aggregated usage data across the M365 tenant. For MTR, the device usage report shows how many calls are being made from room devices:
+
+```powershell
+# Teams device usage distribution — how many users used each device type in the period
+# Period options: D7, D30, D90, D180
+$reportUri = "https://graph.microsoft.com/v1.0/reports/getTeamsDeviceUsageDistributionUserCounts(period='D30')"
+
+# Reports API returns CSV by default
+$csv = Invoke-RestMethod -Uri $reportUri -Method GET -Headers $headers
+
+# Parse the CSV
+$reportData = $csv | ConvertFrom-Csv
+$reportData | Select-Object "Report Date", "Teams Rooms (Windows)", "Teams Rooms (Android)",
+    "Teams Phone", "Web", "Windows", "Mac" | Format-Table
+```
+
+The `Teams Rooms (Windows)` and `Teams Rooms (Android)` columns show the count of MTR devices that participated in at least one meeting during the period. This is a tenant-wide aggregate — not per-room — but it confirms that the fleet is actively being used and gives a trend line when queried weekly.
+
+For per-room meeting activity, the calendar-based utilization approach from the previous lesson is more granular than the Reports API.
+
+---
+
+## Call Records API: Data Model
+
+The Call Records API returns structured call quality data at three levels of granularity:
+
+```
+Call Record
+└── Sessions (each participant pair in the call)
+    └── Segments (each media segment within a session)
+        └── Media (audio, video, app sharing streams)
+            └── Streams (inbound/outbound — contains quality metrics)
+```
+
+Each **stream** contains the network quality metrics: packet loss, jitter, and round-trip time. For MTR quality analysis, you are primarily interested in the audio stream metrics for the room device endpoint.
+
+```powershell
+# Query call records from the last 7 days
+$since    = (Get-Date).AddDays(-7).ToUniversalTime().ToString("o")
+$callsUri = "https://graph.microsoft.com/v1.0/communications/callRecords" +
+            "?`$filter=startDateTime ge $since" +
+            "&`$expand=sessions(`$expand=segments)" +
+            "&`$top=100"
+
+$callRecords = Invoke-GraphRequest -Uri $callsUri -Headers $headers
+Write-Host "Retrieved $($callRecords.Count) call records"
+```
+
+<Callout type="note">
+The Call Records API returns at most 100 records per page — use pagination (`@odata.nextLink`) for large result sets. Data is available approximately **15 minutes** after the call ends. The maximum lookback window in v1.0 is **60 days**.
+</Callout>
+
+---
+
+## Extracting Quality Metrics from Call Records
+
+Parsing the nested call record structure to extract audio quality metrics for each participant:
+
+```powershell
+function Get-CallQualityMetrics {
+    param([array]$CallRecords)
+
+    $metrics = [System.Collections.Generic.List[PSObject]]::new()
+
+    foreach ($call in $CallRecords) {
+        if (-not $call.sessions) { continue }
+
+        foreach ($session in $call.sessions) {
+            if (-not $session.segments) { continue }
+
+            foreach ($segment in $session.segments) {
+                if (-not $segment.media) { continue }
+
+                foreach ($media in $segment.media) {
+                    if ($media.label -ne "main-audio") { continue }
+
+                    foreach ($stream in $media.streams) {
+                        $net = $stream.network
+                        if (-not $net) { continue }
+
+                        # Identify if this endpoint is a Teams Room
+                        $endpoint = if ($stream.streamDirection -eq "callerToCallee") {
+                            $session.caller
+                        } else {
+                            $session.callee
+                        }
+
+                        $isRoom = $endpoint?.userAgent?.headerValue -like "*RoomDevice*" -or
+                                  $endpoint?.userAgent?.headerValue -like "*TeamsRooms*"
+
+                        $metrics.Add([PSCustomObject]@{
+                            CallId          = $call.id
+                            CallStart       = $call.startDateTime
+                            StreamId        = $stream.streamId
+                            IsRoomEndpoint  = $isRoom
+                            PacketLossRate  = $net.packetLoss
+                            AverageJitter   = $net.averageJitter
+                            RoundTripTime   = $net.averageRoundTripTime
+                            BandwidthLow    = $net.bandwidthLowEventRatio
+                            JitterBad       = $net.jitterInterArrival -gt 30
+                            PacketLossBad   = $net.packetLoss -gt 0.05
+                        })
+                    }
+                }
+            }
+        }
+    }
+
+    return $metrics
+}
+
+$qualityMetrics = Get-CallQualityMetrics -CallRecords $callRecords
+```
+
+---
+
+## Building Per-Room Quality Aggregates
+
+Once you have individual stream metrics, aggregate them per room to identify chronic quality issues:
+
+```powershell
+# Filter to room endpoint streams only
+$roomStreams = $qualityMetrics | Where-Object { $_.IsRoomEndpoint -eq $true }
+
+# Aggregate by call origin (approximate per-room — requires correlating with room account)
+$roomQuality = $roomStreams | Group-Object CallId | ForEach-Object {
+    $streams = $_.Group
+    [PSCustomObject]@{
+        CallId           = $_.Name
+        CallStart        = ($streams | Select-Object -First 1).CallStart
+        AvgPacketLoss    = [Math]::Round(($streams | Measure-Object PacketLossRate -Average).Average, 4)
+        AvgJitter        = [Math]::Round(($streams | Measure-Object AverageJitter -Average).Average, 1)
+        AvgRTT           = [Math]::Round(($streams | Measure-Object RoundTripTime -Average).Average, 0)
+        PoorCallFlag     = ($streams | Where-Object { $_.PacketLossBad -or $_.JitterBad }).Count -gt 0
+    }
+}
+
+# Quality thresholds (aligned with CQD definitions)
+$poorCalls = $roomQuality | Where-Object { $_.PoorCallFlag -eq $true }
+$poorRate  = if ($roomQuality.Count -gt 0) {
+    [Math]::Round(($poorCalls.Count / $roomQuality.Count) * 100, 1)
+} else { 0 }
+
+Write-Host "Poor call rate (room endpoints): $poorRate%"
+Write-Host "Poor calls: $($poorCalls.Count) / $($roomQuality.Count)"
+```
+
+| Metric | Poor Quality Threshold |
+|--------|------------------------|
+| Packet loss rate | > 5% (0.05) |
+| Average jitter | > 30ms |
+| Round-trip time | > 500ms |
+| Bandwidth low event ratio | > 25% |
+
+These thresholds align with Microsoft's Call Quality Dashboard (CQD) definitions for "poor" call streams.
+
+---
+
+## API Limitations to Understand
+
+```powershell
+# Key limitations of the Call Records API in production:
+
+# 1. Data latency — query records from at least 15 minutes ago
+$safeStartTime = (Get-Date).AddMinutes(-15)
+
+# 2. Rate limiting — 1 request/second for call records
+# Add sleep between paginated requests
+Start-Sleep -Seconds 1
+
+# 3. 60-day lookback maximum
+$maxLookback = (Get-Date).AddDays(-60)
+
+# 4. $expand adds significant response payload — use $select to trim
+$callsUri = "https://graph.microsoft.com/v1.0/communications/callRecords" +
+            "?`$filter=startDateTime ge $since" +
+            "&`$expand=sessions(`$expand=segments(`$select=media,caller,callee))" +
+            "&`$select=id,startDateTime,endDateTime,type,participants"
+
+# 5. Beta-only: detailed per-participant IP and subnet data
+# v1.0 network object has limited fields vs beta
+```
+
+For high-volume tenants (many calls per day), consider querying by specific date ranges rather than pulling all records at once, and store results incrementally in a database rather than re-querying the full 60-day window on every report run.
+
+---
+
+<KnowledgeCheck id="p3-t3-m2-l4-kc">
+  <Question>
+    You query the Call Records API and find that 40% of your room endpoint streams show packet loss above 5%. Before escalating to the network team, what additional context should you gather from the call record data to determine whether this is a network infrastructure issue or a room-specific issue?
+  </Question>
+  <Answer>Re-query the same data using the Reports API to verify the percentage — the Call Records API is approximate and should be cross-referenced</Answer>
+  <Answer>Check whether the rooms are Android or Windows — Android rooms have known packet loss issues in the Call Records API data</Answer>
+  <Answer correct>You should check whether the poor streams are concentrated on specific rooms (suggesting a room-level issue — local network port, switch, or VLAN) or distributed evenly across all rooms (suggesting a shared network path or upstream infrastructure issue). Also check the call start times — if poor quality is concentrated in specific time windows (e.g., 09:00-09:30 daily), that pattern suggests bandwidth contention rather than a static misconfiguration. Finally, check the round-trip times: very high RTT with moderate packet loss suggests a WAN/routing issue rather than a LAN issue. Group the poor call streams by room identity and by time of day before escalating</Answer>
+  <Answer>The 60-day data retention limit means the data may be incomplete — extend the query to 90 days before drawing conclusions</Answer>
+  <Explanation>
+    Call quality data is only actionable when it is segmented correctly. A 40% poor call rate across all rooms looks like an infrastructure crisis, but if those poor streams are coming from 3 rooms in one building wing, the cause is almost certainly a misconfigured QoS marking on a specific switch or a bad patch cable run — not a network-wide problem. Grouping by room and by time of day before escalating focuses the investigation on the right layer and avoids triggering a large-scale network review for what may be a targeted, small-scale fix.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Reports API:** `getTeamsDeviceUsageDistributionUserCounts` provides aggregate device-type usage counts; returns CSV that must be parsed with `ConvertFrom-Csv`.
+- **Call Records data model:** Call → Sessions → Segments → Media → Streams; audio quality metrics (packet loss, jitter, RTT) live in the `network` object on each stream.
+- **Room endpoint identification:** Check the `userAgent.headerValue` on the caller/callee endpoint to identify Teams Rooms devices within call records.
+- **Poor call thresholds:** Align with CQD definitions — packet loss > 5%, jitter > 30ms, RTT > 500ms.
+- **Limitations:** 15-minute data latency after call end, 60-day lookback maximum, 1 request/second rate limit, large response payloads from `$expand` — use `$select` to trim.
+
+---
+
+## What's Next
+
+[Building a Room Management Dashboard →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/graph-api-mtr/lessons/room-management-dashboard/)

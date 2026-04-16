@@ -1,0 +1,358 @@
+---
+id: "p3-t1-m3-l4"
+slug: "audit-logging-mtr"
+title: "Audit Logging for MTR"
+shortTitle: "Audit Logging"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 3
+moduleSlug: "security-compliance"
+moduleTitle: "Security and Compliance for MTR"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Search the Microsoft Purview Unified Audit Log for room account activity using PowerShell"
+  - "Identify the key Intune audit log events relevant to MTR fleet management and compliance state changes"
+  - "Interpret Windows Event Log security events on MTR devices and forward them to a SIEM via Azure Monitor Agent"
+  - "Describe the audit trail available in MTR Pro Management for remote administrative actions"
+
+prerequisites:
+  - "p3-t1-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "compliance"
+  - "audit"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m3-l5"
+
+metaDescription: "Audit logging for MTR — searching the Microsoft Purview Unified Audit Log for room account events, Intune audit logs for device policy changes, Pro Management audit trail, Windows Event Log security event IDs on MTR devices, and SIEM integration via Azure Monitor Agent forwarding to Sentinel or Splunk."
+
+keywords:
+  - "MTR audit logging"
+  - "Search-UnifiedAuditLog Teams Rooms"
+  - "Intune audit log MTR"
+  - "Windows Event Log MTR security"
+  - "MTR SIEM integration Azure Monitor Agent"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Audit logging for MTR spans four distinct systems: the Microsoft Purview Unified Audit Log (cloud-side activity by room accounts), Intune audit logs (device management actions), MTR Pro Management audit trail (IT admin actions on room devices), and the Windows Event Log on the device itself (OS-level security events). Understanding what each system records, how to query it, and how to correlate events across systems is essential for compliance reporting, incident investigation, and SIEM integration. This lesson covers each audit source with the specific queries and event IDs that matter for MTR operations.
+
+---
+
+## Microsoft Purview Unified Audit Log for Room Accounts
+
+The Unified Audit Log (UAL) in Microsoft Purview records activity across Microsoft 365 services — including sign-in events, Teams meeting creation, recording starts, and Exchange operations — for every user account, including room resource accounts.
+
+**Enable audit logging (verify it is on for your tenant):**
+
+```powershell
+Connect-IPPSSession
+
+# Check if auditing is enabled for the tenant
+Get-AdminAuditLogConfig | Select-Object UnifiedAuditLogIngestionEnabled
+
+# Enable if not already on
+Set-AdminAuditLogConfig -UnifiedAuditLogIngestionEnabled $true
+```
+
+**Search the UAL for room account activity:**
+
+```powershell
+Connect-IPPSSession
+
+# Search all activity for a specific room account in the last 7 days
+$results = Search-UnifiedAuditLog `
+    -StartDate (Get-Date).AddDays(-7) `
+    -EndDate (Get-Date) `
+    -UserIds "boardroom@contoso.com" `
+    -ResultSize 1000
+
+# Display key fields
+$results | Select-Object CreationDate, UserIds, RecordType, Operations, AuditData | Format-Table -AutoSize
+```
+
+**Key UAL record types and operations relevant to MTR:**
+
+| RecordType | Operations to Monitor | Significance |
+|---|---|---|
+| AzureActiveDirectory | UserLoggedIn, UserLoginFailed | Room account authentication events; failed logins indicate credential attacks |
+| MicrosoftTeams | MeetingStarted, MeetingEnded, RecordingStarted, RecordingEnded | Meeting lifecycle from room account; RecordingStarted from room account |
+| MicrosoftTeams | TeamCreated, ChannelCreated | Unusual if room account creates Teams/channels |
+| Exchange | Set-Mailbox, Set-CalendarProcessing | Administrative changes to room account mailbox configuration |
+| Exchange | CalendarItemCreated, CalendarItemUpdated | Room calendar booking activity |
+| OneDrive | FileAccessed, FileDeleted, FileModified | Activity on the room account's OneDrive (unusual; investigate any hits) |
+
+**Search for recording-specific events from room accounts:**
+
+```powershell
+# Find all recording starts initiated by room accounts
+# Assumes room accounts follow a naming convention (e.g., UPN starts with "room-")
+$recordingEvents = Search-UnifiedAuditLog `
+    -StartDate (Get-Date).AddDays(-30) `
+    -EndDate (Get-Date) `
+    -RecordType MicrosoftTeams `
+    -Operations RecordingStarted `
+    -ResultSize 5000
+
+# Filter to room accounts only
+$roomRecordings = $recordingEvents | Where-Object { $_.UserIds -like "room-*@contoso.com" }
+$roomRecordings | Select-Object CreationDate, UserIds, AuditData | Format-Table
+```
+
+<Callout type="warning">
+The Unified Audit Log retains data for 90 days by default in Microsoft 365 E3 tenants, and up to 10 years for Microsoft 365 E5 with the Audit (Premium) add-on. If your compliance requirements mandate longer audit retention, export UAL events to Azure Storage, a Log Analytics Workspace, or a SIEM regularly. Do not rely solely on the UAL portal retention for long-term compliance evidence.
+</Callout>
+
+---
+
+## Intune Audit Logs for MTR Device Management
+
+Intune records all device management actions in its audit log — policy assignments, device enrollments, compliance state changes, and administrative actions. For MTR fleet management, the Intune audit log is the authoritative record of who changed what in the device management configuration.
+
+**Access Intune audit logs:**
+
+In the Intune portal (intune.microsoft.com) → Tenant Administration → Audit Logs.
+
+Filter by:
+- **Date range:** Select the relevant investigation period
+- **Category:** Choose the relevant area (Device Configuration, Compliance Policy, Device Enrollment, etc.)
+- **Activity:** Filter by specific action types
+
+**Key Intune audit log categories and events for MTR:**
+
+| Category | Activity | Significance |
+|---|---|---|
+| Device Enrollment | Create auto enrollment | Changes to the auto-enrollment settings that affect new MTR device onboarding |
+| Device Enrollment | Assign device to user | Room device reassigned — should be rare; investigate unexpected changes |
+| Compliance Policy | Create compliance policy | New compliance policy created; verify it follows MTR design patterns |
+| Compliance Policy | Assign compliance policy | Policy assignment change; could affect which devices are evaluated |
+| Device Configuration | Assign configuration profile | Configuration profile assignment change; affects device settings |
+| Device Configuration | Delete configuration profile | Profile deletion — investigate if unexpected; may remove security controls |
+| Device Actions | Retire | Device retirement action initiated — intentional decommission or unauthorized removal |
+| Device Actions | Wipe | Remote wipe initiated — should be an investigated and authorized action |
+| Device Actions | Sync | Manual sync triggered; useful to verify remediation actions |
+
+**Query Intune audit logs via Microsoft Graph PowerShell:**
+
+```powershell
+Connect-MgGraph -Scopes "DeviceManagementConfiguration.Read.All", "DeviceManagementApps.Read.All"
+
+# Get recent audit events for compliance policy changes
+$auditEvents = Get-MgDeviceManagementAuditEvent `
+    -Filter "category eq 'CompliancePolicy'" `
+    -Top 50
+
+$auditEvents | Select-Object ActivityDateTime, ActivityType, Actor, DisplayName | Format-Table -AutoSize
+```
+
+**Compliance state change events:**
+
+While the Intune audit log records administrative actions, compliance state changes (a device moving from Compliant to Non-compliant) are visible in the device compliance report rather than the audit log. For alert-driven monitoring of compliance state changes, use the Intune integration with Microsoft Sentinel via the Microsoft 365 Defender connector or the Intune Data Warehouse.
+
+---
+
+## MTR Pro Management Audit Trail
+
+The MTR Pro Management portal maintains an audit trail of IT administrative actions performed on room devices through the portal. This covers remote actions that have no equivalent audit record in Intune.
+
+**Pro Management audit trail covers:**
+
+| Action Type | Example Events |
+|---|---|
+| Remote device actions | Restart initiated, App update triggered, Settings change applied |
+| Incident management | Incident assigned to technician, incident status changed, incident closed |
+| Room configuration changes | Room display name changed, room account updated via portal |
+| Alert rule changes | New alert rule created, alert threshold modified |
+| User access changes | Admin user added to Pro Management portal, role changed |
+
+**Access the Pro Management audit trail:**
+
+In the Pro Management portal (portal.rooms.microsoft.com) → Settings → Audit Log. Filter by date range, action type, or initiating user.
+
+The audit trail shows:
+- **Timestamp** (UTC)
+- **Actor** (the UPN of the IT admin who performed the action)
+- **Action** (what was done)
+- **Target** (which room or rooms were affected)
+- **Result** (Success / Failed)
+
+For compliance reporting, the Pro Management audit trail should be exported periodically. At the time of writing, the Pro Management portal does not have a native API for audit log export — export via the portal UI to CSV for archiving or SIEM ingestion.
+
+---
+
+## Windows Event Log Security Events on MTR Devices
+
+The Windows Event Log on each MTR device records OS-level security events. These events are critical for detecting unauthorized access, suspicious software installation, and privilege escalation attempts on room devices.
+
+**Key Event IDs for MTR security monitoring:**
+
+| Event ID | Log | Event Name | MTR Significance |
+|---|---|---|---|
+| 4624 | Security | An account was successfully logged on | Should show Logon Type 2 (interactive) for room account sign-in; investigate unexpected Logon Type 3 (network) or 10 (remote interactive) |
+| 4625 | Security | An account failed to log on | Multiple failures indicate brute force or misconfigured credentials; common after password rotation without device update |
+| 4648 | Security | A logon was attempted using explicit credentials | RunAs or scheduled task using explicit credentials; investigate unexpected occurrences |
+| 4720 | Security | A user account was created | Unexpected local user creation is a red flag on a room device |
+| 4732 | Security | A member was added to a security-enabled local group | Addition to Administrators group is high-priority alert |
+| 7045 | System | A new service was installed | Any new service installed on MTR should be authorized; unexpected services indicate malware or unauthorized software |
+| 4688 | Security | A new process has been created | Process creation logging (requires Audit Process Creation policy); use to detect unexpected process execution |
+| 1102 | Security | The audit log was cleared | Clearing the event log is a strong indicator of tampering; alert immediately |
+
+**Query Windows Event Log on an MTR device via PowerShell:**
+
+```powershell
+# Run on the MTR device directly or via Intune PowerShell script
+
+# Get recent failed logon attempts (Event ID 4625)
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'Security'
+    Id        = 4625
+    StartTime = (Get-Date).AddHours(-24)
+} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | Format-List
+
+# Get new service installations in the last 7 days (Event ID 7045)
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'System'
+    Id        = 7045
+    StartTime = (Get-Date).AddDays(-7)
+} -ErrorAction SilentlyContinue | Select-Object TimeCreated, Message | Format-List
+```
+
+---
+
+## SIEM Integration — Forwarding Windows Event Logs to Sentinel or Splunk
+
+Collecting Windows Event Logs from individual MTR devices manually is not scalable for a large fleet. Forward event logs to a centralized SIEM (Microsoft Sentinel or Splunk) via the Azure Monitor Agent (AMA).
+
+**Azure Monitor Agent deployment for MTR via Intune:**
+
+The AMA is deployed to MTR Windows devices as a managed installer package or via Intune. AMA forwards selected Windows Event Log channels to a Log Analytics Workspace, which feeds Microsoft Sentinel.
+
+```
+Deployment steps:
+1. Create a Log Analytics Workspace (Azure portal → Monitor → Log Analytics Workspaces → Create)
+2. Create a Data Collection Rule (DCR) in Azure Monitor:
+   - Target: Windows Event Logs
+   - Log channels: Security, System
+   - Event IDs to collect: 4624, 4625, 4648, 4720, 4732, 7045, 1102 (and 4688 if process creation auditing is enabled)
+3. Associate the DCR with the MTR device group
+4. Deploy AMA to MTR devices via Intune:
+   - App type: Windows app (Win32)
+   - Install command: msiexec /i AzureMonitorAgentSetup.msi /qn
+   - Or use the native Intune AMA policy (Endpoint Security → Advanced Endpoint Analytics)
+```
+
+**Query forwarded MTR events in Microsoft Sentinel (KQL):**
+
+```kql
+// Failed logon attempts from MTR devices in last 24 hours
+SecurityEvent
+| where TimeGenerated > ago(24h)
+| where EventID == 4625
+| where Computer startswith "MTR-"
+| project TimeGenerated, Computer, Account, IpAddress, LogonType, Status
+| order by TimeGenerated desc
+```
+
+```kql
+// New services installed on MTR devices in last 7 days
+Event
+| where TimeGenerated > ago(7d)
+| where EventID == 7045
+| where Computer startswith "MTR-"
+| project TimeGenerated, Computer, ParameterXml
+| order by TimeGenerated desc
+```
+
+**Splunk integration via Azure Monitor:**
+
+For organizations using Splunk as their SIEM, forward events from the Log Analytics Workspace to Splunk using the Splunk Add-on for Microsoft Cloud Services or the Azure Monitor → Event Hub → Splunk pipeline. The event data format and content are the same; only the transport mechanism differs.
+
+<Callout type="warning">
+The Security Event Log on Windows 11 IoT Enterprise has a default maximum size of 128 MB. On a room device with no SIEM forwarding, this log can wrap within 30–60 days on an active system, overwriting older events. If SIEM forwarding is not immediately available, increase the Security log maximum size via Group Policy or Intune (Computer Configuration → Administrative Templates → Windows Components → Event Log Service → Security → Maximum Log Size: 524288 KB / 512 MB) to extend on-device retention.
+</Callout>
+
+---
+
+<KnowledgeCheck id="p3-t1-m3-l4-kc">
+  <Question>
+    A security analyst investigating a potential insider threat incident needs
+    to determine whether a specific MTR room's resource account was used to
+    start any meeting recordings during a three-week window six months ago.
+    The organization has a Microsoft 365 E3 license and has not deployed any
+    SIEM or log export automation. Where can the analyst search, and what
+    limitation will they encounter?
+  </Question>
+  <Answer>Search the Intune audit log filtering by the room account — Intune retains device and account activity logs for 24 months</Answer>
+  <Answer>Search the Windows Event Log on the MTR device — Event ID 4624 records all Teams activity including recording starts</Answer>
+  <Answer>Search the MTR Pro Management portal audit trail — it retains all room activity including recording events indefinitely</Answer>
+  <Answer correct>The analyst should search the Microsoft Purview Unified Audit Log filtering by the room account UPN and the RecordingStarted operation in the MicrosoftTeams RecordType. However, with a Microsoft 365 E3 license, the UAL retains data for only 90 days — six months ago is beyond the E3 retention window. The analyst will not find data from six months ago unless the organization has been exporting UAL events to an external store. This situation highlights the importance of proactive audit log export to Azure Storage or a SIEM for compliance-sensitive environments — E3 retention is insufficient for many regulatory requirements.</Answer>
+  <Explanation>
+    The Unified Audit Log is the correct source for Teams meeting recording
+    events attributed to a specific account — it records RecordingStarted
+    operations with the initiating user identity. The limitation is retention:
+    90 days for Microsoft 365 E3, up to 1 year for E3 with the Audit (Standard)
+    upgrade, and up to 10 years for E5 with Audit (Premium). Six months ago
+    exceeds the E3 default retention. This is a common compliance gap discovered
+    during incident investigations. The Windows Event Log and Intune audit log
+    do not record Teams application-level events like recording starts. The
+    Pro Management portal audit trail records IT admin actions, not room account
+    meeting activity.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Unified Audit Log:** Use `Search-UnifiedAuditLog -UserIds room@domain.com` to retrieve Teams meeting, recording, and Exchange events for room accounts; default E3 retention is 90 days — export proactively for compliance requirements.
+- **Key UAL operations:** `UserLoggedIn`, `UserLoginFailed`, `RecordingStarted`, `RecordingEnded`, `MeetingStarted` in the AzureActiveDirectory and MicrosoftTeams record types.
+- **Intune audit log:** Records all administrative changes (policy assignments, device actions, wipes, retires); access via Intune portal or Graph PowerShell; compliance state changes are in the compliance report, not the audit log.
+- **Pro Management audit trail:** Records IT admin remote actions on room devices; export to CSV periodically as it lacks a native API export.
+- **Windows Event Log:** Key IDs are 4624 (successful logon), 4625 (failed logon), 7045 (new service), 1102 (log cleared); default log size needs to be increased if no SIEM forwarding is configured.
+- **SIEM integration:** Deploy Azure Monitor Agent via Intune; create a Data Collection Rule targeting Security and System logs; query with KQL in Sentinel or route via Event Hub to Splunk.
+
+---
+
+## What's Next
+
+[Vulnerability Management for MTR Fleets →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/security-compliance/lessons/vulnerability-management-mtr/)

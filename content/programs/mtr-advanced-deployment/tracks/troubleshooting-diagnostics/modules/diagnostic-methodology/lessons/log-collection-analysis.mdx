@@ -1,0 +1,397 @@
+---
+id: "p3-t2-m1-l2"
+slug: "log-collection-analysis"
+title: "Log Collection and Analysis for MTR"
+shortTitle: "Log Collection and Analysis"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 1
+moduleSlug: "diagnostic-methodology"
+moduleTitle: "Diagnostic Methodology"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Locate and collect Teams Rooms application log files from a Windows-based MTR device, both manually and via Pro Management"
+  - "Identify the correct log file and key patterns for a given MTR symptom type"
+  - "Use PowerShell Select-String to search across MTR log files and build a basic log triage script"
+  - "Identify the Windows Event IDs relevant to MTR support scenarios"
+
+prerequisites:
+  - "p3-t2-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "support"
+
+topicTags:
+  - "troubleshooting"
+  - "logs"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m1-l1"
+  - "p3-t2-m1-l3"
+
+metaDescription: "Log collection and analysis for Microsoft Teams Rooms on Windows — app log locations, naming conventions, Pro Management remote log collection, key log patterns for common issues, Windows Event IDs, and PowerShell log triage scripting."
+
+keywords:
+  - "Teams Rooms log files"
+  - "MTR log collection"
+  - "Teams Rooms troubleshooting logs"
+  - "Pro Management log collection"
+  - "MTR Windows Event Log"
+  - "Teams Rooms PowerShell log analysis"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Logs are the primary evidence source for diagnosing Teams Rooms issues that are not immediately visible through Pro Management health data or CQD. The Teams Rooms app produces detailed application logs that record every significant event — authentication attempts, peripheral detection, meeting join sequences, and media stack state changes. Knowing where to find those logs, which files correspond to which issue types, and how to search them efficiently is a foundational support skill. This lesson covers the Teams Rooms app log structure on Windows, both manual and remote collection methods, the Windows Event Log events that matter for MTR, and how to use PowerShell to search across multiple log files at once.
+
+---
+
+## Teams Rooms App Log Location and Structure
+
+All Teams Rooms application logs on Windows are written to a single directory under the Skype user profile:
+
+```
+C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\Logs
+```
+
+This path is only accessible when logged in as a local administrator or via an elevated process — the Skype account (the dedicated room account that runs the Teams Rooms application) is a restricted local user and its AppData is not exposed to the admin account directly without either elevation or accessing it from the Skype session.
+
+**Log file naming convention:**
+
+Log files follow this pattern:
+
+```
+YYYY-MM-DD-HH-MM-SS_<context>.txt
+```
+
+For example:
+```
+2026-04-13-08-15-44_Lync.txt
+2026-04-13-08-15-44_SkypeRoomSystem.txt
+```
+
+The timestamp in the filename represents when the logging session started — typically when the Teams Rooms app started or restarted. A new set of log files is created each time the app restarts.
+
+**Log file rotation:**
+
+The Teams Rooms app retains approximately 3 days of logs locally before older logs are overwritten. On an active room device that restarts daily (as part of the nightly maintenance window), you will find multiple log sessions per day. For issues older than 3 days, you must rely on Pro Management incident history and CQD rather than the device logs.
+
+**Key log files by issue type:**
+
+| Log File Pattern | Contains | Use For |
+|-----------------|----------|---------|
+| `*_SkypeRoomSystem.txt` | App lifecycle, device startup, hardware detection, meeting join/leave events | Most issues — start here |
+| `*_Lync.txt` | Teams client signaling, authentication, resource account sign-in/out, meeting roster | Authentication failures, meeting join failures, sign-in issues |
+| `*_SIPStack.txt` | SIP signaling detail, response codes, call setup/teardown | Meeting join failures, PSTN calls, SIP errors |
+| `*_MediaStack.txt` | Audio/video media pipeline, codec negotiation, bandwidth estimation | Audio/video quality issues, media not starting |
+| `*_PluginHost.txt` | Peripheral plugin events, USB device detection, camera/mic/speaker state | Peripheral detection failures |
+
+For most initial investigations, start with `*_SkypeRoomSystem.txt` — it provides the highest-level view of app state and references events recorded in detail in other log files.
+
+---
+
+## Collecting Logs: Pro Management vs. Manual
+
+**Option 1 — Remote log collection via Pro Management (preferred):**
+
+Pro Management provides remote log collection without requiring physical or RDP access to the device. The collected logs include all Teams Rooms app log files plus basic Windows diagnostic data.
+
+Steps:
+1. In the Pro Management portal, navigate to **Rooms** and select the affected room.
+2. Open the relevant incident, or navigate to **Room Details → Actions**.
+3. Select **Collect logs** — this initiates an upload job on the device.
+4. The device must be online for the collection to succeed; status updates to "Logs collected" when complete (typically 2–5 minutes).
+5. Download the log package from the **Incident detail** page or from the **Room Actions** history — a zip archive containing all log files from the current log session and recent history.
+
+Remote log collection is non-disruptive: the Teams Rooms app continues to operate normally during collection. This is the correct approach for production rooms where physical access would require scheduling.
+
+**Option 2 — Manual collection from the device:**
+
+When Pro Management collection is unavailable (device not enrolled, portal unreachable, or manual investigation in progress), collect logs manually:
+
+1. Exit the Teams Rooms application to reach the Windows desktop (sign in with the local admin account, or use the Teams Rooms admin mode via the Settings button on the console → **Windows Settings** → enter admin credentials).
+2. Navigate to the log path above. Because `C:\Users\Skype\AppData` is a restricted path, access it from an elevated Command Prompt:
+
+```cmd
+robocopy "C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\Logs" "C:\Temp\MTRLogs" /E
+```
+
+3. Compress the `C:\Temp\MTRLogs` folder and transfer via USB or a network share.
+
+**Choosing the right collection method:**
+
+| Scenario | Use |
+|----------|-----|
+| Device online, enrolled in Pro Management | Pro Management remote collection |
+| Device online, not enrolled | Manual via RDP or on-site |
+| Device offline | On-site manual collection only |
+| Issue is ongoing | Pro Management — collect while issue is active to capture live log entries |
+| Issue is intermittent and has not occurred recently | Pro Management log history or manual — recent log files may not contain the event |
+
+---
+
+## Key Teams App Log Patterns
+
+Once you have the log files, knowing what to search for is the critical skill. The following patterns cover the most common MTR issue categories.
+
+**Authentication and sign-in issues:**
+
+Search `*_Lync.txt` for:
+
+```
+Authentication failure
+Sign-in failed
+MsalException
+TokenExpired
+ConditionalAccessBlocked
+```
+
+A successful sign-in sequence looks like:
+```
+[INFO] Sign-in succeeded for user: room@contoso.com
+[INFO] Resource account authenticated
+```
+
+A failed sign-in often shows a specific error code:
+```
+[ERROR] Authentication failure: AADSTS50076 - MFA required
+[ERROR] Sign-in failed: ConditionalAccessBlocked
+```
+
+The AADSTS error code is the most useful piece of data for diagnosing auth failures — document it before looking up the specific CA policy that triggered it.
+
+**Peripheral detection failures:**
+
+Search `*_SkypeRoomSystem.txt` and `*_PluginHost.txt` for:
+
+```
+Camera not found
+Microphone not detected
+Speaker not found
+USB device removed
+DeviceManager
+```
+
+**Media stack issues:**
+
+Search `*_MediaStack.txt` for:
+
+```
+Media stack
+AudioEngine
+VideoEngine
+PacketLoss
+BitrateAdaptation
+```
+
+**Meeting join failures:**
+
+Search `*_SIPStack.txt` for SIP response codes — these directly indicate the failure reason:
+
+| SIP Code | Meaning in MTR Context |
+|----------|----------------------|
+| 403 Forbidden | Resource account not licensed or policy preventing join |
+| 404 Not Found | Meeting URL invalid or meeting deleted |
+| 408 Request Timeout | Signaling timeout — network or service issue |
+| 480 Temporarily Unavailable | Teams service issue or resource account sign-out |
+| 486 Busy Here | Meeting capacity or resource conflict |
+| 503 Service Unavailable | Teams service degradation |
+
+---
+
+## Windows Event Log: Key Event IDs for MTR
+
+The Windows Event Log on the MTR device records OS-level events that complement the Teams app logs. Access via Event Viewer (`eventvwr.msc`) or via PowerShell.
+
+**Event IDs that matter for MTR support:**
+
+| Event ID | Log | Source | Relevance |
+|----------|-----|--------|-----------|
+| 7045 | System | Service Control Manager | New service installed — can indicate unauthorized software or a Teams app update |
+| 7034 | System | Service Control Manager | Service terminated unexpectedly — look for Teams or related services crashing |
+| 4625 | Security | Microsoft Windows Security | Failed logon — indicates unauthorized access attempts or misconfigured admin credentials |
+| 4634 / 4647 | Security | Microsoft Windows Security | Account logoff — track Skype account session state |
+| 1074 | System | User32 | System shutdown or restart, with reason code — identifies whether restarts are scheduled (maintenance window), user-initiated, or unexpected (crash/BSOD) |
+| 41 | System | Kernel-Power | System rebooted without clean shutdown — indicates power failure, BSOD, or hard reset |
+| 1000 | Application | Application Error | Application crash — look for `msteamsapp.exe` or `SkypeRoomSystem.exe` crash entries |
+| 1001 | Application | Windows Error Reporting | Application fault detail — collected crash dump reference for escalation |
+
+**Checking for unexpected restarts via PowerShell:**
+
+```powershell
+# Find all system restart events in the last 7 days
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'System'
+    Id        = 1074, 41
+    StartTime = (Get-Date).AddDays(-7)
+} | Select-Object TimeCreated, Id, Message | Format-List
+```
+
+**Checking for Teams app crashes:**
+
+```powershell
+# Find Teams Rooms application crash events
+Get-WinEvent -FilterHashtable @{
+    LogName   = 'Application'
+    Id        = 1000
+    StartTime = (Get-Date).AddDays(-3)
+} | Where-Object { $_.Message -match 'SkypeRoom|msteams' } |
+    Select-Object TimeCreated, Message | Format-List
+```
+
+---
+
+## Parsing Logs with PowerShell
+
+Manually opening log files and scrolling is slow and error-prone. PowerShell's `Select-String` cmdlet enables pattern matching across all log files in seconds.
+
+**Basic pattern search across all log files:**
+
+```powershell
+$LogPath = "C:\Temp\MTRLogs"
+
+# Search all log files for authentication failures
+Select-String -Path "$LogPath\*.txt" -Pattern "Authentication failure|Sign-in failed|AADSTS" |
+    Select-Object Filename, LineNumber, Line |
+    Format-Table -AutoSize
+```
+
+**Building a log triage script:**
+
+The following script searches for all major issue categories simultaneously and produces a summary report:
+
+```powershell
+<#
+.SYNOPSIS
+    MTR Log Triage Script
+.DESCRIPTION
+    Searches Teams Rooms app log files for key error patterns across
+    all major issue categories. Run after extracting logs to a local path.
+.PARAMETER LogPath
+    Path to the directory containing extracted MTR log files.
+#>
+param(
+    [Parameter(Mandatory)]
+    [string]$LogPath
+)
+
+$Patterns = @{
+    "Authentication"  = "Authentication failure|Sign-in failed|AADSTS|MFA required|ConditionalAccess"
+    "Peripheral"      = "Camera not found|Microphone not detected|Speaker not found|USB device removed"
+    "MediaStack"      = "PacketLoss|BitrateAdaptation|AudioEngine error|VideoEngine error"
+    "MeetingJoin"     = "SIP 4\d\d|SIP 5\d\d|Join failed|Meeting not found"
+    "AppCrash"        = "UnhandledException|Fatal error|AppCrash|Terminating"
+}
+
+foreach ($Category in $Patterns.Keys) {
+    $Matches = Select-String -Path "$LogPath\*.txt" -Pattern $Patterns[$Category] -ErrorAction SilentlyContinue
+
+    Write-Host "`n=== $Category ===" -ForegroundColor Cyan
+    if ($Matches) {
+        $Matches | Select-Object Filename, LineNumber, Line |
+            Format-Table -AutoSize -Wrap
+    } else {
+        Write-Host "  No matches found." -ForegroundColor Gray
+    }
+}
+```
+
+Save as `Invoke-MTRLogTriage.ps1` and run with:
+
+```powershell
+.\Invoke-MTRLogTriage.ps1 -LogPath "C:\Temp\MTRLogs"
+```
+
+The output immediately highlights which issue categories have log evidence, allowing you to focus investigation on the relevant log files and time ranges.
+
+**Microsoft Feedback Hub diagnostic capture:**
+
+For issues that require Microsoft escalation (suspected Teams service bugs, app crashes with no clear cause, reproducible issues with Microsoft ticket open), capture a Feedback Hub diagnostic report on the device:
+
+1. In Windows admin mode on the MTR device, open the Feedback Hub (search from Start).
+2. Select **Report a problem**, describe the issue, and check **Include diagnostic data**.
+3. If the issue is reproducible: use **Recreate my problem** → start capture → reproduce the issue → stop capture.
+4. Submit the report and note the feedback ID — provide this ID to Microsoft support as it links to the full diagnostic trace collected from the device.
+
+This method captures data beyond what the Teams app logs contain (ETW traces, memory dumps, Windows diagnostics) and is the appropriate data collection mechanism when standard log analysis has not identified the root cause.
+
+---
+
+<KnowledgeCheck id="p3-t2-m1-l2-kc">
+  <Question>
+    A support engineer is investigating a Teams Rooms device where participants
+    report that the room audio drops out intermittently during meetings but the
+    video continues normally. The device shows as Healthy in Pro Management and
+    no incidents have been raised automatically. The engineer has collected the
+    log files via Pro Management. Which log file should the engineer prioritize
+    first, and what search pattern is most relevant?
+  </Question>
+  <Answer>The `*_Lync.txt` file, searching for "Sign-in failed" — audio dropout is usually caused by resource account authentication issues</Answer>
+  <Answer>The `*_SIPStack.txt` file, searching for SIP 4xx response codes — audio dropout indicates a meeting join failure that the device has partially recovered from</Answer>
+  <Answer correct>The `*_MediaStack.txt` file, searching for "PacketLoss", "AudioEngine", and "BitrateAdaptation" — intermittent audio dropout with video continuing normally points to the media pipeline rather than signaling or authentication. The MediaStack log records audio engine state, bandwidth estimation events, and packet loss detection. Because video continues (video uses separate encoding and often a different bitrate tier), the issue is isolated to the audio media path. PacketLoss entries will show whether the dropout correlates with network-level loss, and BitrateAdaptation entries will show whether the audio codec adapted downward, which happens when packet loss triggers congestion control</Answer>
+  <Answer>The `*_PluginHost.txt` file, searching for "Microphone not detected" — audio dropout is a peripheral detection failure that occurs mid-call</Answer>
+  <Explanation>
+    Intermittent audio dropout with video unaffected is a media pipeline symptom,
+    not a signaling or authentication symptom. The MediaStack log is where the
+    Teams Rooms app records audio and video engine events, including packet loss
+    detection, jitter buffer state, and bitrate adaptation. Authentication and
+    SIP failures would typically drop both audio and video simultaneously, and
+    would be accompanied by a meeting join failure or reconnection event —
+    not a partial dropout. Peripheral failures (microphone not detected) would
+    show in PluginHost and would typically appear as a persistent issue rather
+    than intermittent dropout. Starting with MediaStack and the patterns
+    "PacketLoss", "AudioEngine error", and "BitrateAdaptation" efficiently
+    targets the most probable root cause layer for this specific symptom pattern.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Log location:** `C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\Logs` — retained approximately 3 days, new session files created on each app restart.
+- **Log files by issue type:** `*_SkypeRoomSystem.txt` for general lifecycle; `*_Lync.txt` for authentication; `*_SIPStack.txt` for meeting join failures (check SIP response codes); `*_MediaStack.txt` for audio/video quality; `*_PluginHost.txt` for peripheral detection.
+- **Collection methods:** Pro Management remote collection is preferred (non-disruptive, no physical access required); manual robocopy for unenrolled or offline devices.
+- **Windows Event Log:** Event IDs 1074 (restart reason), 41 (unclean shutdown), 7034 (service crash), 4625 (failed logon), and 1000 (app crash) are the most actionable for MTR support.
+- **PowerShell triage:** `Select-String` across all log files with a pattern dictionary surfaces relevant evidence in seconds; the triage script template automates this across all issue categories.
+- **Microsoft Feedback Hub:** Use for escalation-bound issues — captures ETW traces and memory data beyond what the Teams app logs contain; provide the feedback ID in the support case.
+
+---
+
+## What's Next
+
+[CQD Advanced Analysis →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/diagnostic-methodology/lessons/cqd-advanced-analysis/)

@@ -1,0 +1,333 @@
+---
+id: "p3-t3-m3-l4"
+slug: "azure-monitor-mtr-telemetry"
+title: "Azure Monitor Integration for MTR Telemetry"
+shortTitle: "Azure Monitor MTR Telemetry"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 3
+moduleSlug: "advanced-automation-integration"
+moduleTitle: "Advanced Automation and Integration"
+
+lessonIndex: 4
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Deploy Azure Monitor Agent to MTR Windows devices via Intune and configure Data Collection Rules to capture relevant Windows Event Log channels"
+  - "Write Kusto queries against the Log Analytics Event table to surface MTR application crashes, camera disconnects, and authentication failures"
+  - "Create Azure Monitor Alert rules and link them to remediation webhooks for automated response to threshold breaches"
+
+prerequisites:
+  - "p3-t3-m3-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "automation"
+  - "integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m3-l3"
+  - "p3-t3-m3-l5"
+
+metaDescription: "Azure Monitor integration for MTR telemetry — deploying Azure Monitor Agent via Intune, Data Collection Rules for Windows Event Logs, KQL queries for MTR events, Alert rules, Sentinel integration, and custom Azure Monitor Workbooks."
+
+keywords:
+  - "Azure Monitor MTR telemetry"
+  - "Teams Rooms Azure Monitor Windows events"
+  - "MTR Log Analytics KQL"
+  - "Teams Rooms event log monitoring"
+  - "Azure Monitor Agent MTR Intune"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Pro Management tells you a room has a problem — Azure Monitor tells you what happened in the Windows operating system before the problem appeared. Windows Event Logs contain a rich telemetry stream: the Teams Rooms application logging startup, crash, and peripheral events; Windows Update installation results; service start/stop events; and security events that surface unauthorized access attempts. Routing that telemetry to Log Analytics via Azure Monitor Agent (deployed through Intune) creates a persistent, queryable telemetry store that enables proactive alerting, post-incident analysis, and security monitoring for the MTR fleet.
+
+---
+
+## Deploying Azure Monitor Agent via Intune
+
+Azure Monitor Agent (AMA) replaces the legacy MMA/OMS agent. Deploy it to MTR Windows devices using an Intune device configuration profile:
+
+```powershell
+# Deploy AMA via Intune Win32 app or using the built-in AMA extension
+# For Entra ID joined MTR devices, use the Azure Monitor Agent extension
+
+# Step 1: Create a Log Analytics Workspace (if not existing)
+New-AzOperationalInsightsWorkspace `
+    -ResourceGroupName "MTR-Monitoring-RG" `
+    -Name "mtr-loganalytics" `
+    -Location "uksouth" `
+    -Sku "PerGB2018"
+
+# Step 2: Create a Data Collection Endpoint
+New-AzDataCollectionEndpoint `
+    -ResourceGroupName "MTR-Monitoring-RG" `
+    -Name "mtr-dce" `
+    -Location "uksouth" `
+    -NetworkAclsPublicNetworkAccess "Enabled"
+```
+
+In Intune, deploy AMA as a **Windows configuration profile** using the Settings Catalog:
+- **Path:** Microsoft Monitoring Agent → Install Azure Monitor Agent
+- **Target:** MTR device group (Entra ID security group used for Intune targeting)
+
+Once AMA is deployed, associate devices with a **Data Collection Rule** that defines which log channels to collect.
+
+---
+
+## Configuring Data Collection Rules
+
+A Data Collection Rule (DCR) specifies which Windows Event Log channels to collect and where to send them:
+
+```json
+{
+  "dataFlows": [
+    {
+      "streams": ["Microsoft-Event"],
+      "destinations": ["mtr-loganalytics-workspace"]
+    }
+  ],
+  "dataSources": {
+    "windowsEventLogs": [
+      {
+        "name": "mtr-application-events",
+        "streams": ["Microsoft-Event"],
+        "xPathQueries": [
+          "Application!*[System[(Level=1 or Level=2 or Level=3)]]",
+          "System!*[System[(Level=1 or Level=2)]]",
+          "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational!*[System[(Level=1 or Level=2 or Level=3)]]"
+        ]
+      }
+    ]
+  }
+}
+```
+
+XPath queries filter which events are collected — collecting only Warning, Error, and Critical events (Level 1, 2, 3) from Application and System logs avoids the volume of Informational events that would inflate Log Analytics ingestion costs.
+
+Key event IDs relevant to MTR operations:
+
+| Event Source | Event ID | Meaning |
+|-------------|----------|---------|
+| Application | 1000 | Application crash (generic) |
+| Application | 1001 | Windows Error Reporting — app crash details |
+| Application | 1026 | .NET runtime error — Teams Rooms app exception |
+| System | 7034 | Service terminated unexpectedly |
+| System | 7036 | Service entered stopped state |
+| System | 41 | Kernel power — unexpected restart (crash/power loss) |
+| Security | 4625 | Failed logon attempt |
+| Security | 4648 | Logon with explicit credentials (unusual for room accounts) |
+
+---
+
+## KQL Queries for MTR Event Analysis
+
+Once data is flowing to Log Analytics, use Kusto Query Language (KQL) to surface actionable patterns:
+
+```kusto
+// Teams Rooms app crashes in the last 7 days — grouped by device
+Event
+| where TimeGenerated > ago(7d)
+| where Source == "Application Error" or EventID in (1000, 1001, 1026)
+| where Computer startswith "MTR-"
+| summarize CrashCount = count(), LastCrash = max(TimeGenerated)
+    by Computer, Source, EventID
+| sort by CrashCount desc
+| project Computer, EventID, CrashCount, LastCrash
+```
+
+```kusto
+// Unexpected restarts (kernel power event 41) — indicates crash or power loss
+Event
+| where TimeGenerated > ago(30d)
+| where EventID == 41
+| where Computer startswith "MTR-"
+| summarize RestartCount = count(), LastRestart = max(TimeGenerated)
+    by Computer
+| where RestartCount > 2
+| sort by RestartCount desc
+```
+
+```kusto
+// Failed logon attempts on MTR devices — security monitoring
+SecurityEvent
+| where TimeGenerated > ago(7d)
+| where EventID == 4625
+| where Computer startswith "MTR-"
+| summarize FailedAttempts = count(), Accounts = make_set(TargetUserName)
+    by Computer, IpAddress
+| where FailedAttempts > 5
+| sort by FailedAttempts desc
+```
+
+```kusto
+// Service stopped unexpectedly — find rooms where Teams Rooms service is crashing
+Event
+| where TimeGenerated > ago(24h)
+| where EventID == 7034
+| where Computer startswith "MTR-"
+| where RenderedDescription contains "Teams"
+| project TimeGenerated, Computer, RenderedDescription
+| sort by TimeGenerated desc
+```
+
+---
+
+## Azure Monitor Alert Rules
+
+Alert rules evaluate KQL queries on a schedule and trigger actions when thresholds are breached:
+
+```powershell
+# Create an alert rule: app crash > 3 times in 24 hours on same device
+New-AzScheduledQueryRule `
+    -ResourceGroupName "MTR-Monitoring-RG" `
+    -Name "MTR-AppCrash-Threshold" `
+    -Location "uksouth" `
+    -DisplayName "MTR App Crash Threshold Exceeded" `
+    -Severity 2 `
+    -Enabled $true `
+    -EvaluationFrequency "PT1H" `
+    -WindowSize "PT24H" `
+    -Scope @("/subscriptions/$subscriptionId/resourceGroups/MTR-Monitoring-RG/providers/Microsoft.OperationalInsights/workspaces/mtr-loganalytics") `
+    -Criteria @{
+        allOf = @(@{
+            query = @"
+Event
+| where TimeGenerated > ago(24h)
+| where EventID in (1000, 1001) and Computer startswith 'MTR-'
+| summarize CrashCount = count() by Computer
+| where CrashCount > 3
+"@
+            timeAggregation = "Count"
+            operator = "GreaterThan"
+            threshold = 0
+            failingPeriods = @{ minFailingPeriodsToAlert = 1; numberOfEvaluationPeriods = 1 }
+        })
+    } `
+    -ActionGroups @("/subscriptions/$subscriptionId/resourceGroups/MTR-Monitoring-RG/providers/microsoft.insights/actionGroups/mtr-alert-action-group")
+```
+
+The Action Group triggers a webhook to your Logic App or Azure Function when the alert fires, enabling automated remediation responses directly from Azure Monitor.
+
+---
+
+## Microsoft Sentinel Integration
+
+For security monitoring, forward MTR Windows Security events to Microsoft Sentinel:
+
+```powershell
+# Connect Log Analytics workspace to Microsoft Sentinel
+New-AzSentinelOnboardingState `
+    -ResourceGroupName "MTR-Monitoring-RG" `
+    -WorkspaceName "mtr-loganalytics"
+
+# MTR-specific Sentinel Analytics Rule: detect unusual sign-in patterns
+# This runs as a Scheduled Analytics Rule in Sentinel
+$analyticsRuleQuery = @"
+SecurityEvent
+| where TimeGenerated > ago(1h)
+| where EventID == 4648
+| where Computer startswith "MTR-"
+| where SubjectUserName !endswith "$"    // Exclude machine accounts
+| summarize count() by Computer, SubjectUserName, TargetServerName
+| where count_ > 3
+"@
+```
+
+Sentinel analytics rules generate **Security Incidents** in Sentinel — distinct from Pro Management incidents — and can trigger automated playbooks (Logic Apps) for response actions such as disabling the resource account in Entra ID if unusual authentication activity is detected.
+
+---
+
+## Building a Custom Azure Monitor Workbook
+
+A Monitor Workbook visualizes KQL query results as charts and tables — an ops team dashboard built entirely within Azure Monitor:
+
+```json
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 3,
+      "name": "App Crashes by Device (7 days)",
+      "query": "Event | where TimeGenerated > ago(7d) | where EventID in (1000,1001) | where Computer startswith 'MTR-' | summarize Crashes=count() by Computer | sort by Crashes desc",
+      "visualization": "table",
+      "parameters": [{ "name": "TimeRange", "type": "datetime" }]
+    },
+    {
+      "type": 3,
+      "name": "Crash Trend (30 days)",
+      "query": "Event | where TimeGenerated > ago(30d) | where EventID in (1000,1001) | where Computer startswith 'MTR-' | summarize Crashes=count() by bin(TimeGenerated, 1d) | render timechart",
+      "visualization": "timechart"
+    }
+  ]
+}
+```
+
+Workbooks can be shared within an Azure resource group and pinned to the Azure portal dashboard for the operations team — they update in real time as new data arrives in Log Analytics.
+
+---
+
+<KnowledgeCheck id="p3-t3-m3-l4-kc">
+  <Question>
+    You deploy AMA to 150 MTR devices and configure a DCR collecting Application and System events at all levels (Information, Warning, Error, Critical). After one week, your Log Analytics ingestion bill is much higher than expected. What configuration change would reduce costs while retaining the events most relevant to MTR operations?
+  </Question>
+  <Answer>Reduce the evaluation frequency of alert rules from 1 hour to 4 hours — this reduces the number of queries run against Log Analytics</Answer>
+  <Answer>Switch from Azure Monitor to Microsoft Sentinel for all event collection — Sentinel has lower per-GB ingestion costs</Answer>
+  <Answer correct>The fix is to update the DCR's XPath queries to filter out Informational events (Level 4) and only collect Warning (Level 3), Error (Level 2), and Critical (Level 1) events. Informational events are the highest-volume log entries — for MTR devices, the Application log alone generates dozens of Informational entries per hour per device. Filtering to Level 1-3 typically reduces ingestion volume by 80-90% while retaining all events that indicate a problem. Update the XPath query from `*[System[...]]` to `*[System[(Level=1 or Level=2 or Level=3)]]` and apply the updated DCR to the device group</Answer>
+  <Answer>Move the Log Analytics workspace to a lower-cost region — ingestion pricing varies by Azure region</Answer>
+  <Explanation>
+    Windows Event Log volume is dominated by Informational events — application lifecycle events, successful service starts, routine scheduled task completions, and similar low-signal high-volume entries. Collecting all levels indiscriminately multiplies Log Analytics ingestion costs without adding operational value. The XPath level filter in the DCR is the primary cost control lever: restricting to Warning and above captures all meaningful operational signals while eliminating the Informational flood. Alert rules and workbook queries are evaluated against already-ingested data — reducing query frequency does not reduce ingestion cost.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **AMA deployment:** Deploy Azure Monitor Agent via Intune device configuration profile targeting the MTR Entra ID security group; associate with a Data Collection Rule.
+- **DCR XPath filters:** Collect only Warning, Error, and Critical events (Level 1-3) from Application and System logs to control ingestion volume and cost.
+- **KQL queries:** Crash analysis (EventID 1000/1001), unexpected restarts (EventID 41), and failed logons (SecurityEvent 4625) are the three most operationally relevant query categories.
+- **Alert rules:** Scheduled Query Rules evaluate KQL on a schedule and fire action groups (webhooks to Logic Apps/Functions) when thresholds are breached.
+- **Sentinel:** Forward Security events for advanced security analytics; Analytics Rules generate Security Incidents and can trigger automated remediation playbooks.
+- **Workbooks:** Custom Azure Monitor Workbooks provide an always-current ops view of MTR event data without requiring Power BI.
+
+---
+
+## What's Next
+
+[Building a Managed Services Automation Platform →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/advanced-automation-integration/lessons/managed-services-automation-platform/)

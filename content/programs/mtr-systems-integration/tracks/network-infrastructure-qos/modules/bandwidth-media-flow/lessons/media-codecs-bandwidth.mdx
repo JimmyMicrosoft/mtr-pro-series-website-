@@ -1,0 +1,197 @@
+---
+id: "p2-t1-m2-l1"
+slug: "media-codecs-bandwidth"
+title: "Media Codecs and Bandwidth Requirements"
+shortTitle: "Media Codecs and Bandwidth"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 2
+moduleSlug: "bandwidth-media-flow"
+moduleTitle: "Bandwidth, Media Flow, and Call Quality"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Identify the audio and video codecs Teams uses and explain how they adapt to network conditions"
+  - "State the bandwidth ranges for Teams audio, video, and content sharing at different quality levels"
+  - "Explain how Teams' adaptive bitrate mechanism affects bandwidth consumption under network congestion"
+
+prerequisites:
+  - "p2-t1-m1-l3"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "bandwidth"
+  - "media-codecs"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m2-l1-codec-bandwidth-reference.pdf"
+    label: "Teams Codec and Bandwidth Reference"
+    sizeKb: 35
+
+relatedLessons:
+  - "p2-t1-m2-l2"
+
+metaDescription: "Teams media codecs and bandwidth — SILK/Opus audio, H.264/AV1 video, bandwidth ranges per traffic type, adaptive bitrate behavior, and per-session bandwidth budgets for MTR capacity planning."
+
+keywords:
+  - "Teams Rooms bandwidth per session"
+  - "Teams audio codec SILK Opus"
+  - "Teams video codec H.264"
+  - "MTR bandwidth requirements"
+  - "Teams adaptive bitrate"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams media quality and network bandwidth consumption are directly linked — but the relationship is adaptive, not fixed. Teams constantly measures network conditions and adjusts codec parameters to balance quality against available bandwidth. Understanding the codecs and their bandwidth ranges allows integrators to plan with accurate numbers rather than worst-case assumptions, and to explain to clients why bandwidth consumption varies between meetings.
+
+---
+
+## Audio Codecs
+
+Teams uses two primary audio codecs:
+
+**SILK (Skype in-line codec):** A wideband codec developed by Skype, used for standard audio in Teams calls. Operates at 8–32 kHz sample rates. Bandwidth: approximately **20–40 kbps** per direction for voice.
+
+**Opus:** An open standard codec with excellent quality at low bitrates. Teams uses Opus for high-quality audio scenarios including music-on-hold and some Teams Rooms configurations. Bandwidth: **6–510 kbps** (voice mode: 6–20 kbps per direction).
+
+**Practical planning figure for Teams audio:** **30–100 kbps symmetrical per room** including RTP overhead, depending on audio quality and number of active speakers. For MTR bandwidth planning, use **100 kbps symmetrical** as a conservative per-room audio budget that provides headroom for all audio scenarios.
+
+Teams audio is extremely resilient — it is designed to maintain intelligibility on poor connections with packet loss up to 30% and latency up to 500ms (though quality degrades significantly at those levels). For planning purposes, audio is the least bandwidth-intensive component.
+
+---
+
+## Video Codecs
+
+Teams uses multiple video codecs, selected based on device capability and negotiation:
+
+**H.264 (AVC):** The baseline video codec, supported by virtually all Teams-capable hardware. MTR devices use H.264 for compatibility with all call types including federation with Zoom and Webex through Direct Guest Join.
+
+**H.265 (HEVC):** More efficient than H.264 at equivalent quality — roughly 40–50% better compression. Used in some Teams-to-Teams calls when both endpoints support it.
+
+**AV1:** The newest and most efficient codec Teams supports. Provides equivalent quality to H.264 at approximately half the bitrate. Requires hardware AV1 support on both endpoints. Available on newer MTR Windows compute units with compatible hardware encoders.
+
+**VP9:** Used in some browser-based Teams scenarios.
+
+**Video bandwidth ranges by resolution:**
+
+| Resolution | Typical Range | Quality Description |
+|------------|--------------|---------------------|
+| 240p | 200–500 kbps | Minimum quality |
+| 360p | 500–1,000 kbps | Acceptable quality |
+| 540p | 1,000–1,500 kbps | Good quality |
+| 720p (HD) | 1,500–2,500 kbps | High quality — typical Teams Rooms target |
+| 1080p (Full HD) | 3,000–4,500 kbps | Excellent quality |
+| 1080p outgoing (MTR room camera) | 4,000–7,000 kbps | Teams Rooms main camera stream |
+
+**Per-room video budget for planning:** For an MTR room sending 1080p outgoing video and receiving one HD video stream (typical for a room-to-room meeting), budget **4–8 Mbps** symmetrical. For a multi-party call with multiple incoming video streams (gallery view), budget **10–15 Mbps** to support high-quality reception.
+
+---
+
+## Content Sharing Bandwidth
+
+Screen sharing and content camera streams use separate bandwidth from the main video:
+
+**Screen sharing (application/desktop share):** 500 kbps–1.5 Mbps depending on content movement. Static slides use minimal bandwidth; fast-moving content or video in presentations uses significantly more.
+
+**Content camera (whiteboard camera):** 500 kbps–2 Mbps with AI enhancement enabled. Without enhancement, closer to 500 kbps–1 Mbps.
+
+**Planning figure:** Add **2 Mbps** per room for content sharing headroom on top of the audio and video budget.
+
+---
+
+## Adaptive Bitrate Behavior
+
+Teams does not operate at fixed bitrates. The Teams media layer uses Real-Time Control Protocol (RTCP) feedback to continuously measure network conditions — available bandwidth, packet loss, round-trip time — and adjusts the video encoder's target bitrate accordingly.
+
+**How adaptation works:**
+- When the network has available bandwidth: video quality increases toward the maximum resolution the hardware supports
+- When the network becomes congested or packets are lost: the encoder reduces bitrate, dropping resolution if needed to maintain frame rate, then reducing frame rate if bandwidth continues to decrease
+- Audio is the last to degrade — Teams will sacrifice video resolution completely before compromising audio quality
+
+**Planning implication:** The bandwidth figures above represent the operating range, not fixed values. A room with adequate bandwidth for 1080p video will use up to 8 Mbps when the network has capacity. During a congested period, it may drop to 720p or lower and use 2 Mbps. The network must have capacity for the peak (desired quality) scenario, not just the average.
+
+<DownloadButton
+  file="p2-t1-m2-l1-codec-bandwidth-reference.pdf"
+  label="Teams Codec and Bandwidth Reference"
+  sizeKb={35}
+  description="Quick-reference table for Teams codecs and bandwidth — audio (SILK/Opus), video by resolution (H.264/AV1), content sharing, and per-room planning budgets for audio-only, standard meetings, and high-quality multi-party scenarios."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m2-l1-kc">
+  <Question>
+    During a high-profile executive meeting, remote participants report that
+    the MTR room's video stream looks blocky and low-resolution, but audio
+    is clear and intelligible. What does this indicate about the network?
+  </Question>
+  <Answer>The room camera has failed and needs to be replaced</Answer>
+  <Answer>The resource account is missing the Teams Rooms Pro license for HD video</Answer>
+  <Answer correct>The network is experiencing congestion or bandwidth constraint — Teams' adaptive bitrate mechanism has reduced video resolution to preserve audio quality, which is always protected last. This indicates available bandwidth is insufficient for the target video quality</Answer>
+  <Answer>The meeting organizer has disabled HD video in the meeting settings</Answer>
+  <Explanation>
+    Teams' adaptive bitrate prioritizes audio — it will reduce video resolution
+    to near-zero before degrading audio quality. When audio is clear but video
+    appears blocky or low-resolution, it is a reliable indicator that bandwidth
+    is constrained at that moment. Teams has detected the congestion and reduced
+    the video encoder bitrate to match available bandwidth. The fix is network
+    investigation — congestion point identification, QoS verification, or
+    bandwidth upgrade if consistently at capacity.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Audio:** 30–100 kbps per room; resilient to network variation. Use 100 kbps for planning.
+- **Video:** 1,500–8,000 kbps per room depending on resolution (720p–1080p). Use 8 Mbps symmetrical for quality meetings.
+- **Content sharing:** Add 2 Mbps overhead per room.
+- **Adaptive bitrate:** Teams adjusts quality to match available bandwidth. Audio protected first; video degrades first.
+
+---
+
+## What's Next
+
+With per-session bandwidth understood, the next lesson applies this to capacity modeling for multi-room deployments.
+
+[Bandwidth Planning and Capacity Modeling →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/bandwidth-planning-capacity/)

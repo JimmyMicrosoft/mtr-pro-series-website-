@@ -1,0 +1,128 @@
+{
+  "trackSlug": "solution-architecture-presales",
+  "trackTitle": "Solution Architecture & Presales",
+  "programSlug": "mtr-practice-leadership",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "A customer's office has a variety of meeting spaces ranging from 2-person booths to a 30-person boardroom. Which room category from the standard enterprise design pattern is appropriate for a space seating 6–8 people with a single display and one camera?",
+      "answers": [
+        "Focus Room (1–2 people, typically no conferencing technology).",
+        "Huddle Room (3–6 people, compact MTR setup with single display and integrated bar device).",
+        "Medium Conference Room (6–10 people, typically a single or dual display, ceiling or table microphones, and a dedicated camera).",
+        "Boardroom (20+ people, multi-display, multi-camera, and full DSP audio)."
+      ],
+      "correct": 2,
+      "explanation": "A space for 6–8 people falls into the Medium Conference Room category. This pattern typically includes a single or dual front-of-room display, a dedicated PTZ or wide-angle camera, ceiling or tabletop microphones, and a dedicated MTR compute unit — more than a huddle room but below the complexity of a large or boardroom configuration."
+    },
+    {
+      "id": 2,
+      "text": "A hybrid meeting equity principle states that remote participants should have an equivalent meeting experience to in-room participants. Which camera placement practice best achieves this for a medium conference room?",
+      "answers": [
+        "Mount the camera as high as possible on the back wall, pointed towards the ceiling for a wide-angle view of the room.",
+        "Position the camera at eye level relative to seated participants, centred on the display, so remote participants see faces — not the tops of heads — and in-room participants look towards the screen (and camera) when engaging with remote attendees.",
+        "Use a 360° tabletop camera placed in the centre of the table so all in-room participants face it equally.",
+        "Position the camera in a corner of the room for the widest possible field of view."
+      ],
+      "correct": 1,
+      "explanation": "Eye-level camera placement centred above or below the front-of-room display creates natural eye contact between in-room and remote participants. When the camera aligns with the display showing remote participants, in-room attendees naturally look towards both screen and camera simultaneously — a key element of meeting equity."
+    },
+    {
+      "id": 3,
+      "text": "During a discovery session with a prospect, you learn their AV team manages a large estate of Cisco Webex Room Bars alongside their new Microsoft Teams deployment. How should the solution architecture address this multi-vendor reality?",
+      "answers": [
+        "Recommend immediately replacing all Cisco devices with MTR hardware to standardise the environment.",
+        "Design the architecture to support coexistence: leverage Direct Guest Join on MTR devices for Webex meetings, use Teams Admin Center for MTR management, and Cisco Control Hub for Webex devices — and present a phased migration path based on device refresh cycles.",
+        "Advise the customer that Microsoft Teams and Cisco Webex cannot coexist in the same organisation.",
+        "Recommend deploying a third-party video interop gateway instead of using native room devices from either vendor."
+      ],
+      "correct": 1,
+      "explanation": "Multi-vendor environments are common in enterprise transitions. The correct architectural approach acknowledges the existing investment, designs for coexistence (Direct Guest Join bridges the meeting platform gap), separates management platforms by vendor, and provides a roadmap for consolidation aligned to natural device refresh cycles — rather than a disruptive forklift replacement."
+    },
+    {
+      "id": 4,
+      "text": "A prospect's procurement team challenges the MTR proposal with: 'Zoom Rooms has a lower per-unit hardware cost for equivalent rooms.' How should the solution architect respond using TCO modelling?",
+      "answers": [
+        "Concede the point and offer a discount to match Zoom's price.",
+        "Argue that MTR hardware is always more expensive and justify it through brand prestige.",
+        "Present a total cost of ownership (TCO) model that includes: licence costs (Teams Rooms Basic may be free for up to 25 rooms), management tool savings from native Intune and Teams Admin Center integration (eliminating third-party MDM costs), reduced IT overhead from unified M365 management, and lower training costs for organisations already using Teams.",
+        "Avoid discussing cost and focus only on technical features."
+      ],
+      "correct": 2,
+      "explanation": "TCO modelling is the appropriate response to a unit-price challenge. For an M365-invested organisation, MTR's value includes: free Teams Rooms Basic licences (up to 25 rooms), native integration with existing Intune and Teams infrastructure (eliminating additional tooling costs), and a single administrative interface — factors that significantly reduce total cost over the device lifecycle."
+    },
+    {
+      "id": 5,
+      "text": "Which design document specifically illustrates how audio, video, USB, and control signals flow between each device in an MTR room system?",
+      "answers": [
+        "Floor plan",
+        "Signal flow diagram",
+        "Rack elevation drawing",
+        "Bill of Materials (BOM)"
+      ],
+      "correct": 1,
+      "explanation": "A signal flow diagram traces every signal path between devices — showing inputs, outputs, connection types (HDMI, USB, RS-232, TCP/IP, audio) and direction of signal flow. It is essential for understanding system integration, troubleshooting, and handing over a complex room system to maintenance technicians."
+    },
+    {
+      "id": 6,
+      "text": "When building a Bill of Materials (BOM) for a technical proposal, which cost component is most commonly overlooked by junior solution architects, leading to margin erosion on delivery?",
+      "answers": [
+        "The cost of the MTR compute unit and display.",
+        "Consumables such as HDMI cables and rack screws.",
+        "Professional services labour for installation, configuration, commissioning, and travel — particularly for multi-site deployments where travel and accommodation costs can be significant.",
+        "The Teams Rooms licence cost, which is always included in the hardware price."
+      ],
+      "correct": 2,
+      "explanation": "Labour and travel costs are the most commonly underestimated BOM components. Junior architects often accurately price hardware and software but underestimate installation labour hours, commissioning time, travel to remote sites, accommodation, and the iterative nature of complex AV integrations — leading to delivered projects that erode or eliminate the expected margin."
+    },
+    {
+      "id": 7,
+      "text": "A prospect says: 'We're concerned about Microsoft having access to our meeting content and metadata if we use Teams Rooms.' How should the solution architect address this data privacy objection?",
+      "answers": [
+        "Agree that this is a valid concern and recommend using an on-premises Teams server instead.",
+        "Dismiss the concern as unfounded and move on.",
+        "Explain Microsoft's data residency and privacy commitments (GDPR compliance, data stored in the customer's chosen geography, Microsoft's contractual commitments via the Data Processing Agreement), and offer to arrange a formal Microsoft security briefing for the customer's legal/compliance team.",
+        "Recommend disabling all analytics and telemetry, which prevents the concern entirely without addressing the underlying question."
+      ],
+      "correct": 2,
+      "explanation": "Data privacy objections require factual, respectful engagement. Microsoft has published data residency commitments, GDPR compliance documentation, and Data Processing Agreements that directly address these concerns. Offering a Microsoft security briefing for the customer's legal team demonstrates credibility and moves the conversation forward constructively."
+    },
+    {
+      "id": 8,
+      "text": "During needs analysis, a customer reveals that 40% of their employees are now permanently remote and the remaining 60% are hybrid, attending the office 2–3 days per week. How should this data influence the room design recommendation?",
+      "answers": [
+        "Design fewer rooms since most employees are remote and rarely use the office.",
+        "Design all rooms as large traditional boardrooms to accommodate the days when everyone is in the office simultaneously.",
+        "Prioritise flexible collaboration spaces (huddle rooms and medium rooms with MTR) over large traditional boardrooms, ensure every room has high-quality camera and microphone technology for equal remote participation, and consider room booking and occupancy analytics to right-size the estate.",
+        "Recommend removing all conferencing technology and using personal laptops for all meeting participation."
+      ],
+      "correct": 2,
+      "explanation": "A hybrid-majority workforce requires spaces optimised for mixed in-room/remote meetings — not traditional boardrooms designed for all-in-room use. Flexible smaller rooms with quality MTR technology serve hybrid work patterns better, and occupancy analytics ensure the estate matches actual usage patterns rather than pre-pandemic assumptions."
+    },
+    {
+      "id": 9,
+      "text": "A rack elevation drawing for an MTR installation shows: 1U patch panel, 1U switch, 2U MTR compute unit, 1U power distribution unit (PDU), and 4U of blank panels for future use. What is the minimum rack size (in rack units) required?",
+      "answers": [
+        "7U",
+        "9U",
+        "12U",
+        "8U"
+      ],
+      "correct": 1,
+      "explanation": "1U (patch panel) + 1U (switch) + 2U (compute unit) + 1U (PDU) + 4U (blank panels) = 9U minimum. Rack planning must account for all installed equipment plus any reserved expansion space. In practice, a 12U or larger rack would be specified to allow for cable management and airflow."
+    },
+    {
+      "id": 10,
+      "text": "A competitor's salesperson tells the customer that 'Cisco Webex Rooms have superior noise cancellation because they use dedicated AI chips, unlike Microsoft Teams Rooms which relies on software.' How should the MTR solution architect respond?",
+      "answers": [
+        "Agree with the competitor's claim and apologise for the limitation.",
+        "Avoid the topic entirely and redirect to pricing.",
+        "Claim that MTR has dedicated AI chips on every device without verifying this is accurate.",
+        "Clarify that Microsoft Teams uses cloud-based and in-device AI noise suppression (including Qualcomm AI noise reduction on certified devices), and that the quality of any room system's audio depends significantly on the DSP processing in the certified peripheral devices — then offer a live demonstration to let the customer evaluate audio quality directly."
+      ],
+      "correct": 3,
+      "explanation": "Effective objection handling is factual, composed, and customer-centric. Teams does use AI-powered noise suppression both in software and through certified hardware partners. Crucially, audio quality in any room system depends heavily on the peripheral (microphone, DSP, speaker) — a point that reframes the comparison. Offering a live demonstration shifts from a features argument to real-world evidence."
+    }
+  ]
+}

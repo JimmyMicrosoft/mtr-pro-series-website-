@@ -1,0 +1,337 @@
+---
+id: "p1-t3-m3-l3"
+slug: "xml-deployment-methods"
+title: "XML Deployment Methods — Manual, USB, Intune, TAC Config Profiles"
+shortTitle: "XML Deployment Methods"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 3
+moduleSlug: "xml-configuration-profiles"
+moduleTitle: "XML Configuration Profiles"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Deploy SkypeSettings.xml using manual file copy, USB drive, Intune PowerShell script, and TAC configuration profile methods"
+  - "Explain the precedence order for XML configuration sources and predict the effective configuration when multiple sources are present"
+  - "Select the appropriate deployment method for a given project scale and IT management environment"
+
+prerequisites:
+  - "p1-t3-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "teams-admin-center"
+  - "intune"
+
+roleTags:
+  - "installer"
+  - "architect"
+  - "support"
+
+topicTags:
+  - "xml-configuration"
+  - "skypesettings"
+  - "deployment"
+  - "intune"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t3-m3-l3-intune-script-template.ps1"
+    label: "Intune XML Deployment Script Template"
+    sizeKb: 8
+
+relatedLessons:
+  - "p1-t3-m3-l2"
+  - "p1-t3-m1-l4"
+
+metaDescription: "MTR Windows XML deployment methods — manual file copy, USB FAT32 deployment, Intune PowerShell script, and TAC configuration profiles. Precedence order (TAC > Intune > Local XML) and method selection by deployment scale."
+
+keywords:
+  - "SkypeSettings.xml deployment"
+  - "MTR Intune configuration"
+  - "Teams Rooms TAC config profile"
+  - "MTR XML USB deployment"
+  - "Teams Rooms configuration deployment methods"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A correctly written SkypeSettings.xml file has no effect until it reaches the target device in the right location. The deployment method determines how the file gets there — and for fleet deployments, the difference between a manual method and a scripted method is the difference between touching every device and touching none of them. This lesson covers all four supported deployment methods, when to use each, and the precedence rules that determine which configuration source wins when multiple methods are in use simultaneously.
+
+---
+
+## Method 1: Manual File Copy
+
+The simplest deployment method — copy the XML file directly to the LocalState folder on the device.
+
+**Target path:**
+```
+C:\Users\Skype\AppData\Local\Packages\Microsoft.SkypeRoomSystem_8wekyb3d8bbwe\LocalState\SkypeSettings.xml
+```
+
+**Procedure:**
+
+1. Connect a keyboard and mouse to the MTR Windows device (or use Remote Desktop if enabled)
+2. Sign in with the local admin account (not the Skype/resource account)
+3. Navigate to the target path using File Explorer (you may need to enable "Show hidden files and folders" in View options to see the AppData directory)
+4. Copy or overwrite the SkypeSettings.xml file at that location
+5. Reboot the device — the Teams app reads the file at startup
+
+**When to use:** Single-device deployments, testing during commissioning before fleet deployment, one-off configurations for individual rooms with unique requirements.
+
+**Limitations:** Does not scale beyond a handful of devices. Requires physical or remote access to each device. Not repeatable or auditable at fleet scale.
+
+<Callout type="tip">
+  During commissioning, always verify the XML configuration using the manual
+  method on the first device before deploying to the full fleet. Confirm the
+  expected behavior, then scale with USB or Intune for the remaining devices.
+</Callout>
+
+---
+
+## Method 2: USB Drive Deployment
+
+MTR Windows devices can read a SkypeSettings.xml file from a USB drive at startup. This is the fastest method for on-site deployments across multiple devices without network-based management.
+
+**USB drive requirements:**
+- File system: FAT32 (not NTFS, not exFAT — FAT32 is required)
+- The XML file must be at the root of the drive: `\SkypeSettings.xml`
+- Only the XML file is required; no other structure is needed
+
+**Procedure:**
+
+1. Format a USB drive as FAT32
+2. Copy the validated SkypeSettings.xml to the root of the drive (not in a folder)
+3. Insert the USB drive into the MTR Windows device while it is running
+4. Reboot the device — on startup, the Teams app detects the USB drive, copies the SkypeSettings.xml to the LocalState folder, and applies the configuration
+5. Remove the USB drive after the device has fully booted and the configuration has been applied
+
+**Verification:** After reboot, navigate to the LocalState folder and confirm the SkypeSettings.xml file is present and contains the expected content.
+
+**When to use:** On-site deployments of 5–30+ devices, rapid configuration of devices before they go online for network management, deployments where network-based management is not yet configured.
+
+**Limitations:** Requires physical presence at each device to insert the USB drive. Does not provide ongoing management — if the XML needs to change later, the USB process must be repeated.
+
+---
+
+## Method 3: Intune PowerShell Script
+
+For organizations using Microsoft Intune for device management, a PowerShell script can place the XML file at the correct path on any Intune-enrolled MTR Windows device without requiring physical access.
+
+**Script approach:**
+
+The script performs three actions:
+1. Defines the XML content as a string variable
+2. Constructs the correct target path based on the device's Skype user profile
+3. Writes the file to that path
+
+```powershell
+# MTR XML Deployment Script — Intune
+# Run context: SYSTEM account
+
+$xmlContent = @"
+<?xml version="1.0" encoding="UTF-8"?>
+<SkypeSettings>
+  <DualMonitorMode>true</DualMonitorMode>
+  <ContentDuplicationAllowed>false</ContentDuplicationAllowed>
+  <AutoScreenShare>true</AutoScreenShare>
+  <FrontRowEnabled>true</FrontRowEnabled>
+</SkypeSettings>
+"@
+
+# Build target path using the Skype user's SID-based package path
+$packageBase = "C:\Users\Skype\AppData\Local\Packages"
+$packageFolder = Get-ChildItem $packageBase -Filter "Microsoft.SkypeRoomSystem_*" |
+    Select-Object -First 1 -ExpandProperty Name
+
+if ($packageFolder) {
+    $targetPath = Join-Path $packageBase "$packageFolder\LocalState\SkypeSettings.xml"
+    $xmlContent | Out-File -FilePath $targetPath -Encoding UTF8 -Force
+    Write-Output "SkypeSettings.xml deployed to: $targetPath"
+} else {
+    Write-Error "SkypeRoomSystem package directory not found."
+    exit 1
+}
+```
+
+**Key script design notes:**
+
+- The script uses `Get-ChildItem` with a wildcard to find the `Microsoft.SkypeRoomSystem_*` folder rather than hardcoding the full package path. The suffix after the underscore is a publisher hash that may differ across Windows versions and should not be hardcoded.
+- The script runs under the SYSTEM account in Intune — it has access to all user profiles including the Skype user's AppData.
+- After the script runs, the device must reboot for the Teams app to read the new XML. This can be combined with an Intune device reboot policy or scheduled during a maintenance window.
+
+**Intune deployment configuration:**
+
+- Platform: Windows 10 and later
+- Script type: PowerShell script
+- Run this script using the logged on credentials: **No** (run as SYSTEM)
+- Enforce script signature check: organization-dependent
+- Assign to the device group containing MTR Windows devices
+
+**When to use:** Fleet deployments where devices are Intune-enrolled. The most scalable method for organizations already using Intune. Changes can be pushed to all devices simultaneously by updating the script assignment.
+
+---
+
+## Method 4: Teams Admin Center Configuration Profiles
+
+Teams Admin Center (TAC) provides a configuration profile feature that delivers settings to MTR devices without requiring any file-level management. This is the Microsoft-native, Teams-integrated approach to device configuration.
+
+**What TAC config profiles cover:**
+
+TAC configuration profiles control a subset of the settings available in SkypeSettings.xml, delivered through the Teams management layer rather than the XML file layer. Settings available in TAC profiles include display behavior, meeting settings, and some peripheral assignments — but not all SkypeSettings.xml elements.
+
+**Creating and assigning a TAC config profile:**
+
+1. In Teams Admin Center, navigate to **Teams Devices → Rooms on Windows**
+2. Select **Configuration profiles** from the left navigation
+3. Create a new profile — configure the desired settings
+4. Assign the profile to individual devices or to a device tag (group)
+5. The profile is delivered to devices over the Teams service connection — no physical access required
+
+**License requirement:** TAC configuration profiles require a **Teams Rooms Pro** license. Devices with a Teams Rooms Basic license cannot receive TAC configuration profiles.
+
+**When to use:** Organizations with TAC management capability and Pro licenses. The cleanest management experience for ongoing configuration changes — profiles can be updated in TAC and pushed to all assigned devices without any scripting.
+
+---
+
+## Configuration Precedence Order
+
+When multiple deployment methods are in use simultaneously — which is common in larger organizations — the following precedence order determines which configuration takes effect:
+
+```
+TAC Configuration Profile  (highest priority — overrides everything below)
+         ↓
+Intune-deployed SkypeSettings.xml
+         ↓
+Local SkypeSettings.xml (manual or USB deployed)
+         (lowest priority)
+```
+
+**Practical implications:**
+
+- If a TAC configuration profile is assigned to a device, its settings override the corresponding settings in any local SkypeSettings.xml file. Settings controlled by the TAC profile cannot be overridden by local XML.
+- If Intune deploys an XML file and a local XML file also exists, Intune's file overwrites the local file (since the script deploys to the same path with `-Force`).
+- Settings not controlled by a higher-priority source fall through to the lower-priority source. A TAC profile that configures display settings but does not configure content camera settings allows the local XML's content camera settings to remain in effect.
+
+**Troubleshooting implication:** When a local XML configuration doesn't appear to be taking effect, always check whether a TAC profile is assigned to the device. TAC → Devices → select device → Configuration profile tab. If a profile is assigned, its settings supersede the local XML for any overlapping settings.
+
+<DownloadButton
+  file="p1-t3-m3-l3-intune-script-template.ps1"
+  label="Intune XML Deployment Script Template"
+  sizeKb={8}
+  description="Production-ready PowerShell script template for Intune deployment of SkypeSettings.xml to MTR Windows devices. Includes dynamic path resolution, error handling, and deployment verification output. Replace the XML content section with your organization's configuration."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m3-l3-kc">
+  <Question>
+    An on-site technician needs to configure 20 MTR Windows devices at a client
+    site. The devices are not yet enrolled in Intune. Which deployment method
+    is most appropriate?
+  </Question>
+  <Answer>Manual file copy — connect to each device and copy the XML individually</Answer>
+  <Answer correct>USB drive deployment — place the XML on a FAT32-formatted USB drive at the root of the drive, and insert it into each device during reboot</Answer>
+  <Answer>TAC configuration profile — assign the profile in TAC and wait for the devices to receive it</Answer>
+  <Answer>Intune PowerShell script — enroll all devices in Intune first, then deploy the script</Answer>
+  <Explanation>
+    USB drive deployment is the right method for on-site deployment to multiple
+    devices that are not yet enrolled in a management platform. One USB drive
+    with the XML at the FAT32 root can configure all 20 devices with a single
+    insert-and-reboot workflow. Manual copy requires more time per device.
+    TAC profiles require Pro licenses and network connectivity to the Teams
+    service. Intune enrollment is a prerequisite for the script method, and
+    enrolling 20 devices adds significant time before the XML can be deployed.
+  </Explanation>
+
+  <Question>
+    A device has both a locally deployed SkypeSettings.xml file and a TAC
+    configuration profile assigned. The local XML sets `&lt;DualMonitorMode&gt;true&lt;/DualMonitorMode&gt;`,
+    but the TAC profile sets dual monitor mode to disabled. What is the
+    effective configuration on the device?
+  </Question>
+  <Answer>The local XML takes effect because it was deployed first</Answer>
+  <Answer>Both settings apply, causing a configuration conflict that must be manually resolved</Answer>
+  <Answer correct>The TAC configuration profile takes effect — TAC profiles have the highest precedence and override corresponding settings in local SkypeSettings.xml</Answer>
+  <Answer>The most recently changed setting takes effect, regardless of source</Answer>
+  <Explanation>
+    TAC configuration profiles have the highest precedence in the configuration
+    hierarchy — they override both Intune-deployed and locally deployed
+    SkypeSettings.xml for any settings they control. When a TAC profile sets
+    dual monitor mode to disabled, that setting takes effect regardless of what
+    the local XML specifies. To allow the local XML setting to take effect,
+    the TAC profile must either be unassigned from the device or updated to
+    match the desired setting.
+  </Explanation>
+
+  <Question>
+    An Intune PowerShell script for XML deployment uses
+    `Get-ChildItem $packageBase -Filter "Microsoft.SkypeRoomSystem_*"`
+    rather than hardcoding the full package path. Why is this approach correct?
+  </Question>
+  <Answer>Wildcard searches are faster than hardcoded paths in PowerShell</Answer>
+  <Answer correct>The suffix after the underscore in the package folder name is a publisher hash that can differ across Windows versions and deployments — using a wildcard makes the script portable across all MTR Windows devices without needing to know the specific hash</Answer>
+  <Answer>The Skype user account does not have permission to access hardcoded absolute paths</Answer>
+  <Answer>The package folder is recreated with a new name each time the Teams app updates</Answer>
+  <Explanation>
+    The `Microsoft.SkypeRoomSystem_` package folder has a publisher hash suffix
+    (e.g., `8wekyb3d8bbwe`) that is consistent within a known context but
+    should not be assumed to be identical across all device configurations and
+    Windows versions. Using a wildcard search (`Microsoft.SkypeRoomSystem_*`)
+    finds the correct folder regardless of the exact suffix, making the script
+    portable and resilient to future changes. Hardcoding the full path creates
+    a fragile script that may silently fail on devices where the path differs.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Manual copy:** Direct file placement to the LocalState path — correct for single-device commissioning and testing.
+- **USB deployment:** FAT32 drive, XML at root — fastest on-site method for pre-Intune fleet deployment.
+- **Intune script:** Dynamic path resolution script, run as SYSTEM, assigns to MTR device group — scalable fleet method for Intune-enrolled organizations.
+- **TAC config profiles:** Pro license required, delivered over Teams service connection, no file management needed — cleanest ongoing management approach.
+- **Precedence:** TAC Profile > Intune XML > Local XML. TAC profile settings override all lower-priority sources for settings they control.
+
+---
+
+## Module Complete
+
+You have completed Module 3.3: XML Configuration Profiles. You now understand the SkypeSettings.xml schema, can write configurations for the most common deployment scenarios, and can deploy those configurations at any scale using the appropriate method for the project context.
+
+This is the final module in Track 3: Device Configuration Essentials, and the final module in **Program 1: MTR Foundations**. You now have a complete foundation in the Teams Rooms ecosystem, physical installation, and device configuration — the three pillars of MTR deployment work.
+
+[View Program 1: MTR Foundations Overview →](/programs/mtr-foundations/)

@@ -1,0 +1,128 @@
+{
+  "trackSlug": "physical-installation",
+  "trackTitle": "Physical Installation",
+  "programSlug": "mtr-foundations",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What is the recommended minimum cable category for structured cabling in a new MTR room installation, and why?",
+      "answers": [
+        "Cat5e, because it supports Gigabit Ethernet which is sufficient for all MTR traffic.",
+        "Cat6, because it supports 10 Gigabit Ethernet at up to 55 metres.",
+        "Cat6A, because it supports 10 Gigabit Ethernet at up to 100 metres and provides headroom for future PoE++ and bandwidth demands.",
+        "Cat8, because MTR devices require 25 Gigabit connectivity for 4K video streams."
+      ],
+      "correct": 2,
+      "explanation": "Cat6A is the current minimum recommended standard for new installations. It supports 10GbE to the full 100m channel length, handles higher PoE power levels (PoE++) without the thermal issues of Cat6, and future-proofs the infrastructure."
+    },
+    {
+      "id": 2,
+      "text": "A display is being wall-mounted in a medium-sized conference room. According to ergonomic installation standards, where should the bottom edge of the screen be positioned?",
+      "answers": [
+        "At floor level to accommodate standing and seated viewers equally.",
+        "At approximately 95–115 cm from the finished floor.",
+        "At exactly 150 cm from the finished floor to align with standing eye level.",
+        "There is no standard — the position is determined solely by the room's aesthetic design."
+      ],
+      "correct": 1,
+      "explanation": "Industry standards recommend positioning the bottom edge of the display at 95–115 cm from the finished floor. This places the screen centre at approximately seated eye level, reducing neck strain for the majority of meeting participants."
+    },
+    {
+      "id": 3,
+      "text": "During a rack installation, a technician needs to calculate how much vertical space four 2U devices will occupy. What is the total height in millimetres?",
+      "answers": [
+        "266.7 mm",
+        "355.6 mm",
+        "177.8 mm",
+        "444.5 mm"
+      ],
+      "correct": 1,
+      "explanation": "One rack unit (1U) equals 44.45 mm. Four 2U devices = 8U total. 8 × 44.45 mm = 355.6 mm. This calculation is important when planning rack layouts and ensuring equipment fits within available rack space."
+    },
+    {
+      "id": 4,
+      "text": "A technician is running an HDBaseT (HDBT) extender to carry video, audio, USB, and control signals from a rack to a remote display 60 metres away. What cable type must be used, and what is the critical installation consideration?",
+      "answers": [
+        "Fibre optic cable; avoid sharp bends near connectors.",
+        "RG6 coaxial cable; ensure correct impedance matching at each end.",
+        "Cat6A or Cat7 solid-core UTP; do not exceed the manufacturer's specified maximum bend radius, as tight bends cause signal degradation and can damage the cable.",
+        "Cat5e stranded patch cable; use shielded plugs at both ends."
+      ],
+      "correct": 2,
+      "explanation": "HDBaseT extenders require solid-core Cat6A (or Cat7) UTP for reliable performance over longer runs. Exceeding the cable's minimum bend radius — particularly at pull points and at the connector entry — causes permanent damage to the conductor and results in intermittent or failed signal transmission."
+    },
+    {
+      "id": 5,
+      "text": "What is the primary role of a DSP (Digital Signal Processor) in a Teams Room audio system?",
+      "answers": [
+        "To convert analogue HDMI signals to digital for display output.",
+        "To manage network traffic prioritisation for audio streams.",
+        "To process microphone and loudspeaker signals — providing echo cancellation, noise reduction, mixing, and gain control — ensuring clean audio for far-end participants.",
+        "To authenticate audio devices with the Teams Rooms resource account."
+      ],
+      "correct": 2,
+      "explanation": "A DSP handles all signal processing between microphones, amplifiers, and loudspeakers. Its core functions include acoustic echo cancellation (AEC), noise reduction, automatic gain control (AGC), and signal routing/mixing — all essential for intelligible conference audio."
+    },
+    {
+      "id": 6,
+      "text": "Before beginning a physical installation in a conference room, which item on the site preparation checklist is most likely to cause project delays if overlooked?",
+      "answers": [
+        "Confirming the room name plate design with facilities.",
+        "Verifying that mains power circuits with appropriate amperage and the correct socket types are in place at the rack and display locations.",
+        "Selecting the colour of cable management clips.",
+        "Ordering spare HDMI cables to store in the rack."
+      ],
+      "correct": 1,
+      "explanation": "Power availability is a common project-critical item. If dedicated mains circuits, correct amperage, or appropriate socket types are not in place before the installation day, the project will stall. Electrical work often requires advance booking of licensed electricians."
+    },
+    {
+      "id": 7,
+      "text": "A technician is working at height on a 3-metre ladder to mount a camera above a display. Which combination of safety requirements applies in this scenario?",
+      "answers": [
+        "No special requirements apply for ladders under 4 metres.",
+        "A spotter must hold the ladder, appropriate PPE (hard hat, safety footwear) must be worn, and the ladder must be correctly footed and angled at the 4:1 ratio.",
+        "The technician only needs non-slip footwear; no other PPE is required for indoor work at height.",
+        "A full scaffold must be erected for any work above 2 metres regardless of duration."
+      ],
+      "correct": 1,
+      "explanation": "Working at height requires a risk assessment, correct ladder setup (4:1 angle ratio, footed on level ground), a second person to secure the base, and PPE appropriate to the hazard including hard hat and safety footwear in case of dropped tools."
+    },
+    {
+      "id": 8,
+      "text": "After completing an MTR room installation, what is the correct documentation standard for cable labelling?",
+      "answers": [
+        "Cables only need to be labelled at the patch panel end; labelling both ends is optional.",
+        "Only power cables require labelling; signal cables are identified by their colour.",
+        "Each cable should be labelled at both ends with a consistent identifier that matches the as-built drawings, enabling future technicians to trace any cable without specialist tools.",
+        "Labelling is only required for cables longer than 10 metres."
+      ],
+      "correct": 2,
+      "explanation": "Professional documentation standards require every cable to be labelled at both termination points with an identifier that corresponds directly to the as-built drawings. This ensures traceability, speeds up fault diagnosis, and supports future maintenance by any technician."
+    },
+    {
+      "id": 9,
+      "text": "A site survey reveals the conference room has a suspended ceiling at 2.8 metres. The planned ceiling-mounted microphone array requires a conduit run of 4 metres from the cable tray to the drop point. What installation consideration is most important?",
+      "answers": [
+        "Ensuring the conduit is painted to match the ceiling colour before installation.",
+        "Using only rigid metal conduit regardless of the routing path.",
+        "Planning the conduit route to maintain the minimum bend radius of the microphone cable, using appropriate conduit fittings at corners, and ensuring the cable can be withdrawn and replaced without removing ceiling tiles.",
+        "Running the microphone cable in the same conduit as the mains power supply to keep cable runs tidy."
+      ],
+      "correct": 2,
+      "explanation": "Signal cables must be run in conduit that respects the cable's minimum bend radius, uses proper swept bends at corners, and allows future cable replacement. Signal cables must never share a conduit with mains power, as electromagnetic interference will degrade audio quality."
+    },
+    {
+      "id": 10,
+      "text": "Which of the following power requirements is most important to verify before installing a high-end MTR compute unit with integrated amplification that draws 380W at peak load?",
+      "answers": [
+        "That the nearest socket is within 2 metres of the rack.",
+        "That the mains circuit is rated and protected for the expected load, with sufficient headroom above the device's peak draw, and that the circuit is on a dedicated breaker not shared with HVAC or lighting.",
+        "That the power supply unit in the device is set to the correct voltage via a manual selector switch.",
+        "That an uninterruptible power supply (UPS) with at least 5 minutes of runtime is installed, regardless of customer requirements."
+      ],
+      "correct": 1,
+      "explanation": "Verifying circuit rating and protection is the foundational power requirement. A shared circuit with HVAC or lighting can cause voltage sags or nuisance trips. The circuit must be rated above peak draw, and ideally on a dedicated breaker to ensure system stability."
+    }
+  ]
+}

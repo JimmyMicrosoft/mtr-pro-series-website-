@@ -1,0 +1,306 @@
+---
+id: "p3-t2-m2-l1"
+slug: "audio-quality-diagnostics"
+title: "Audio Quality Diagnostics for MTR"
+shortTitle: "Audio Quality Diagnostics"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 2
+moduleSlug: "audio-video-diagnostics"
+moduleTitle: "Audio and Video Diagnostics"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Map audio symptom categories to the correct investigation layer (microphone, DSP, codec, network, or speaker)"
+  - "Execute the echo investigation decision tree to confirm or rule out AEC configuration issues"
+  - "Distinguish local choppy audio from remote choppy audio and identify the corresponding root cause for each"
+  - "Use DSP software signal meters during a live call to localize an audio problem to a specific processing stage"
+  - "Collect pre-AEC, post-AEC, and post-NR reference recordings to isolate the failing processing stage"
+
+prerequisites:
+  - "p3-t2-m1-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "av-technician"
+
+topicTags:
+  - "troubleshooting"
+  - "audio"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m2-l2"
+  - "p3-t2-m2-l3"
+
+metaDescription: "Audio quality diagnostics for Microsoft Teams Rooms — symptom-to-layer mapping, echo investigation tree, background noise diagnosis, choppy audio differential, low far-end volume, DSP signal metering, and reference recording collection."
+
+keywords:
+  - "MTR audio troubleshooting"
+  - "Teams Rooms audio quality"
+  - "MTR echo diagnosis"
+  - "AEC troubleshooting Teams Rooms"
+  - "MTR DSP diagnostics"
+  - "Teams Rooms choppy audio"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Audio complaints are the most frequent category of MTR support request. The challenge is that "the audio sounds bad" can mean a dozen different things, each caused by a different failure at a different layer of the signal chain. A microphone coverage gap looks different from a DSP misconfiguration, which looks different from a network packet loss event, which looks different from a speaker calibration problem — yet all four can be reported identically by an end user. Effective audio diagnosis requires mapping each symptom to the layer most likely responsible, then systematically testing that layer before expanding the investigation. This lesson provides the diagnostic framework for the most common audio symptom categories, along with specific tools and techniques for each.
+
+---
+
+## Audio Diagnostic Framework: Symptom to Layer Mapping
+
+Every audio complaint in an MTR environment falls into one of eight symptom categories. Each category points to a primary investigation layer — start at that layer before broadening your scope.
+
+| Symptom Category | Primary Investigation Layer | Secondary Layer |
+|---|---|---|
+| Far end hears echo of their own voice | DSP (AEC configuration) | Speaker-to-microphone distance / room RT60 |
+| Background noise audible to far end | DSP (noise gate / NR) | Room ambient NC level / HVAC |
+| Audio is choppy or breaking up (near end reports) | Speaker or DSP output | Amplifier gain / DSP output level |
+| Audio is choppy or breaking up (far end reports) | Network (packet loss) | Microphone / codec |
+| Far-end voices are too quiet | Speaker calibration / amplifier gain | DSP output level / network bandwidth |
+| Microphone does not pick up voices at far end of room | Microphone coverage | Microphone polar pattern / room layout |
+| Audio cuts in and out when a specific person speaks | Noise gate threshold too aggressive | Ambient NC level too high relative to threshold |
+| Audio has a constant hum or tone | Electrical ground loop | Power supply / DSP input gain |
+
+Use this table to direct the first diagnostic action. If symptoms match multiple rows, address the highest row first — AEC and noise gate issues are far more common than electrical ground loops in modern MTR installations.
+
+---
+
+## Echo Investigation Tree
+
+Echo is the most disruptive audio symptom because it affects the remote participants directly and can make a room unusable within minutes of a meeting starting. Echo in a Teams Rooms context is almost always a failure of Acoustic Echo Cancellation (AEC) — but the failure can be at different points in the AEC system.
+
+**Step 1: Confirm which direction the echo travels.**
+
+Ask the remote participant: "Are you hearing your own voice echoed back to you?" If yes, the room's microphone is picking up the room's speakers and sending it back to the network — the AEC is failing at the near end. If the room occupants are hearing their own echo, the problem is at the far end and should be investigated at the far end's room.
+
+**Step 2: Confirm AEC is enabled in the DSP.**
+
+In the DSP configuration software (Biamp Tesira Designer or QSC Designer):
+- Verify the AEC block is present and enabled on each microphone input channel
+- Verify the AEC block is not bypassed
+- In Tesira: the AEC block should show a green active state; check the Reference Gain setting is not set to 0 dB attenuation (this would mute the reference signal)
+
+**Step 3: Confirm the reference signal is connected.**
+
+AEC requires a reference signal — a copy of the signal being played through the speakers fed back to the AEC block so the DSP knows what to cancel. Common misconfiguration: the reference signal path is disconnected or routed to the wrong AEC block.
+
+- In Tesira: verify a signal path runs from the loudspeaker output (post-amplifier) or the Dante/AES67 output feeding the amplifier back to the AEC Reference input of the correct AEC block
+- In QSC Designer: verify the AEC Reference connection in the routing matrix
+
+**Step 4: Check speaker-to-microphone distance.**
+
+AEC has a delay tolerance — typically 300–500 ms. If the acoustic delay from speaker to microphone exceeds this tolerance (very large rooms, incorrectly positioned microphones far from speakers), AEC will not cancel the echo effectively.
+
+- Measure the distance from the nearest loudspeaker to the nearest microphone capsule
+- In large rooms with ceiling speaker arrays: check that ceiling microphones are not positioned equidistant from multiple speaker clusters (competing reflections)
+
+**Step 5: Measure room RT60 if previous steps are clear.**
+
+High RT60 (reverberant room) extends the echo tail beyond AEC cancellation range. If Steps 1–4 are clear and echo persists, measure RT60 using a room measurement application. An RT60 above 0.6 s at 1 kHz in a typical conference room indicates the room needs acoustic treatment before AEC can fully cancel.
+
+---
+
+## Background Noise Diagnosis
+
+Background noise reaching remote participants is a DSP or room environment issue. The diagnostic sequence:
+
+**Measure the room's ambient noise level (NC).**
+
+Use a calibrated SPL meter or measurement microphone with measurement software. Measure with HVAC operating normally. Reference:
+- NC-30 or below: acceptable for conferencing
+- NC-35–40: marginal; noise gate thresholds must be tuned carefully
+- NC-45 and above: conference audio quality will be poor regardless of DSP tuning; the room environment itself must be addressed
+
+**Check the HVAC contribution.**
+
+HVAC noise is the most common source of elevated NC in conference rooms. Test: temporarily disable HVAC at the thermostat. If the noise level drops by more than 5 dB in the microphone signal, HVAC is the primary contributor. Long-term solutions are outside the AV scope (duct lining, grille placement), but the finding must be documented and reported to facilities.
+
+**Check the noise gate threshold.**
+
+In the DSP:
+- A noise gate threshold set too low allows HVAC noise through continuously
+- A noise gate threshold set too high clips the beginning of quiet voices (audio "cuts in" after a speaker starts talking)
+- Optimal threshold: 6–10 dB above the measured NC level. If NC is 40 dBSPL at the microphone capsule, the noise gate threshold should be approximately 46–50 dBSPL
+
+**Check equipment fan noise.**
+
+AV rack equipment, compute units, and display cooling fans placed near open-ceiling microphone arrays can be captured continuously. Test: hold a cardboard shield near the suspected equipment during a test call and listen for noise reduction in the far-end monitoring. If confirmed, relocate equipment or install acoustic rack treatment.
+
+---
+
+## Choppy Audio Differential Diagnosis
+
+"Choppy" audio has two completely different root causes depending on which end of the call is reporting it. This distinction is critical and must be established before any diagnostic action.
+
+**Determine which end is reporting the problem.**
+
+| Who Reports Choppy? | Primary Suspect | Investigation Method |
+|---|---|---|
+| People in the room (near end) | Speaker / amplifier / DSP output | Check DSP output level meters; check amplifier clip indicator; check speaker wiring |
+| Remote participants (far end) | Network packet loss or microphone/codec | Check CQD for the affected calls: VideoPacketLossRate, AudioPacketLossRate |
+
+**If remote participants report choppy audio:**
+
+1. Pull CQD data for the affected call sessions from this room. Filter by `RoomId` or the resource account UPN. Look for `AudioPacketLossRate` above 1% — this is the primary network indicator.
+2. If packet loss is confirmed in CQD, the issue is network — investigate according to the Network Quality module.
+3. If packet loss is not detected in CQD, the microphone or codec may be the issue. Collect the MediaStack log and search for `AudioEngine`, `PacketLoss`, and `EncoderBitrate` entries around the time of the reported choppy audio.
+
+**If room occupants report choppy audio:**
+
+1. Connect to the DSP via Biamp Tesira Software or QSC Designer software during a live call (see the next section on real-time signal metering).
+2. Observe the output level meters: if the output level is clipping (hitting the ceiling of the meter), reduce the output gain.
+3. Verify the amplifier is not in protection mode (many amplifiers have a front-panel status LED that indicates clipping or thermal protection).
+4. For MTR-native audio (devices using the integrated Teams Rooms audio processing without an external DSP), check the Windows sound settings for the output device volume — some devices reset audio levels after a Teams Rooms app update.
+
+---
+
+## Real-Time Signal Level Monitoring with DSP Software
+
+When a call is in progress and audio issues are occurring, connecting to the DSP software allows monitoring of each stage of the signal chain simultaneously — this is the most powerful diagnostic technique for live call issues.
+
+**Biamp Tesira Software — Meter View:**
+
+1. Open Tesira Designer and connect to the Tesira server (the DSP unit must be on the same network or reachable via VPN/direct connection).
+2. Navigate to **Monitor → Meters** or right-click any signal processing block and select **Meter**.
+3. Monitor key points in the signal chain:
+   - **Microphone input meters:** should show activity when room occupants speak; silence when they are not speaking
+   - **AEC block output meters:** should show reduced signal compared to input when far-end audio is playing (AEC removing the reference)
+   - **Noise gate output meters:** should show clean dropoff during silence (gate closing) and smooth opening when voices start
+   - **Output meters:** should peak in the -12 to -6 dBFS range; sustained near 0 dBFS indicates clipping
+
+**QSC Designer — Signal Flow Meters:**
+
+1. Open QSC Designer and connect to the Core (the Q-SYS Core must be online).
+2. In Design View, enable **Status** mode — signal meters appear on all processing blocks in the schematic.
+3. The same monitoring points apply: input, AEC reference, noise gate, output.
+
+**What to look for at each stage:**
+
+| Stage | Normal | Problem Indicator |
+|---|---|---|
+| Mic input (pre-processing) | Voice peaks -20 to -12 dBFS; silence below -40 dBFS | Flat line (no signal = wiring/routing issue); continuous signal at -20 dBFS (noise floor too high) |
+| AEC output | Voice peaks similar to input; reference-frequency content reduced | Same level as input (AEC not cancelling = reference not connected) |
+| Noise gate output | Clean gating: drops to -∞ in silence | Constant signal (gate threshold too low); clipped openings (threshold too high) |
+| DSP output | -12 to -6 dBFS peaks | Sustained 0 dBFS (clipping); below -24 dBFS consistently (gain staging error) |
+
+---
+
+## Collecting a Reference Recording
+
+When DSP software monitoring identifies which processing stage is causing the issue but the specific cause is unclear, collecting a reference recording provides evidence to compare against expected behavior and to share with the DSP manufacturer's support team.
+
+**What to capture:**
+
+Three recording points, ideally simultaneously:
+1. **Pre-AEC (microphone input):** the raw microphone signal before any DSP processing
+2. **Post-AEC:** the signal after the AEC block (to confirm echo cancellation is functioning)
+3. **Post-NR (noise reduction):** the final processed signal sent to the codec
+
+**How to capture in Tesira:**
+
+Tesira's "Record" feature (available in Tesira software) allows you to record the signal at any point in the signal flow directly from the DSP:
+1. In Tesira Designer, right-click the block immediately after the stage you want to record and select **Record to file**.
+2. Set a duration (30–60 seconds is usually sufficient to capture the symptom).
+3. Repeat for each of the three points: the raw input, the AEC output, and the noise reduction output.
+4. Export the recordings as WAV files for analysis.
+
+**How to capture in QSC:**
+
+In Q-SYS, use the built-in **Snapshot** feature or the Q-SYS Control Script to route the signal to a software recording block. Alternatively, use the Q-SYS UCI (User Control Interface) to temporarily route the target signal to a monitor output connected to a laptop running an audio recording application.
+
+**What to listen for in the recordings:**
+
+- **Pre-AEC vs. Post-AEC comparison:** Post-AEC should have the speaker/room audio significantly reduced when far-end audio is playing. If Post-AEC sounds the same as Pre-AEC, AEC is not functioning.
+- **Post-AEC vs. Post-NR comparison:** Post-NR should have the noise floor reduced compared to Post-AEC. If the noise floor is unchanged, noise reduction is not functioning or is set to minimal strength.
+- These recordings provide clear evidence for escalation to the DSP manufacturer if configuration appears correct but the processing is not performing as expected.
+
+---
+
+<KnowledgeCheck id="p3-t2-m2-l1-kc">
+  <Question>
+    During a live Teams Rooms meeting, the remote participants report that
+    they can clearly hear the room's HVAC noise and that voices from the
+    room are choppy — voices appear to cut in abruptly and then drop out
+    between sentences. The room occupants report that the far end sounds
+    fine. A technician connects to the Biamp Tesira DSP via Tesira Designer
+    and observes the following: microphone input meters show continuous
+    signal at approximately -22 dBFS even during silence between sentences;
+    the noise gate output meters show the signal dropping to -∞ immediately
+    when a speaker finishes a sentence and then snapping open abruptly when
+    they start the next sentence. Which condition is most likely causing the
+    observed behavior?
+  </Question>
+  <Answer>The AEC reference signal is disconnected — the continuous signal at -22 dBFS is echo from the room's speakers being captured by the microphone and not cancelled</Answer>
+  <Answer>The microphone wiring has a fault — continuous signal at -22 dBFS during silence indicates a wiring short that is introducing noise into the signal chain</Answer>
+  <Answer correct>The noise gate threshold is set too high relative to the room's NC level. The room's ambient noise (HVAC) is producing a continuous microphone signal at approximately -22 dBFS. The noise gate threshold is set above this level, so the gate closes during speech pauses (dropping to -∞) and snaps open aggressively when voices exceed the threshold — which is what remote participants perceive as choppy, abruptly cut audio. The correct fix is to either reduce the noise gate threshold to approximately 6–10 dB above the measured NC floor, or to address the HVAC noise source first and then re-evaluate the threshold</Answer>
+  <Answer>Network packet loss is causing the choppy audio — the remote participants' description of voices cutting in and out is consistent with UDP packet loss causing audio gaps</Answer>
+  <Explanation>
+    The critical evidence is the combination of two observations: (1) continuous
+    signal at -22 dBFS during silence (meaning the noise floor at the microphone
+    is elevated — consistent with audible HVAC), and (2) the noise gate dropping
+    to -∞ between sentences and snapping open when speaking resumes. This is
+    the classic signature of a noise gate threshold set above the room's ambient
+    noise level. During silence, the gate correctly closes because the ambient
+    noise does not reach the threshold; when a speaker starts, their voice
+    pushes the level above the threshold and the gate opens — but opens abruptly
+    rather than smoothly, which is perceived as choppy. Network packet loss would
+    appear in CQD as elevated AudioPacketLossRate and would affect both directions
+    of audio; the room occupants confirm the far end sounds fine, eliminating the
+    network hypothesis. AEC failure would produce continuous echo content
+    at frequencies matching the loudspeaker signal, not a flat noise floor.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Symptom-to-layer mapping:** Eight symptom categories each point to a primary investigation layer; always start at the mapped layer before broadening the investigation.
+- **Echo investigation:** Confirm the echo direction, verify AEC is enabled and not bypassed, confirm the reference signal path is connected, check speaker-to-microphone distance, and measure RT60 only if earlier steps are clear.
+- **Choppy audio differential:** Near-end choppy = speaker/DSP output issue; far-end choppy = network packet loss or microphone/codec. Establish which end is reporting before any diagnostic action. Use CQD AudioPacketLossRate to confirm or eliminate the network hypothesis.
+- **Background noise:** Measure NC level first; HVAC is the most common cause above NC-35. Noise gate threshold should be 6–10 dB above the measured NC floor.
+- **Real-time DSP monitoring:** Biamp Tesira Designer meter view and QSC Designer status mode allow live signal monitoring at every stage during an active call — the most direct diagnostic technique for call-time issues.
+- **Reference recordings:** Capture pre-AEC, post-AEC, and post-NR audio at each processing stage to compare expected vs. actual behavior; provide to DSP manufacturer for escalation.
+
+---
+
+## What's Next
+
+[Video Quality Diagnostics →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/audio-video-diagnostics/lessons/video-quality-diagnostics/)

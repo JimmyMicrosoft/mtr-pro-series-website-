@@ -1,0 +1,270 @@
+---
+id: "p3-t1-m2-l1"
+slug: "multi-site-pro-management"
+title: "Multi-Site Pro Management Organization"
+shortTitle: "Multi-Site Organization"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 2
+moduleSlug: "pro-management-enterprise"
+moduleTitle: "Pro Management at Enterprise Scale"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 28
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Design a building and tagging hierarchy in Teams Rooms Pro Management that supports filtering, alerting, and reporting for a 100–500 room fleet across multiple geographic sites"
+  - "Assign and delegate Pro Management roles (Administrator, Operator, Viewer) across a large support team using the principle of least privilege"
+  - "Describe the architectural considerations and limitations for managing Pro Management across multiple Azure AD tenants, including MSP multi-tenant scenarios"
+
+prerequisites:
+  - "p3-t1-m1-l5"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "pro-management"
+  - "multi-site"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l5"
+  - "p3-t1-m2-l2"
+
+metaDescription: "Design a scalable Teams Rooms Pro Management hierarchy for 100–500 rooms: building structure, tagging strategy, role delegation, and MSP multi-tenant management."
+
+keywords:
+  - "Teams Rooms Pro Management multi-site"
+  - "MTR Pro Management organization hierarchy"
+  - "Pro Management tagging strategy"
+  - "Teams Rooms MSP multi-tenant"
+  - "Pro Management roles delegation"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+When a Teams Rooms fleet grows beyond a few dozen devices, the organizational structure inside Teams Rooms Pro Management becomes as important as the technology itself. Without deliberate hierarchy design, the incident feed becomes noise, alert routing loses meaning, and support teams spend more time navigating the portal than resolving problems. This lesson covers how to build a scalable structure in Pro Management — from building enrollment and tagging strategy through role delegation and multi-tenant MSP management — for organizations operating 100 to 500 rooms across multiple sites.
+
+---
+
+## Building the Room Hierarchy in Pro Management
+
+Pro Management does not support an explicit folder or tree hierarchy the way some ITSM tools do. Instead, it uses **buildings**, **rooms within buildings**, and **tags** as the organizational primitives. Understanding the distinction between these layers is critical before you begin enrolling devices at scale.
+
+**Buildings** are the top-level organizational container in Pro Management. Each building has a name, optional address, and optional time zone. Every room must belong to a building. Buildings are the primary filter axis across the incident feed, analytics views, and alert rules.
+
+**Rooms** are enrolled individually. Once a device is linked to a Pro Management resource account, Pro Management discovers it and it appears in the Rooms list. The room is then assigned to a building. Room names are inherited from the resource account's display name — consistent naming conventions in Azure AD (established during device enrollment) pay dividends here because they become the room names you filter on in Pro Management.
+
+**Tags** are free-form key-value labels applied to rooms. They enable cross-cutting filters that buildings alone cannot provide.
+
+For a 100–500 room fleet, a recommended building enrollment sequence:
+
+1. Create all buildings in Pro Management before enrolling rooms — this prevents a backlog of rooms sitting unassigned in the default view
+2. Use the building name format: `[Region] — [City] — [Site Name]` (e.g., `EMEA — London — Canary Wharf`)
+3. Assign rooms to buildings immediately upon enrollment using bulk assignment (Pro Management → Rooms → filter by unassigned → bulk select → Assign to Building)
+4. Set the correct time zone on each building — this affects scheduled maintenance window calculations and incident timestamps
+
+<Callout type="tip">
+Pro Management displays room names exactly as they appear in the Azure AD resource account's display name. If your display name convention is inconsistent (e.g., some rooms are "London-Conf-101" and others are "Conf Room 101 London"), clean up the display names in Azure AD or Exchange before enrolling at scale. Retroactive renames propagate to Pro Management within 24 hours.
+</Callout>
+
+---
+
+## Tagging Strategy at Scale
+
+Tags are the most flexible organizational tool in Pro Management and the one most commonly under-utilized or over-engineered. The right tagging strategy enables filtered views, scoped alert rules, and segment-specific analytics. The wrong strategy creates hundreds of unique tags with inconsistent values that nobody can filter on reliably.
+
+**Recommended tag taxonomy for large deployments:**
+
+| Tag Key | Purpose | Example Values |
+|---------|---------|----------------|
+| `region` | Geographic region for executive-level filtering | `AMER`, `EMEA`, `APAC` |
+| `site` | Specific office location | `london-cw`, `nyc-hq`, `sydney-01` |
+| `floor` | Floor within a building | `2`, `3`, `basement` |
+| `room-type` | Functional room classification | `focus`, `medium`, `large`, `boardroom`, `huddle` |
+| `av-tier` | AV equipment tier for upgrade planning | `tier1-premium`, `tier2-standard`, `tier3-basic` |
+| `support-team` | Which support team owns this room | `london-av`, `nyc-it`, `apac-partner` |
+| `managed-by` | For MSP deployments, the managing entity | `partner-abc`, `internal` |
+
+**Enforcement principles:**
+- Define the allowed values for each tag key before rollout and document them. Tags are free-text in Pro Management — typos create orphaned values (`AMEA` vs `AMER`)
+- Apply tags in bulk when enrolling a batch of rooms from the same site using the multi-select tag editor
+- Avoid tags that duplicate what buildings already provide — if your building name is already `EMEA — London — Canary Wharf`, a `city:london` tag adds no filtering value
+- Limit the taxonomy to 5–7 tag keys. More than this creates cognitive overhead and inconsistent application
+
+**Using tags to filter the incident feed:**
+
+The incident feed in Pro Management can be filtered by building, tag, room type, and severity simultaneously. For a 300-room fleet, a London AV technician should be able to filter to: Building = `EMEA — London — Canary Wharf` AND `support-team:london-av` — seeing only the 45 rooms in their scope rather than all 300.
+
+<Callout type="warning">
+Tag filters in Pro Management use AND logic when multiple tags are applied. Filtering on `region:EMEA` AND `room-type:boardroom` shows only rooms that have BOTH tags. This is the correct behavior for scoped views — but ensure rooms receive all applicable tags at enrollment, or filters will silently under-count results.
+</Callout>
+
+---
+
+## Incident Feed Organization for Large Fleets
+
+At 100+ rooms, the raw incident feed in Pro Management becomes difficult to act on without structure. A room with a flapping peripheral can generate dozens of incidents in a day; a network outage affecting one building creates simultaneous incidents across 30 rooms. Without feed organization, high-priority incidents are buried in noise.
+
+**Effective incident feed practices:**
+
+**1. Use building filters as the primary scope control.**
+Support team members should open Pro Management with a building filter already applied matching their coverage area. Bookmark the filtered URL or set it as the team's default view.
+
+**2. Use severity filters to triage.**
+Pro Management classifies incidents as Critical, Important, or Warning. Start the morning review with Critical + Important only; address Warning-level incidents as capacity allows.
+
+**3. Acknowledge and assign promptly.**
+Unacknowledged incidents stack. Establish a team convention: the on-duty technician acknowledges all new Critical and Important incidents within 30 minutes of appearance. Acknowledgment does not resolve the incident — it signals that it is being worked.
+
+**4. Use the "Affected Rooms" grouping to spot correlated incidents.**
+When multiple rooms in the same building go offline simultaneously, the incident feed shows individual incidents per room. Scanning the feed for multiple incidents with the same building + same timestamp reveals likely infrastructure events (switch failure, VLAN issue) rather than individual device failures.
+
+**5. Close resolved incidents promptly.**
+Open incidents inflate the active count and make new incidents harder to spot. Build a weekly hygiene practice: review all incidents open >48 hours and close those where the underlying issue has been resolved.
+
+---
+
+## Role Delegation for Large Support Teams
+
+Pro Management provides three built-in roles that control what users can see and do within the portal:
+
+| Role | Capabilities | Appropriate For |
+|------|-------------|----------------|
+| **Administrator** | Full access: manage rooms, buildings, tags, alert rules, integrations, user roles, view all data | IT/AV leadership, Pro Management owners |
+| **Operator** | Manage incidents, acknowledge and close alerts, view all room health and analytics, cannot modify alert rules or integrations | Tier 1 and Tier 2 support staff, AV technicians |
+| **Viewer** | Read-only access to room health, incidents (view only), and analytics | Workplace/facilities managers, executive stakeholders, procurement |
+
+**Delegation model for a large organization:**
+
+For a 300-room fleet with a global support team, a practical delegation model:
+
+```
+Administrator (2–3 people)
+├── Global IT Manager
+├── AV Systems Architect
+└── Pro Management Platform Owner
+
+Operator (15–25 people)
+├── Regional AV leads (AMER, EMEA, APAC)
+├── Site-level AV technicians
+└── Service desk Tier 2 agents
+
+Viewer (10–30 people)
+├── Workplace Experience Managers
+├── Facilities Leads
+├── Finance/Real Estate stakeholders (for utilization data)
+└── Executive sponsors
+```
+
+**Key delegation principles:**
+- Apply least privilege: the majority of day-to-day support staff need Operator, not Administrator
+- Administrator access should require justification and periodic review (quarterly access review)
+- Do not give Administrator to MSP partner staff — use Operator for partner technicians and reserve Administrator for the client IT owner
+- Viewer access for workplace managers enables self-service utilization queries and reduces ad-hoc reporting requests to the IT team
+
+<Callout type="tip">
+Pro Management role assignments are made per user in the Pro Management portal settings. There is currently no group-based role assignment — each user must be assigned individually. For teams larger than 20 Operators, maintain an access tracking spreadsheet that is reviewed quarterly alongside any joiners/movers/leavers process.
+</Callout>
+
+---
+
+## MSP Multi-Tenant Management at Scale
+
+Managed Service Providers managing Teams Rooms across multiple client tenants use Pro Management's **multi-tenant view**, accessed through the MSP partner portal experience. Each client tenant is a separate Pro Management instance; the MSP portal provides a single-pane view aggregating incidents and health across all tenants.
+
+**MSP architecture considerations:**
+
+**Tenant isolation:** Each client's Pro Management data is isolated within their Azure AD tenant. MSP staff access client tenants via delegated administration (Azure Lighthouse or direct guest access). There is no cross-tenant data sharing — the MSP aggregated view is a read-aggregation layer, not a shared data store.
+
+**Access provisioning for MSP staff:**
+- Client tenant Administrators must grant MSP staff access within their Pro Management instance
+- MSP partner technicians should be assigned Operator role in client tenants — not Administrator — unless the MSP has explicit contractual authority for platform configuration changes
+- Use named user accounts per MSP technician (not shared service accounts) to maintain audit trail integrity
+
+**Incident routing in multi-tenant MSP deployments:**
+
+| Volume | Recommended Approach |
+|--------|---------------------|
+| 1–5 client tenants | MSP staff monitor each tenant directly via individual logins; aggregate view useful for morning review |
+| 6–20 client tenants | Use MSP aggregated view as the primary daily tool; configure per-tenant webhook to MSP's ITSM for automated ticket creation |
+| 20+ client tenants | Webhook to ITSM is essential — manual monitoring of 20+ Pro Management instances is not operationally viable |
+
+**Naming conventions across tenants:** When MSP staff support multiple clients, room names that look identical across tenants (e.g., "Conference Room A") create confusion in the aggregated view. Encourage clients to prefix building and room names with a client-specific identifier, or use the MSP's ITSM (with client field) as the authoritative incident view rather than the Pro Management aggregated portal.
+
+---
+
+<KnowledgeCheck id="p3-t1-m2-l1-kc">
+  <Question>
+    Your organization has 280 Teams Rooms across 12 office buildings in three
+    regions (AMER, EMEA, APAC). You have 18 support staff who manage incidents
+    — 6 per region, each responsible only for rooms in their region. You also
+    have a Workplace Experience Manager in each region who needs to view
+    utilization reports for their regional rooms but should not be able to
+    close or acknowledge incidents. Which role configuration is correct?
+  </Question>
+  <Answer>Assign all 18 support staff and all 3 Workplace Experience Managers the Operator role so they can all access the rooms they need</Answer>
+  <Answer>Assign the 18 support staff Administrator so they can filter by building, and assign Viewer to the Workplace Experience Managers</Answer>
+  <Answer correct>Assign the 18 support staff the Operator role (enabling incident management) and the 3 Workplace Experience Managers the Viewer role (read-only access to analytics and health data). Support staff use building filters to scope their incident feed to their regional rooms. Workplace Experience Managers use Viewer access to pull utilization analytics for their region without being able to modify incidents or alert configurations</Answer>
+  <Answer>Create a custom role for the Workplace Experience Managers that grants analytics access only — Pro Management supports custom role creation for this purpose</Answer>
+  <Explanation>
+    Pro Management's three built-in roles map directly to this scenario.
+    Operator provides the incident management capabilities (acknowledge, close,
+    update) that support staff need without granting Administrator access to
+    alert rules and integrations. Viewer provides read-only access that is
+    appropriate for stakeholders who need utilization data but should not be
+    able to affect incident state. Pro Management does not support custom role
+    creation — the three built-in roles (Administrator, Operator, Viewer) are
+    the only options. Giving support staff Administrator access to enable
+    building filters is unnecessary — building and tag filters are available
+    to all roles including Operator.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Buildings** are the primary organizational container; create all buildings before enrolling rooms and assign rooms immediately on enrollment.
+- **Tagging strategy:** use 5–7 standardized tag keys (region, site, floor, room-type, support-team); enforce allowed values to prevent tag sprawl.
+- **Incident feed:** use building filters as primary scope, severity filters for triage, and multi-room incident grouping to identify infrastructure events vs. individual device failures.
+- **Role delegation:** Operator for support staff, Viewer for workplace/facilities stakeholders, Administrator restricted to 2–3 platform owners; no group-based role assignment is available.
+- **MSP multi-tenant:** each client tenant is isolated; MSP staff use delegated access at Operator level; webhook to ITSM becomes essential above 6 client tenants.
+
+---
+
+## What's Next
+
+[ITSM Integration — ServiceNow and Jira →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/pro-management-enterprise/lessons/itsm-integration-pro-management/)

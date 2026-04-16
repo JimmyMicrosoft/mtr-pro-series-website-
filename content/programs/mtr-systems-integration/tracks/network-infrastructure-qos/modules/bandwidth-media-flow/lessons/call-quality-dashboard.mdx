@@ -1,0 +1,240 @@
+---
+id: "p2-t1-m2-l3"
+slug: "call-quality-dashboard"
+title: "Call Quality Dashboard — Analysis and Investigation"
+shortTitle: "Call Quality Dashboard"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+module: 2
+moduleSlug: "bandwidth-media-flow"
+moduleTitle: "Bandwidth, Media Flow, and Call Quality"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 35
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Navigate the Teams Call Quality Dashboard and locate MTR-specific quality data"
+  - "Interpret the key quality metrics — packet loss, jitter, round-trip time — and map them to network root causes"
+  - "Build and run CQD queries to investigate quality trends for a specific building, subnet, or room"
+
+prerequisites:
+  - "p2-t1-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "network"
+  - "call-quality"
+  - "cqd"
+  - "monitoring"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m2-l3-cqd-query-templates.pdf"
+    label: "CQD Query Templates for MTR Monitoring"
+    sizeKb: 50
+
+relatedLessons:
+  - "p2-t1-m2-l2"
+  - "p2-t1-m2-l4"
+
+metaDescription: "Teams Call Quality Dashboard for MTR — CQD navigation, MTR stream filters, packet loss/jitter/RTT thresholds, building data upload, subnet-level queries, and systematic investigation workflow for quality issues."
+
+keywords:
+  - "Teams Call Quality Dashboard MTR"
+  - "CQD Teams Rooms analysis"
+  - "Teams CQD packet loss jitter"
+  - "MTR call quality investigation"
+  - "Teams quality monitoring rooms"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Call Quality Dashboard (CQD) is Microsoft's tenant-level analytics platform for Teams call quality data. It aggregates quality metrics from every Teams call and meeting in the tenant — including MTR rooms — and provides query and visualization tools for identifying quality trends, investigating specific buildings or subnets, and correlating quality problems with network parameters. CQD is the correct tool for post-deployment quality monitoring and for investigating systemic quality problems across a fleet of rooms.
+
+---
+
+## Accessing CQD
+
+CQD is accessed at `cqd.teams.microsoft.com`. The following roles can access CQD:
+- Teams Service Administrator
+- Teams Communications Administrator
+- Teams Communications Support Engineer
+- Teams Communications Support Specialist (limited access)
+- Global Reader
+
+CQD data is available for the last 28 days by default, with historical data extending up to 12 months in some tenant configurations. Data typically appears in CQD 24–48 hours after the calls occur — CQD is a trend analysis tool, not a real-time monitoring dashboard.
+
+---
+
+## Quality Metrics: What They Mean
+
+CQD reports on three primary network quality metrics for each call stream:
+
+**Packet Loss Rate:** The percentage of audio or video packets that did not arrive at the destination. Packets are lost due to network congestion, faulty cables, Wi-Fi interference, or routing issues.
+
+| Packet Loss | Impact |
+|------------|--------|
+| < 1% | Excellent — transparent to participants |
+| 1–3% | Acceptable — minor quality variation |
+| 3–5% | Noticeable — audio artifacts, video quality reduction |
+| > 5% | Poor — significant quality degradation |
+
+Microsoft's recommended threshold: audio poor-call rate (PCR) is defined as > 10% packet loss over the stream duration.
+
+**Jitter:** Variation in packet arrival timing, measured in milliseconds. Packets sent at even intervals but arriving at irregular intervals cause audio buffer over/underruns — producing robotic or choppy speech.
+
+| Jitter | Impact |
+|--------|--------|
+| < 30 ms | Excellent |
+| 30–50 ms | Acceptable |
+| > 50 ms | Poor — noticeable audio quality issues |
+
+**Round-Trip Time (RTT):** The time for a packet to travel from the source to the destination and back, in milliseconds. High RTT (latency) causes conversational delays and can trigger echo detection issues.
+
+| Round-Trip Time | Impact |
+|----------------|--------|
+| < 100 ms | Excellent |
+| 100–200 ms | Acceptable for most scenarios |
+| > 200 ms | Poor — echo suppression triggers; conversational flow disrupted |
+| > 500 ms | Very poor — near real-time conversation becomes difficult |
+
+---
+
+## Building Data Upload
+
+CQD becomes significantly more powerful when building data (subnet-to-location mapping) is uploaded. Without building data, streams are identified only by IP address. With building data, CQD can show quality metrics by building, floor, room name, or campus.
+
+**Building data file:** A CSV file with columns including:
+- Subnet/CIDR (e.g., 10.10.100.0/24)
+- Building name
+- City, country, region
+- Building type (office, campus, etc.)
+- Inside/Outside flag (identifies whether this is corporate network traffic or external)
+
+Upload the building data CSV in CQD Settings → Tenant Data Upload. After upload, all streams from the MTR VLAN subnet are attributed to the building and can be queried by location.
+
+**MTR-specific building data:** For MTR deployments, include the dedicated MTR VLAN subnet in the building data file. This enables filtering CQD queries to show only MTR room streams.
+
+---
+
+## Filtering for MTR Streams
+
+MTR devices appear in CQD as "Teams Rooms on Windows" or "Teams Rooms on Android" in the client type dimension. To filter CQD reports to show only MTR room data:
+
+1. In any CQD report, click **Edit** (pencil icon)
+2. Add a filter: **First Client Type = Teams Room on Windows** OR **First Client Type = Teams Room on Android**
+3. Apply the filter — all data now reflects only MTR device streams
+
+Alternatively, filter by the MTR VLAN subnet if building data has been uploaded:
+- Filter: **First Building Name = [your building name]** AND **First Inside Corp = Yes**
+
+---
+
+## Using the Summary Reports
+
+CQD's built-in Summary Reports provide the fastest starting point for quality assessment:
+
+**Overall Call Quality:** Shows the percentage of calls classified as Good, Poor, or Unclassified across all modalities. A healthy MTR deployment should show >95% Good calls for audio.
+
+**Server-Client streams vs. Client-Server:** Teams calls have streams in both directions. Poor quality in one direction but not the other helps isolate whether the issue is at the sending or receiving end (and therefore which network segment is the problem).
+
+**Trending reports:** CQD's daily/weekly trend charts show whether quality is stable, improving, or degrading. A sudden quality decline on a specific date correlates with network changes (firmware updates, firewall rule changes, bandwidth utilization increases).
+
+---
+
+## Building a Custom MTR Investigation Query
+
+When a specific quality issue needs investigation (e.g., "All rooms in Building 3 have poor audio after 14:00"), build a custom query:
+
+1. In CQD, click **Query Editor**
+2. Set date range to the period of the reported issue
+3. Add dimensions: Building Name, Subnet, Client Type, Day of Week, Hour of Day
+4. Add measures: Audio Poor Call Rate, Audio Packet Loss Rate, Audio Jitter, Audio Round-Trip Time
+5. Filter: Client Type = Teams Room on Windows/Android; Building Name = Building 3
+6. Run the query and sort by Audio Poor Call Rate descending
+
+The results show which rooms, subnets, or time periods have the highest poor-call rates and the specific metrics driving them. Correlating the Hour of Day dimension with the reported 14:00 problem often reveals a bandwidth congestion pattern during specific hours.
+
+<DownloadButton
+  file="p2-t1-m2-l3-cqd-query-templates.pdf"
+  label="CQD Query Templates for MTR Monitoring"
+  sizeKb={50}
+  description="Ready-to-use CQD query templates for MTR monitoring — MTR stream filter setup, building-level quality summary, time-of-day analysis, poor-call investigation, and subnet-level trend queries. Includes expected output interpretation and threshold reference."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t1-m2-l3-kc">
+  <Question>
+    CQD shows that audio Poor Call Rate for MTR rooms in one building is 25%,
+    while all other buildings show less than 3%. The poor calls consistently
+    occur during business hours (09:00–17:00). What is the most likely cause?
+  </Question>
+  <Answer>The resource accounts in that building have an expired license causing intermittent sign-out during meetings</Answer>
+  <Answer correct>Network congestion at that building's internet connection during business hours — the time-of-day correlation (09:00–17:00) is a strong indicator of bandwidth saturation under business-hour load, distinct from an off-hours issue like maintenance or firmware updates</Answer>
+  <Answer>The MTR devices in that building have a firmware bug that only affects audio quality</Answer>
+  <Answer>The building data upload mapped the wrong subnet to that building, and the poor calls are actually from a different location</Answer>
+  <Explanation>
+    A 25% poor call rate isolated to one building with a strong business-hours
+    time correlation is a classic bandwidth congestion pattern. The other
+    buildings showing &lt;3% eliminates tenant-wide issues (licensing, service
+    problems). The time-of-day pattern (business hours only, not evenings or
+    weekends) indicates congestion under workday load rather than a
+    hardware or configuration issue. The next step is to review network
+    monitoring data for that building's internet connection during peak
+    hours to confirm utilization and identify the congestion point.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Access CQD:** `cqd.teams.microsoft.com`; requires Teams admin role; data 24–48h delayed.
+- **Key metrics:** Packet loss (<1% excellent, >5% poor), Jitter (<30ms excellent, >50ms poor), RTT (<100ms excellent, >200ms poor).
+- **Building data:** Upload subnet CSV to enable location-based filtering — essential for MTR-specific analysis.
+- **MTR filter:** Client Type = Teams Room on Windows/Android.
+- **Investigation:** Custom query with building, time, subnet dimensions; sort by Audio Poor Call Rate to isolate patterns.
+
+---
+
+## What's Next
+
+The final lesson in this module covers the network readiness validation tools — the active tests that confirm network performance before deployment.
+
+[Network Readiness Validation Tools and Methodology →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/lessons/network-readiness-validation/)

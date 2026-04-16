@@ -1,0 +1,280 @@
+---
+id: "p3-t3-m1-l3"
+slug: "bulk-configuration-changes"
+title: "Bulk Configuration Changes at Scale"
+shortTitle: "Bulk Configuration Changes"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 3
+trackSlug: "powershell-graph-automation"
+trackTitle: "PowerShell and Graph API Automation"
+
+module: 1
+moduleSlug: "powershell-mtr-operations"
+moduleTitle: "PowerShell for MTR Operations"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Apply the safe bulk change pattern — WhatIf, logging, batching, and error collection — to Exchange, Teams, Entra ID, and custom attribute operations"
+  - "Perform bulk Set-CalendarProcessing, meeting policy, Entra ID group membership, and custom attribute changes across a room fleet"
+  - "Implement per-operation error handling that produces a success/failure summary without stopping the entire script on a single failure"
+
+prerequisites:
+  - "p3-t3-m1-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "powershell"
+  - "automation"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t3-m1-l2"
+  - "p3-t3-m1-l4"
+
+metaDescription: "Performing bulk MTR configuration changes at scale with PowerShell — Set-CalendarProcessing, meeting policy reassignment, Entra ID group membership, custom attributes, safe bulk change patterns, and error handling."
+
+keywords:
+  - "MTR bulk configuration PowerShell"
+  - "Teams Rooms bulk changes PowerShell"
+  - "Set-CalendarProcessing bulk"
+  - "MTR PowerShell automation bulk"
+  - "Teams Rooms meeting policy bulk"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Bulk configuration changes are among the highest-risk PowerShell operations in an MTR deployment — a misconfigured `foreach` loop touching 200 room accounts at once can create 200 incidents simultaneously. The discipline applied to bulk changes — always running with `-WhatIf` first, logging every operation, processing in batches, and collecting errors without failing silently — is what separates a trusted automation script from one that requires a late-night incident call. This lesson covers the four most common bulk change scenarios and the safe pattern that wraps all of them.
+
+---
+
+## The Safe Bulk Change Pattern
+
+Every bulk change script should follow this pattern regardless of what operation is being performed:
+
+```powershell
+# STEP 1: Define the change scope
+$targetRooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited |
+    Where-Object { $_.CustomAttribute1 -eq "LON-HQ" }   # Building filter
+
+Write-Host "Target scope: $($targetRooms.Count) rooms"
+
+# STEP 2: WhatIf pass — validate without making changes
+Write-Host "`n--- WhatIf pass (no changes made) ---"
+foreach ($room in $targetRooms) {
+    Write-Host "[WhatIf] Would update $($room.DisplayName) ($($room.UserPrincipalName))"
+}
+
+# Pause for operator confirmation
+$confirm = Read-Host "`nProceed with $($targetRooms.Count) changes? (yes/no)"
+if ($confirm -ne "yes") { Write-Host "Aborted."; exit }
+
+# STEP 3: Execute in batches with logging
+$results   = [System.Collections.Generic.List[PSObject]]::new()
+$errors    = [System.Collections.Generic.List[PSObject]]::new()
+$batchSize = 20
+$batchNum  = 0
+
+for ($i = 0; $i -lt $targetRooms.Count; $i += $batchSize) {
+    $batchNum++
+    $batch = $targetRooms[$i..([Math]::Min($i + $batchSize - 1, $targetRooms.Count - 1))]
+    Write-Host "Processing batch $batchNum ($($batch.Count) rooms)..."
+
+    foreach ($room in $batch) {
+        try {
+            # <--- THE ACTUAL CHANGE GOES HERE --->
+            # Set-CalendarProcessing, Grant-CsTeamsMeetingPolicy, etc.
+
+            $results.Add([PSCustomObject]@{
+                Room      = $room.DisplayName
+                UPN       = $room.UserPrincipalName
+                Status    = "Success"
+                Timestamp = (Get-Date -Format "o")
+            })
+        } catch {
+            $errors.Add([PSCustomObject]@{
+                Room      = $room.DisplayName
+                UPN       = $room.UserPrincipalName
+                Status    = "Failed"
+                Error     = $_.Exception.Message
+                Timestamp = (Get-Date -Format "o")
+            })
+            Write-Warning "Failed: $($room.DisplayName) — $($_.Exception.Message)"
+        }
+    }
+
+    # Throttle prevention between batches
+    if ($i + $batchSize -lt $targetRooms.Count) {
+        Write-Host "Batch $batchNum complete. Sleeping 5s to avoid throttling..."
+        Start-Sleep -Seconds 5
+    }
+}
+
+# STEP 4: Summary and log export
+$date = Get-Date -Format "yyyy-MM-dd-HHmm"
+$results | Export-Csv -Path "C:\Logs\bulk-change-success-$date.csv" -NoTypeInformation
+$errors  | Export-Csv -Path "C:\Logs\bulk-change-errors-$date.csv"  -NoTypeInformation
+
+Write-Host "`n--- Summary ---"
+Write-Host "Success: $($results.Count)"
+Write-Host "Failed:  $($errors.Count)"
+if ($errors.Count -gt 0) { Write-Warning "Review errors: C:\Logs\bulk-change-errors-$date.csv" }
+```
+
+This shell applies to all four bulk scenarios below — only the operation inside `try {}` changes.
+
+---
+
+## Bulk Calendar Processing Updates
+
+Updating `BookingWindowInDays` for all rooms in a building so they accept bookings up to 180 days in advance:
+
+```powershell
+# Targeting rooms in building LON-HQ (stored in CustomAttribute1)
+$targetRooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited |
+    Where-Object { $_.CustomAttribute1 -eq "LON-HQ" }
+
+# Inside the try block of the safe pattern above:
+Set-CalendarProcessing -Identity $room.UserPrincipalName `
+    -BookingWindowInDays 180 `
+    -AutomateProcessing AutoAccept `
+    -AllowRecurringMeetings $true `
+    -MaximumDurationInMinutes 480
+```
+
+Other common bulk `Set-CalendarProcessing` changes:
+
+| Parameter | Typical Bulk Update Scenario |
+|-----------|------------------------------|
+| `BookingWindowInDays` | Policy change affecting all rooms in a region |
+| `AutomateProcessing` | Switching rooms from AutoAccept to None for a maintenance window |
+| `AddAdditionalResponse` | Adding a standard footer message to all room acceptance emails |
+| `DeleteComments` | Policy enforcement — removing meeting body content for privacy |
+| `MaximumDurationInMinutes` | Updating cap for rooms now used for half-day workshops |
+
+---
+
+## Bulk Meeting Policy Reassignment
+
+Assigning a custom Teams meeting policy to all room accounts in a building:
+
+```powershell
+# Get all Teams room user objects in a specific office
+$roomUsers = Get-CsOnlineUser -Filter "Department -eq 'LON-HQ-Rooms'" |
+    Where-Object { $_.TeamsRoomsLicenseConfiguration -ne $null }
+
+# Inside the try block:
+Grant-CsTeamsMeetingPolicy -Identity $room.UserPrincipalName `
+    -PolicyName "MTR-LON-MeetingPolicy"
+```
+
+<Callout type="tip">
+`Get-CsOnlineUser` with a filter on `Department` is reliable for building-level scoping when the Department attribute is populated during provisioning. Alternatively, filter by `EnterpriseVoiceEnabled`, license assignment, or an Entra ID group membership.
+</Callout>
+
+---
+
+## Bulk Entra ID Group Membership
+
+Adding all rooms from a new building to the `MTR-Building-LON` Entra ID security group (used for Intune policy targeting):
+
+```powershell
+# Get target group
+$group = Get-MgGroup -Filter "displayName eq 'MTR-Building-LON'"
+$groupId = $group.Id
+
+# Get all room user objects (Entra ID user objects for resource accounts)
+$targetRooms = Get-MgUser -Filter "startswith(displayName,'MTR-LON')" -All |
+    Select-Object Id, DisplayName, UserPrincipalName
+
+# Inside the try block:
+New-MgGroupMember -GroupId $groupId -DirectoryObjectId $room.Id
+```
+
+To remove rooms from a group when a building is decommissioned:
+
+```powershell
+# Remove member — uses same safe pattern
+Remove-MgGroupMemberByRef -GroupId $groupId -DirectoryObjectId $room.Id
+```
+
+---
+
+## Bulk Custom Attribute Updates
+
+Setting `CustomAttribute1` to a building code for all rooms in a site — useful when onboarding a new building and the provisioning script didn't set the attribute, or when a building code changes:
+
+```powershell
+$targetRooms = Get-Mailbox -RecipientTypeDetails RoomMailbox -ResultSize Unlimited |
+    Where-Object { $_.UserPrincipalName -like "*-LON-*" }
+
+# Inside the try block:
+Set-Mailbox -Identity $room.UserPrincipalName `
+    -CustomAttribute1 "LON-HQ" `
+    -CustomAttribute2 "UK" `
+    -CustomAttribute3 "Standard"
+```
+
+Custom attributes are used throughout the fleet inventory and reporting scripts as the primary metadata store for building, region, and room type. Keeping them accurate is critical for all downstream automation.
+
+---
+
+<KnowledgeCheck id="p3-t3-m1-l3-kc">
+  <Question>
+    You run a bulk Set-CalendarProcessing script targeting 150 rooms. After the run, the success log shows 142 entries and the error log shows 8. Three of the 8 errors all reference the same failure message: "The operation couldn't be performed because object 'conf-lon-03@contoso.com' couldn't be found." What does this error indicate, and what is the correct remediation?
+  </Question>
+  <Answer>The Exchange Online cmdlet has a known bug with certain room naming patterns — rename the mailbox and retry</Answer>
+  <Answer>The script batch size is too small — increase to 50 and the error will resolve on retry</Answer>
+  <Answer correct>The "object couldn't be found" error from Set-CalendarProcessing means the mailbox exists in Get-Mailbox (which is why it appeared in the target scope) but Exchange has not fully replicated or provisioned the mailbox's calendar processing configuration — this sometimes occurs with recently created or recently licensed mailboxes. The correct remediation is to wait 15-30 minutes for replication to complete, then re-run the script targeting only the 8 failed rooms using their UPNs from the error log</Answer>
+  <Answer>The rooms are licensed with Teams Rooms Basic which does not support Set-CalendarProcessing</Answer>
+  <Explanation>
+    Exchange Online provisioning is not always instantaneous — a mailbox that appears in Get-Mailbox results may not yet have its calendar processing settings fully initialized, especially if it was recently created or re-licensed. The safe bulk pattern's error collection makes this easy to remediate: the error log contains the exact UPNs that failed, so a targeted retry on just those 8 rooms is straightforward. Retrying the full 150-room scope would be wasteful and risks re-applying changes to rooms that already succeeded.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Safe bulk pattern:** Always scope → WhatIf → confirm → batch execute with `try/catch` → export logs → summarize. Never skip any step.
+- **Batching:** Process rooms in groups of 20 with `Start-Sleep` between batches to avoid Exchange Online and Teams throttling.
+- **Error collection:** Use a `List[PSObject]` to accumulate per-operation errors without stopping the loop — a single failure should not abort 149 other changes.
+- **Calendar processing:** `Set-CalendarProcessing` is the most common bulk change; scope by `CustomAttribute1` for building-level targeting.
+- **Policy and group changes:** `Grant-CsTeamsMeetingPolicy` and `New-MgGroupMember` follow the same safe pattern with only the operation changing inside `try {}`.
+
+---
+
+## What's Next
+
+[Scheduled Maintenance Automation →](/programs/mtr-advanced-deployment/tracks/powershell-graph-automation/modules/powershell-mtr-operations/lessons/scheduled-maintenance-automation/)

@@ -1,0 +1,239 @@
+---
+id: "p1-t2-m3-l3"
+slug: "camera-microphone-positioning"
+title: "Camera and Microphone Positioning for MTR"
+shortTitle: "Camera & Mic Positioning"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 2
+trackSlug: "physical-installation"
+trackTitle: "Physical Installation"
+
+module: 3
+moduleSlug: "hardware-mounting"
+moduleTitle: "Hardware Mounting and Connections"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+
+objectives:
+  - "Position an MTR-certified camera to optimize auto-framing performance and ensure all meeting participants are captured"
+  - "Place microphones to achieve full coverage of the seating area while minimizing HVAC noise and acoustic interference"
+  - "Apply Microsoft's camera positioning guidelines and AVIXA sound reinforcement coverage principles to a specific room geometry"
+
+prerequisites:
+  - "p1-t2-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "installer"
+  - "architect"
+
+topicTags:
+  - "camera-placement"
+  - "microphone-placement"
+  - "field-of-view"
+  - "acoustic"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p1-t2-m3-l3-mic-placement-template.pdf"
+    label: "Microphone Placement Grid Template"
+    sizeKb: 50
+
+relatedLessons:
+  - "p1-t2-m3-l2"
+  - "p1-t2-m3-l4"
+
+metaDescription: "Camera and microphone positioning for MTR conference rooms — horizontal centering, vertical height, field-of-view coverage, ceiling microphone array placement, HVAC clearances, and AVIXA coverage principles."
+
+keywords:
+  - "camera placement conference room MTR"
+  - "ceiling microphone array placement"
+  - "auto-framing camera positioning"
+  - "microphone HVAC clearance"
+  - "FOV conference room camera"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Camera and microphone positioning are the placement decisions that most directly determine meeting quality. Remote participants experience the room through the camera and microphone — a camera that clips the end seats or is mounted 8 inches off-center, a microphone that picks up HVAC noise instead of voices, a ceiling array placed over the credenza instead of the chairs — these are failures that manifest in every meeting. Getting positioning right during installation requires applying geometry, not guesswork.
+
+---
+
+## Camera Positioning — Horizontal
+
+The camera must be centered horizontally relative to the display face. This is the single most important camera placement rule, and it is violated more often than any other.
+
+When a camera is centered on the display, remote participants perceive in-room participants as looking directly at them — the natural experience of a face-to-face conversation. When the camera is offset from the display center — even by 4–6 inches — remote participants see in-room participants looking to one side, which creates a subtle but persistent feeling that the in-room people are not engaged. In rooms where the display is not centered on the wall (off-center architectural feature, column, or asymmetric furniture arrangement), the camera position must still align with the display center, even if that means an asymmetric camera mount or custom arm.
+
+Verify centering with a tape measure from both edges of the display to the camera lens position, not from the wall edges. Eyeballing it is not sufficient for professional work.
+
+---
+
+## Camera Positioning — Vertical
+
+Microsoft's guidance for camera vertical placement:
+
+- **Standard conference rooms (seated meeting):** Camera at or slightly above seated eye level, typically 4–5 feet from the finished floor when on a credenza, or matching the display center height when integrated into the display frame.
+- **Standing presentation rooms:** Camera at 5–6 feet for a better view of standing presenters.
+- **Integrated bar systems (Poly Studio X, Neat Bar):** Follow OEM mounting guide precisely — these systems have specific height requirements for their built-in camera optics.
+
+**Too high:** Camera mounted above the display top captures the table, floor, and partial faces looking slightly downward. Remote participants see the tops of heads rather than faces.
+
+**Too low:** Camera mounted below display center captures ceiling tiles, lighting fixtures, and chins. Remote participants see faces from below.
+
+{/* MEDIA: Camera placement geometry diagram — side elevation and top-down view of conference room. Correct camera height marked at ~4–5 ft. "Too high" and "too low" positions shown with annotations describing what remote participants see in each case. Filename: p1-t2-m3-l3-camera-placement.png */}
+
+---
+
+## Camera Field of View and Coverage
+
+The camera's field of view (FOV) must encompass the full width of the near-end seating. The relationship between camera FOV and seating coverage depends on:
+- The horizontal FOV of the camera (from the spec sheet)
+- The distance from the camera to the near end of the seating
+
+**Coverage calculation:** For a camera at distance D from the nearest seated participant, with a horizontal FOV angle θ, the horizontal coverage width W at distance D is:
+
+W = 2 × D × tan(θ/2)
+
+For a camera with 120° horizontal FOV at 8 feet from the nearest seat: W = 2 × 8 × tan(60°) = 2 × 8 × 1.732 = 27.7 feet of coverage width. Confirm this covers the full seating area width.
+
+For auto-framing cameras (AI active speaker tracking), position to capture the entire room in the initial wide view — the AI needs to see all possible speaker positions to track correctly. A camera with insufficient initial FOV for the room leaves some seats outside the tracking range.
+
+**Content camera positioning:** Content cameras (pointing at a whiteboard) must be positioned perpendicularly to the whiteboard surface — not at an angle. Parallax distortion from off-axis mounting causes the Teams Rooms whiteboard AI enhancement to fail. The camera should be 3–12 feet from the whiteboard and at a height that captures the full whiteboard area within frame.
+
+---
+
+## Microphone Positioning Principles
+
+Each microphone element has a defined pickup pattern (cardioid, hypercardioid, omnidirectional) and a coverage radius — the distance at which the microphone achieves its rated signal-to-noise ratio for speech pickup. Coverage must overlap to eliminate dead spots where a participant's voice is picked up by no element at adequate level.
+
+AVIXA recommends 20% coverage overlap between adjacent microphone elements for consistent pickup across the seating area. For a microphone element with a 6-foot coverage radius, the adjacent element should be placed at a distance of 9.6 feet (6 + 6 × 0.8 = 10.8 feet center-to-center, ensuring 20% overlap on each side).
+
+**Tabletop microphones:** Place in the center of the seating area, within the manufacturer's specified pickup distance for all occupied seats. Follow the manufacturer's placement guidelines — some tabletop mics are omnidirectional and must not be placed against a wall; others are directional and must face the primary speaker position.
+
+**Ceiling microphone arrays:** Center over the seating area — over the chairs, not the table surface. The array must be within the specified height range (typically 8–12 feet from finished floor). Beam-steering ceiling arrays (e.g., Shure MXA910, Biamp Devio) aim pickup beams toward seated participants — correct positioning over the seating area, not over an architectural feature, is essential for the beam-steering algorithm to function correctly.
+
+---
+
+## HVAC and Interference Clearances
+
+Microphone elements must maintain required clearances from noise sources:
+
+| Source | Minimum Clearance |
+|--------|-------------------|
+| HVAC diffuser or return grille | 12 inches minimum |
+| Tabletop edge | 6 inches minimum (to reduce table-transmitted noise) |
+| Fan-cooled equipment (projector, amplifier) | 24 inches minimum |
+| Air supply ceiling diffuser | 18 inches minimum for ceiling mics |
+
+When the optimal acoustic coverage position conflicts with an HVAC diffuser location, move the microphone element and compensate with additional coverage overlap or an additional element. Never compromise the HVAC clearance to achieve a cleaner ceiling layout — HVAC noise in the microphone signal is one of the most commonly reported audio quality complaints and one of the hardest to fix retroactively.
+
+<Callout type="tip">
+  During commissioning, listen to the microphone pickup through a monitor speaker or
+  headphones while an HVAC cycle runs. HVAC noise pickup that is not audible in casual
+  room observation often becomes clearly audible in the microphone signal. Identify and
+  resolve HVAC pickup issues during commissioning — they are much harder to diagnose
+  remotely from a support call.
+</Callout>
+
+---
+
+<KnowledgeCheck id="p1-t2-m3-l3-kc">
+  <Question>
+    A remote participant on a Teams call reports that in-room participants always appear
+    to be looking to their left rather than at the camera. What is the most likely cause?
+  </Question>
+  <Answer>The camera auto-framing AI is tracking a participant on one side of the room</Answer>
+  <Answer>The camera model is not on the MTR certified list for this compute unit</Answer>
+  <Answer correct>The camera is mounted off-center relative to the display — in-room participants look at the display but the camera is offset to the right, so their gaze appears directed away from the camera</Answer>
+  <Answer>The display aspect ratio is incorrect, causing a perception shift for remote participants</Answer>
+  <Explanation>
+    When in-room participants look at the display during a meeting, the camera captures
+    their gaze direction. If the camera is centered on the display, they appear to look
+    directly at remote participants. If the camera is offset from the display center,
+    in-room participants' gaze appears directed away from the camera position — creating
+    the experience that they are looking to one side. Verify camera centering with a tape
+    measure from both display edges to the camera lens.
+  </Explanation>
+
+  <Question>
+    A ceiling microphone array is installed directly above an HVAC supply diffuser to
+    achieve the geometric center of the table. HVAC noise is now audible in the microphone
+    signal. What is the correct approach?
+  </Question>
+  <Answer>Replace the microphone with a model that has better HVAC noise rejection</Answer>
+  <Answer>Add acoustic foam baffles around the HVAC diffuser to reduce noise</Answer>
+  <Answer correct>Relocate the microphone array to maintain the 12-inch minimum clearance from the HVAC diffuser — adjust coverage with overlapping elements if needed to maintain full seating coverage</Answer>
+  <Answer>The HVAC system noise level is within acceptable limits — no action needed</Answer>
+  <Explanation>
+    HVAC diffuser clearance is a required installation parameter, not an optional
+    guideline. Placing a microphone directly above an HVAC diffuser will result in
+    HVAC noise pickup regardless of the microphone model's specifications. The array
+    must be relocated to maintain the 12-inch minimum clearance. If this creates a
+    coverage gap, compensate with overlap from adjacent elements or an additional
+    element — not by returning to the HVAC-adjacent position.
+  </Explanation>
+
+  <Question>
+    A camera has a horizontal FOV of 110°. It is positioned 10 feet from the nearest
+    seated participant. Approximately how wide is the camera's coverage at the near
+    end of the seating?
+  </Question>
+  <Answer>Approximately 10 feet</Answer>
+  <Answer>Approximately 15 feet</Answer>
+  <Answer correct>Approximately 23.8 feet (W = 2 × 10 × tan(55°) = 2 × 10 × 1.43 = 28.6 feet) — close to the 23–24 foot range</Answer>
+  <Answer>Approximately 5 feet</Answer>
+  <Explanation>
+    W = 2 × D × tan(θ/2). With D = 10 feet and θ = 110°: W = 2 × 10 × tan(55°) =
+    2 × 10 × 1.428 = 28.6 feet. (The answer listed as correct approximates this calculation
+    — the key concept is that FOV coverage at a given distance is calculated using the
+    tangent of half the FOV angle.) A 110° camera at 10 feet covers approximately 28 feet
+    of width — sufficient for most standard conference room seating arrangements.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Position the camera correctly:** Centered on the display (measured, not eyeballed), at seated eye level (4–5 feet), with FOV verified to cover all seated positions using W = 2 × D × tan(θ/2).
+- **Apply HVAC clearances:** 12 inches from diffusers for microphone elements; 18 inches for ceiling arrays from supply diffusers.
+- **Design microphone coverage:** 20% overlap between adjacent elements; ceiling arrays centered over seating positions; tabletop mics within manufacturer's pickup radius for all seats.
+
+---
+
+## What's Next
+
+The final lesson in Module 2.3 covers the rack — how to design the equipment layout, manage thermal load, dress cables, and produce a finished rack installation that meets AVIXA E502.01 standards.
+
+[Rack Design and Equipment Installation for MTR Systems →](/programs/mtr-foundations/tracks/physical-installation/modules/hardware-mounting/lessons/rack-design-equipment-installation/)

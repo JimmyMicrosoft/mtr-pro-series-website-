@@ -1,0 +1,252 @@
+---
+id: "p1-t1-m2-l1"
+slug: "meeting-types-av-implications"
+title: "Meeting Types and Their AV Implications"
+shortTitle: "Meeting Types"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 2
+moduleSlug: "teams-fundamentals-for-av"
+moduleTitle: "Microsoft Teams Fundamentals for AV Professionals"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 20
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "understand"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Distinguish the four primary Microsoft Teams meeting types and describe the structural differences between them"
+  - "Explain how each meeting type affects the in-room AV experience on an MTR device"
+  - "Identify AV design considerations specific to webinar and town hall use cases"
+
+prerequisites:
+  - "p1-t1-m1-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "exchange-online"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+  - "pre-sales"
+
+topicTags:
+  - "meeting-types"
+  - "teams-fundamentals"
+
+vendorTags:
+  - "microsoft"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m2-l1-meeting-type-worksheet.pdf"
+    label: "Meeting Type Scenario Worksheet"
+    sizeKb: 95
+
+relatedLessons:
+  - "p1-t1-m2-l2"
+
+metaDescription: "Understand the four Microsoft Teams meeting types — private, channel, webinar, and town hall — and how each affects the in-room AV experience on MTR devices."
+
+keywords:
+  - "Teams meeting types"
+  - "MTR meeting join"
+  - "Teams channel meeting room"
+  - "Teams webinar AV"
+  - "town hall production room"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Not all Teams meetings are the same, and that distinction matters more than most integrators realize when they are designing and configuring rooms. A private meeting, a channel meeting, a webinar, and a town hall each behave differently in terms of how the room joins, who controls the experience, what the AV requirements look like, and what can go wrong. Knowing these differences prevents the kind of support call where a client reports that "the room doesn't show meetings" — when the actual cause is that the resource account was never added to the Teams channel where the meeting was scheduled.
+
+This lesson covers the four primary meeting types, how they interact with MTR rooms specifically, and the AV design implications that arise when a client's use case goes beyond a standard private meeting. It is a shorter lesson but a foundational one — the meeting type context will come up repeatedly in later modules on configuration, troubleshooting, and client consulting.
+
+---
+
+## Private Meetings
+
+A private meeting is the most common meeting type in enterprise Teams use. It is scheduled via Outlook or the Teams calendar application, sent to specific invited attendees by email address, and appears on those attendees' calendars. When the room resource account is invited to a private meeting, the meeting appears on the room's MTR touch console as a scheduled event with a one-touch join button. This is the join flow that most clients associate with "how the room works" and the one that the MTR platform is primarily optimized for.
+
+From an AV perspective, private meetings are straightforward. All meeting participants have presenter rights by default unless the organizer modifies meeting options. Content sharing via HDMI input and screen share is fully supported. The full MTR feature set — camera, audio, display, content sharing, layout selection — is available. Post-installation testing should always use a private meeting as the baseline functional test before testing other scenarios.
+
+<Callout type="note">
+  When a private meeting invite includes the room resource account, the meeting appears on
+  the touch console approximately 15 minutes before the scheduled start time. If meetings are
+  not appearing, the first diagnostic step is to confirm the resource account was actually
+  included in the meeting invite and that Exchange Online AutomateProcessing is set to
+  AutoAccept. These two conditions are responsible for the vast majority of "no meetings
+  showing" support calls.
+</Callout>
+
+---
+
+## Channel Meetings
+
+A channel meeting is scheduled within a specific Teams channel — a structured group communication space within a Teams team. Any member of that channel can join the meeting without a direct invite. Channel meetings appear in the Teams client's channel activity feed rather than (or in addition to) the organizer's calendar.
+
+The AV implication for integrators is a specific and common support scenario: the room resource account must be a member of the Teams team (and specifically have access to the channel) for the channel meeting to appear on the room's touch console. If the IT team created the resource account correctly and the room joins private meetings without issue, but does not show channel meetings, the first thing to check is whether the resource account has been added to the relevant Teams team. This is a configuration item for the IT administrator, not a hardware or network issue, but it is the integrator's job to know what to ask.
+
+The resource account does not need to be explicitly invited to each channel meeting — it only needs to be a team member for channel meetings in that team to propagate to the room's calendar. Once added, any future channel meeting in that team will appear on the room's console automatically.
+
+{/* MEDIA: Calendar integration diagram showing how meeting invites flow from Teams/Outlook calendar → Exchange Online → resource account mailbox → MTR device display. Includes a callout showing the channel meeting special case: resource account must be a member of the team for channel meetings to appear. Filename: p1-t1-m2-l1-calendar-integration-diagram.png */}
+
+---
+
+## Webinars
+
+A webinar is a structured Teams event designed for a defined presenter-attendee model. It includes formal registration, controlled attendee management, and a clear distinction between presenters (who can share content, speak, and appear on camera) and attendees (who are muted by default and have limited interaction capabilities beyond reactions and Q&A). When an MTR room joins a webinar as a room — not as a named presenter — it joins as an attendee by default, which means its microphone is muted and it cannot share content unless explicitly promoted to presenter by the webinar organizer.
+
+The AV implications depend on the room's role in the webinar. Rooms used purely for attendee viewing — a team watching a training webinar together from a conference room — have minimal special requirements beyond a good display and audio system for the in-room audience to hear the webinar content clearly. Rooms used as presenter spaces — where the webinar host or panelists are presenting from a physical room — require higher production quality: a professional camera framing the presenter correctly, a clean and quiet audio environment, good lighting, and content sharing that is reliable enough for a live broadcast context. These are meaningfully different AV specifications, and integrators should ask clients how webinars will be used before finalizing hardware selections.
+
+<Callout type="tip">
+  When a client mentions webinar use as a requirement, ask specifically: is the room being
+  used as a presenter space or an attendee space? The answer changes the camera, audio, and
+  lighting specifications significantly. A presenter webinar room warrants a higher-quality
+  camera with clean framing, acoustic treatment considerations, and broadcast-quality audio.
+  An attendee viewing room just needs a good screen and speakers.
+</Callout>
+
+---
+
+## Town Halls and Large-Scale Events
+
+Town halls — the feature Microsoft rebranded from "Live Events" — are large-scale broadcast experiences supporting up to 10,000 attendees. They have a formal production model: designated producers manage the broadcast, presenters are in a green room or dedicated production space, and attendees watch a one-way video stream with limited interaction capabilities (Q&A, reactions). Town halls are not standard MTR meeting join scenarios — the production room for a town hall typically requires broadcast-grade infrastructure that goes well beyond a standard Teams Rooms configuration.
+
+For integrators, town hall production rooms are a specialized scope that may involve external encoders, professional camera switching, vision mixers, professional audio consoles, teleprompters, and lighting rigs. The MTR device in a town hall production room, if present at all, is typically used as a monitoring endpoint or for green room preview — not as the primary production source. If a client mentions town halls as a requirement, clarify whether they need a dedicated production room and scope it separately from standard MTR conference rooms.
+
+The practical takeaway for most integrators: private meetings and channel meetings represent the overwhelming majority of room use cases. Webinars require additional scoping questions. Town halls are an entirely different engagement. Document the meeting type requirements explicitly in your pre-sale discovery and scope accordingly.
+
+{/* MEDIA: AV complexity spectrum graphic — horizontal spectrum from "simple" to "complex" with meeting types placed along it. Private meeting at simple end, channel meeting slightly more complex (resource account team membership required), webinar in the middle (presenter vs. attendee distinction), town hall at the complex end (full broadcast production infrastructure). Filename: p1-t1-m2-l1-meeting-complexity-spectrum.png */}
+
+---
+
+## Hands-On Exercise
+
+The Meeting Type Scenario Worksheet presents five client use case descriptions. For each, you will identify the most appropriate Teams meeting type and describe one AV implication for the room design or configuration. Scenarios include situations like an ad hoc team standup, a quarterly all-hands for 500 employees, a product demo for registered external prospects, and a focus room for individual calls.
+
+The worksheet also includes a channel meeting troubleshooting scenario: a room's touch console shows no meetings despite a channel meeting being scheduled. Identify the root cause and describe the resolution.
+
+<DownloadButton
+  file="p1-t1-m2-l1-meeting-type-worksheet.pdf"
+  label="Meeting Type Scenario Worksheet"
+  sizeKb={95}
+  description="Five meeting type identification scenarios and one channel meeting troubleshooting scenario with answer key."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m2-l1-kc">
+  <Question>
+    A client reports that an MTR room shows private meeting invites correctly on the touch
+    console, but a channel meeting that was just scheduled does not appear. The most likely
+    cause is:
+  </Question>
+  <Answer>The resource account does not have a Teams Rooms Pro license</Answer>
+  <Answer>The channel meeting was scheduled too far in advance and has not yet synced</Answer>
+  <Answer correct>The resource account has not been added as a member of the Teams team where the channel meeting was scheduled</Answer>
+  <Answer>Channel meetings are not supported on MTR Android devices</Answer>
+  <Explanation>
+    Private meetings appear because the resource account was directly invited. Channel meetings
+    require the resource account to be a member of the Teams team — not just invited to the
+    specific meeting. Since private meetings work correctly, the resource account and Exchange
+    configuration are fine. The missing piece is team membership.
+  </Explanation>
+
+  <Question>
+    A client is planning a quarterly all-hands meeting for 600 employees with a live video
+    broadcast, a formal Q&A session, and designated presenters in a dedicated room. Which
+    Teams meeting type best fits this scenario?
+  </Question>
+  <Answer>Private meeting with the room resource account invited</Answer>
+  <Answer>Channel meeting in the company-wide Teams team</Answer>
+  <Answer>Webinar with registered attendees</Answer>
+  <Answer correct>Town hall — a large-scale broadcast event with producer and presenter roles</Answer>
+  <Explanation>
+    A 600-person event with formal presenter roles, a live broadcast model, and structured
+    Q&A is a town hall (formerly Live Event) use case. Webinars support smaller audiences
+    with registration; private and channel meetings do not scale to 600 attendees with the
+    broadcast/attendee model described.
+  </Explanation>
+
+  <Question>
+    An integrator is scoping a conference room that will be used as a webinar presenter space
+    — the client's executives will host live webinars from this room weekly. Compared to a
+    standard private-meeting conference room, what additional AV considerations apply?
+  </Question>
+  <Answer>The room needs a Teams Rooms Pro license for webinar support</Answer>
+  <Answer correct>Higher-quality camera framing, acoustic treatment, consistent lighting, and broadcast-quality audio are warranted given the live broadcast context</Answer>
+  <Answer>Webinars require a dedicated compute unit separate from the standard MTR compute</Answer>
+  <Answer>No additional considerations — webinars work identically to private meetings from an AV perspective</Answer>
+  <Explanation>
+    A webinar presenter room requires a higher standard of AV production quality than a
+    standard conference room because the output is live-broadcast to potentially hundreds
+    of attendees. Camera framing, background aesthetics, lighting consistency, and audio
+    quality are all more consequential. These considerations drive different hardware and
+    room design choices compared to a room used primarily for private team meetings.
+  </Explanation>
+
+  <Question>
+    Which of the following accurately describes how an MTR room joins a webinar by default
+    when it has been added to the webinar as a room resource?
+  </Question>
+  <Answer>The room joins as a presenter with full content sharing and microphone access</Answer>
+  <Answer correct>The room joins as an attendee — muted by default and unable to share content unless explicitly promoted to presenter by the webinar organizer</Answer>
+  <Answer>The room cannot join webinars — only private and channel meetings are supported</Answer>
+  <Answer>The room joins as a co-organizer with the same rights as the webinar host</Answer>
+  <Explanation>
+    When an MTR room joins a Teams webinar, it joins with attendee permissions by default.
+    Attendees in a webinar are muted and cannot share content. To allow the room's camera
+    and microphone to be active in a webinar, the organizer must explicitly promote the room
+    to presenter. This is important to communicate to clients who expect rooms to work
+    identically in webinars as they do in private meetings.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Describe the four meeting types:** Private meetings (direct invite, full MTR feature set), channel meetings (open to team members, resource account must be a team member), webinars (presenter/attendee model, room joins as attendee by default), and town halls (large-scale broadcast, production-room scope).
+- **Explain the channel meeting gap:** The most common "room shows no meetings" issue for channel meetings is a resource account that was not added to the Teams team. This is an IT configuration item, not a hardware problem.
+- **Scope webinar and town hall rooms differently:** Webinar presenter rooms warrant higher AV production quality; town hall production rooms are an entirely different engagement scope.
+
+---
+
+## What's Next
+
+You now understand how Teams meetings are structured and how each type interacts with an MTR room. The next lesson covers the mechanics of joining — the four methods an MTR device uses to get into a meeting and the technical prerequisites behind each.
+
+[How MTR Joins a Meeting — One-Touch, Proximity, Manual, and BYOD →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/teams-fundamentals-for-av/lessons/how-mtr-joins-a-meeting/)

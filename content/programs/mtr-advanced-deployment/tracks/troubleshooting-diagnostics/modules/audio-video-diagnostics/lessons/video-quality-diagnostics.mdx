@@ -1,0 +1,299 @@
+---
+id: "p3-t2-m2-l2"
+slug: "video-quality-diagnostics"
+title: "Video Quality Diagnostics for MTR"
+shortTitle: "Video Quality Diagnostics"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 2
+trackSlug: "troubleshooting-diagnostics"
+trackTitle: "Troubleshooting and Diagnostics Framework"
+
+module: 2
+moduleSlug: "audio-video-diagnostics"
+moduleTitle: "Audio and Video Diagnostics"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "analyze"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Map video quality symptoms (pixelation, blur, freeze, color issues) to the correct diagnostic layer"
+  - "Interpret CQD video stream metrics to identify network- vs. device-originated video problems"
+  - "Verify camera health using Device Manager and USB bandwidth monitoring tools"
+  - "Diagnose IntelliFrame failures by identifying the common environmental and configuration causes"
+  - "Use netstat and Wireshark to observe video stream bitrate variation during a live call"
+
+prerequisites:
+  - "p3-t2-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "av-technician"
+
+topicTags:
+  - "troubleshooting"
+  - "video"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t2-m2-l1"
+  - "p3-t2-m2-l3"
+
+metaDescription: "Video quality diagnostics for Microsoft Teams Rooms — layer-by-layer diagnostic framework, symptom differentiation, CQD video metrics, camera health verification, network bandwidth analysis, and IntelliFrame failure diagnosis."
+
+keywords:
+  - "MTR video troubleshooting"
+  - "Teams Rooms video quality"
+  - "IntelliFrame diagnostics"
+  - "MTR camera health"
+  - "Teams Rooms video freeze"
+  - "CQD video metrics MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Video quality issues in Teams Rooms are often more visible than audio issues — a frozen frame or pixelated image is immediately obvious to every participant — but they can be harder to diagnose because the same symptom can originate at five different layers between the camera hardware and the far-end display. Effective video diagnosis starts with the symptom itself: the specific visual artifact tells you which layer to investigate first. A pixelated image points to a different layer than a blurry image or a frozen frame. This lesson provides the diagnostic framework for mapping video symptoms to layers, interpreting CQD video data, verifying camera health at the OS level, and diagnosing IntelliFrame failures.
+
+---
+
+## Video Quality Diagnostic Layers
+
+Video quality in an MTR system passes through five layers before reaching remote participants. Problems at any layer produce distinct visual artifacts.
+
+| Layer | Diagnostic Tools | Typical Failure Mode |
+|---|---|---|
+| Camera hardware | Physical inspection, firmware check | Lens contamination, overheating, hardware fault |
+| USB connection | Device Manager, USB bandwidth monitoring | Intermittent disconnect, bandwidth saturation |
+| Teams video codec | Teams app MediaStack log, CQD | Bitrate adaptation, encoder fault |
+| Network path | CQD, Wireshark, netstat | Packet loss, bandwidth congestion |
+| Far-end display | Remote participant report, display settings | Scaling, color profile mismatch |
+
+The direction of investigation follows the symptom. A problem reported only by remote participants (they see poor video from the room) starts at the camera and works toward the network. A problem with the room display (room sees poor incoming video) starts at the network and works toward the display.
+
+---
+
+## Symptom Differentiation
+
+Before pulling CQD data or inspecting the USB tree, the specific visual symptom narrows the investigation layer significantly.
+
+**Pixelation and macroblocking (blocky image, especially during motion):**
+
+Pixelation is caused by video codec bitrate reduction — either the encoder is deliberately reducing quality due to perceived network congestion (adaptive bitrate), or actual network packet loss has caused the decoder to produce artifacts. This is a network/codec layer symptom.
+
+- Check CQD: `VideoPacketLossRate` and `VideoLocalFrameLossPercentageAvg` for the affected call
+- Check network during the affected time period for bandwidth saturation events
+
+**Blur (soft image, faces not sharp):**
+
+Blur is a camera layer symptom. Causes:
+- Camera auto-focus searching due to insufficient scene contrast or incorrect focus mode setting
+- Lighting below the camera's minimum threshold (camera boosting gain, introducing noise that reads as blur)
+- Camera set to manual focus but focus not calibrated for the room seating distance
+
+Verify by reviewing a test snapshot from the camera (many PTZ camera management applications allow snapshot capture from the camera's RTSP stream without an active call).
+
+**Freeze (still image, no motion):**
+
+Freeze can occur at three different layers:
+
+| Freeze Pattern | Most Likely Layer |
+|---|---|
+| Freeze then recover within a few seconds | Network: burst packet loss causing decoder to hold last frame |
+| Freeze then reconnect (Teams reconnect banner visible) | Network: severe packet loss or brief connectivity loss |
+| Freeze then black screen | USB/driver: camera source lost; Teams stops rendering |
+| Freeze for exactly the same duration repeatedly | USB: driver crash/reset cycle |
+
+**Color issues (incorrect white balance, green tint, washed out):**
+
+Color problems are camera hardware or settings issues. Most PTZ cameras in Teams Rooms environments should be configured to automatic white balance. If a room has mixed light sources (warm incandescent accent lighting combined with cool fluorescent ceiling lights), the camera may oscillate between color temperatures. Verify camera white balance mode in the camera's web interface or management software.
+
+---
+
+## CQD Video Stream Data
+
+CQD is the primary tool for confirming whether a reported video quality issue has a network root cause. For the affected room, filter CQD by the resource account UPN or room name and examine the following metrics for the affected call session.
+
+**Key CQD video metrics and targets:**
+
+| Metric | Target | Concern Threshold | Action if Exceeded |
+|---|---|---|---|
+| `VideoFrameRateAvg` | ≥30 fps (HD); ≥7 fps minimum | <7 fps | Investigate network bandwidth or USB/driver issue |
+| `VideoLocalFrameLossPercentageAvg` | <1% | >5% | Network packet loss — investigate with Wireshark |
+| `VideoPacketLossRate` | <0.5% | >1% | Network path issue — check DSCP, switch, WAN |
+| `VideoPostFECPacketLossRate` | <0.5% | >1% | Packet loss after forward error correction — significant network problem |
+| `VideoBitRateAvg` | 500–4000 kbps (varies by resolution) | Sustained <500 kbps | Bandwidth constraint or adaptive bitrate reduction |
+| `RoundTripTime` | <100 ms | >150 ms | Network path latency — investigate routing |
+
+**Reading CQD video stream direction:**
+
+CQD reports both the sending stream (from the room to the cloud) and the receiving stream (from the cloud to the room). Identify which stream is poor:
+- If the sending stream shows high packet loss and the remote participants see poor video from the room, the problem is on the uplink path from the room
+- If the receiving stream shows high packet loss and the room display shows poor incoming video, the problem is on the downlink path to the room
+
+---
+
+## Camera Health Verification
+
+When CQD data does not show a network cause and the video issue points to the camera or USB layer, verify camera health at the OS level.
+
+**Device Manager inspection:**
+
+1. On the MTR Windows device (in admin mode), open Device Manager (`devmgmt.msc`).
+2. Expand **Cameras** — the camera should appear here with its full device name (e.g., "Logitech Rally Camera", "Poly Studio USB Camera").
+3. A yellow warning triangle indicates a driver error. Right-click → **Properties → Events** tab to see the specific driver error message.
+4. If the camera appears and disappears from Device Manager during the diagnostic session, this confirms an intermittent USB disconnect (the root cause could be the USB cable, the USB hub, or the camera firmware).
+
+**USB bandwidth monitoring:**
+
+Multiple high-resolution cameras or other high-bandwidth USB devices sharing a USB host controller can saturate the available USB bandwidth. Each USB 3.0 host controller provides approximately 5 Gbps shared across all devices on that controller.
+
+To check USB host controller allocation:
+1. In Device Manager, expand **Universal Serial Bus controllers**.
+2. Right-click a **USB Root Hub** → **Properties → Power** tab — this shows the devices connected to that hub and their power draw (a proxy for USB bandwidth usage).
+3. For a more precise bandwidth measurement, use **USB Tree View** (free Microsoft Sysinternals-adjacent utility) which shows actual bandwidth allocation per host controller.
+
+If bandwidth saturation is confirmed, connect the camera to a different USB host controller (a different physical USB port group on the compute unit) or reduce the camera's video resolution if supported by the camera firmware.
+
+---
+
+## Network Bandwidth Testing During a Video Call
+
+CQD provides retrospective data. During an active video quality issue, use netstat and Wireshark to observe the video stream in real time.
+
+**Using netstat to observe active Teams connections:**
+
+```cmd
+netstat -ano | findstr :3478
+netstat -ano | findstr :3479
+```
+
+Teams media uses UDP ports 3478–3481. Active UDP connections on these ports during a call confirm media is flowing. If no entries appear, Teams may be falling back to TCP 443 (HTTPS).
+
+To observe a specific connection's traffic volume:
+
+```powershell
+# Repeat every 5 seconds to observe state changes
+while ($true) {
+    netstat -s -p UDP | Select-String "Datagrams Sent|Datagrams Received"
+    Start-Sleep -Seconds 5
+}
+```
+
+**Using Wireshark to observe video UDP stream bitrate:**
+
+1. Start a Wireshark capture on the network interface connected to the LAN (not the loopback interface).
+2. Apply the filter: `udp && (udp.port == 3478 || udp.port == 3479 || udp.port == 3480 || udp.port == 3481)`
+3. In Wireshark, use **Statistics → IO Graph** — plot `udp` traffic with a 1-second interval to visualize bitrate over time.
+4. A smooth, consistent bitrate line (typically 1–4 Mbps for a 1080p Teams Rooms send stream) indicates healthy video bandwidth.
+5. Spikes followed by rapid drops in the IO graph indicate TCP retransmit-like behavior if Teams has fallen back to TCP, or burst-loss events on UDP.
+
+**What bitrate variation indicates:**
+
+| Bitrate Pattern | Interpretation |
+|---|---|
+| Smooth 1–4 Mbps, consistent | Healthy video stream |
+| Gradual ramp-up from 200 kbps to 1 Mbps over 30 seconds | Normal codec warm-up (adaptive bitrate) |
+| Abrupt drops from 2 Mbps to 200 kbps repeatedly | Network congestion causing adaptive bitrate reduction |
+| Drops to 0 for 2–5 seconds, then resumes | Brief connectivity interruptions — check switch or upstream link |
+| Continuous 200–400 kbps, never higher | Bandwidth cap or QoS policy limiting video bitrate |
+
+---
+
+## IntelliFrame Diagnostic
+
+IntelliFrame (Microsoft's AI-based room framing technology, available on compatible cameras such as the Surface Hub and selected certified camera models) automatically frames meeting participants within the camera view. When IntelliFrame fails to frame correctly — or fails to activate at all — the following diagnostics apply.
+
+**Symptom: IntelliFrame shows a wide room shot instead of framing participants.**
+
+Possible causes and checks:
+
+| Cause | Verification | Remediation |
+|---|---|---|
+| Insufficient room lighting | Measure lux at the seating area (target: ≥200 lux for face detection) | Add or reposition lighting; confirm no backlight from windows |
+| Camera field of view too narrow | Review the camera's horizontal FOV spec vs. room width and seating distance | Use a wider FOV camera or reposition for full coverage |
+| Participants outside camera range | Test with participants seated at maximum expected distance from camera | Reposition camera or adjust mounting height |
+| IntelliFrame disabled in device settings | Check Teams Rooms app Settings → Camera | Enable IntelliFrame in the device settings |
+| Camera firmware outdated | Check firmware version in camera management interface | Update camera firmware to latest certified version |
+
+**Symptom: IntelliFrame frames an empty area instead of where participants are seated.**
+
+This indicates the AI is detecting an object in the wrong area of the frame (a whiteboard reflection, a TV displaying faces, a window with pedestrian movement). Remediate by:
+- Covering or repositioning the interfering object temporarily to confirm it is the cause
+- Adjusting camera tilt to reduce the visible area containing the interference
+- In some certified cameras: accessing the IntelliFrame exclusion zone settings to mark the false-detection area as excluded
+
+---
+
+<KnowledgeCheck id="p3-t2-m2-l2-kc">
+  <Question>
+    Remote participants in a recurring weekly meeting report that the Teams
+    Rooms video from room AV-301 looks pixelated and blocky for the first
+    10–15 minutes of every meeting, then clears up and remains good for the
+    rest of the meeting. The room occupants see no issues with incoming video.
+    CQD data for the last three instances of this meeting shows
+    VideoFrameRateAvg averaging 8 fps for the first 15 minutes and 28 fps
+    for the remainder. VideoPacketLossRate is 0% throughout all three calls.
+    What is the most likely explanation?
+  </Question>
+  <Answer>The camera has a lens contamination issue that causes the autofocus to hunt for the first 15 minutes until the lens warms up and the contamination becomes less optically significant</Answer>
+  <Answer>A firewall rule is blocking Teams video traffic for the first 15 minutes of the meeting session before a time-based exception allows it through</Answer>
+  <Answer correct>The pattern is consistent with normal adaptive bitrate codec warm-up combined with a constrained uplink bandwidth. VideoPacketLossRate is 0% throughout, eliminating network packet loss as a cause. The gradual improvement from 8 fps to 28 fps over 15 minutes matches the Teams video codec's adaptive bitrate algorithm ramping up from a conservative initial estimate toward the actual available bandwidth. This is most likely caused by a bandwidth constraint at the meeting start time (competing traffic on the uplink during the start of the business day when the meeting begins, which then eases as other users' transfers complete). The resolution is to verify the uplink bandwidth during the first 15 minutes of the meeting start time using a network monitoring tool or by checking WAN utilization graphs at that time slot</Answer>
+  <Answer>IntelliFrame is causing the low frame rate by consuming CPU resources for person detection during the first 15 minutes until it completes its initial room scan and enters steady-state tracking mode</Answer>
+  <Explanation>
+    The combination of zero packet loss and low frame rate that gradually improves
+    is the characteristic signature of adaptive bitrate codec warm-up limited by
+    available bandwidth, not by packet loss. If packet loss were the cause,
+    VideoPacketLossRate would show elevated values during the affected period.
+    Camera issues (lens, autofocus) would not produce a digital pixelation/
+    macroblocking artifact — they would produce blur. IntelliFrame CPU load
+    does not directly throttle the video frame rate in this consistent pattern.
+    The 15-minute improvement window correlating with a specific recurring
+    meeting time (implying a consistent time-of-day trigger) strongly suggests
+    competing bandwidth consumption at meeting start — investigate WAN utilization
+    at that specific time each week to confirm.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Layer mapping:** Camera hardware → USB connection → Teams video codec → network path → far-end display. Symptom type determines the starting layer.
+- **Symptom differentiation:** Pixelation/macroblocking = network/codec; blur = camera focus/lighting; freeze = USB/driver or network (pattern distinguishes which); color issues = camera settings.
+- **CQD video metrics:** `VideoFrameRateAvg` target ≥7 fps; `VideoLocalFrameLossPercentageAvg` target <5%; `VideoPacketLossRate` target <1%. Check both the sending and receiving streams to determine the affected direction.
+- **Camera health:** Device Manager confirms camera presence and driver state; USB Root Hub power tab and USB Tree View quantify bandwidth allocation; intermittent appearance in Device Manager confirms a USB disconnect cycle.
+- **Network testing during a call:** netstat confirms active UDP media connections; Wireshark IO Graph shows real-time bitrate variation to distinguish healthy codec ramp-up from congestion-driven drops.
+- **IntelliFrame:** The four most common failure causes are insufficient lighting, narrow FOV, participants outside camera range, and the feature being disabled in settings. Verify lux levels at the seating area first.
+
+---
+
+## What's Next
+
+[Peripheral Failure Patterns →](/programs/mtr-advanced-deployment/tracks/troubleshooting-diagnostics/modules/audio-video-diagnostics/lessons/peripheral-failure-patterns/)

@@ -1,0 +1,123 @@
+---
+id: "p2-t1-m1"
+slug: "mtr-network-architecture"
+title: "MTR Network Architecture and Design"
+shortTitle: "Network Architecture"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 1
+trackSlug: "network-infrastructure-qos"
+trackTitle: "Network Infrastructure and QoS"
+
+moduleIndex: 1
+
+type: "module"
+duration: 125
+lessonCount: 5
+
+difficulty: "intermediate"
+bloomLevelRange: "understand–apply"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Design a VLAN and subnet architecture for an MTR deployment that separates room devices from general office traffic"
+  - "Identify all required Microsoft 365 URLs, IP ranges, and ports for MTR connectivity and translate them into firewall rules"
+  - "Configure DSCP-based QoS marking for Teams media traffic on switches and endpoint devices"
+  - "Evaluate a Wi-Fi network design against MTR requirements and identify configuration issues that affect meeting quality"
+
+prerequisites:
+  - "p1-t3-m1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "network"
+  - "vlan"
+  - "qos"
+  - "dscp"
+  - "firewall"
+  - "wifi"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t1-m1-resource-pack.zip"
+    label: "Module 1.1 Resource Pack"
+    sizeKb: 520
+
+metaDescription: "MTR network architecture — VLAN design, Microsoft 365 firewall requirements, DSCP QoS implementation, and Wi-Fi design for Teams Rooms. 5 lessons, 125 minutes."
+
+keywords:
+  - "MTR VLAN network design"
+  - "Teams Rooms firewall requirements"
+  - "MTR QoS DSCP configuration"
+  - "Teams Rooms Wi-Fi requirements"
+  - "Microsoft 365 network connectivity MTR"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+MTR devices live at the intersection of the AV world and the enterprise network. Getting the network layer right — before devices are deployed — prevents the majority of post-deployment support issues. This module covers the network design decisions that set up an MTR deployment for reliability: VLAN and subnet design, the Microsoft 365 connectivity requirements that define the firewall rule set, QoS implementation that protects meeting media from competing traffic, and Wi-Fi design for rooms that cannot use wired connections.
+
+---
+
+## What you will learn
+
+By completing this module, you will be able to:
+
+- Design a network topology for MTR deployment including dedicated VLANs, IP addressing, and inter-VLAN routing considerations
+- Build a complete firewall rule set from Microsoft's published M365 network requirements for Teams Rooms
+- Implement DSCP QoS marking on switches and MTR endpoints and verify correct marking in the network path
+- Evaluate a Wi-Fi environment against MTR requirements including band, channel width, roaming behavior, and client density
+
+---
+
+## Lessons in this module
+
+This module contains **5 lessons** with an estimated total duration of **2 hours 5 minutes**.
+
+| # | Lesson | Format | Duration |
+|---|--------|--------|----------|
+| 1 | [MTR Network Topology — VLANs, Subnets, and Segmentation](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/mtr-network-topology/) | Reading | 25 min |
+| 2 | [Microsoft 365 Connectivity Requirements — URLs, IPs, and Ports](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/m365-connectivity-requirements/) | Reading | 25 min |
+| 3 | [QoS Fundamentals — DSCP Marking and Traffic Classification](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/qos-fundamentals/) | Reading | 25 min |
+| 4 | [QoS Implementation — Switch Configuration and Policy Application](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/qos-implementation/) | Reading | 25 min |
+| 5 | [Wi-Fi Design and Validation for MTR Deployments](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/mtr-network-architecture/lessons/wifi-design-validation/) | Reading | 25 min |
+
+---
+
+## Downloadable resources
+
+<DownloadButton
+  file="p2-t1-m1-resource-pack.zip"
+  label="Module 1.1 Resource Pack"
+  sizeKb={520}
+  description="Contains all reference materials for this module: MTR network design checklist, M365 URL/IP/port reference for firewall configuration, DSCP QoS quick reference card, switch QoS configuration templates, and Wi-Fi validation checklist."
+/>
+
+---
+
+## What's next
+
+Module 1.2 builds on the network foundation by examining bandwidth requirements, media codecs, and the Call Quality Dashboard — the tools for validating and monitoring network performance after deployment.
+
+[Continue to Module 1.2: Bandwidth, Media Flow, and Call Quality →](/programs/mtr-systems-integration/tracks/network-infrastructure-qos/modules/bandwidth-media-flow/)

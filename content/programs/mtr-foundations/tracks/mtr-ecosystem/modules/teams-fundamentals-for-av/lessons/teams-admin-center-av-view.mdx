@@ -1,0 +1,278 @@
+---
+id: "p1-t1-m2-l3"
+slug: "teams-admin-center-av-view"
+title: "Teams Admin Center — The AV Integrator's View"
+shortTitle: "Teams Admin Center"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 1
+trackSlug: "mtr-ecosystem"
+trackTitle: "The MTR Ecosystem"
+
+module: 2
+moduleSlug: "teams-fundamentals-for-av"
+moduleTitle: "Microsoft Teams Fundamentals for AV Professionals"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Navigate the Teams Admin Center to the relevant sections for MTR device management"
+  - "Perform a post-installation device health check in TAC and interpret device status and peripheral health indicators"
+  - "Identify the meeting policy assigned to a resource account and understand how policies affect room behavior"
+
+prerequisites:
+  - "p1-t1-m2-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "programmer"
+  - "support"
+  - "architect"
+
+topicTags:
+  - "admin-center"
+  - "device-health"
+  - "meeting-policies"
+
+vendorTags:
+  - "microsoft"
+
+videoId: ""
+thumbnailAlt: ""
+
+downloads:
+  - file: "p1-t1-m2-l3-tac-lab-report.pdf"
+    label: "TAC Lab Report Template"
+    sizeKb: 75
+
+relatedLessons:
+  - "p1-t1-m2-l2"
+  - "p1-t1-m2-l4"
+
+metaDescription: "Navigate the Microsoft Teams Admin Center as an AV integrator — device health checks, peripheral status indicators, policy assignment, and post-installation verification."
+
+keywords:
+  - "Teams Admin Center device health"
+  - "MTR device management"
+  - "Teams Rooms TAC"
+  - "MTR peripheral health"
+  - "Teams Admin Center integrator"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+The Teams Admin Center (TAC) is where Microsoft gives IT administrators a unified view of every Teams-connected device, user, and policy in their organization. For AV integrators, it serves a different but equally important purpose: it is the place where you confirm, after installation, that the room is actually working — not just powered on and signed in, but healthy, with all peripherals connected and recognized, showing the correct app version, and assigned to the correct meeting policy.
+
+TAC is not an integrator tool in the sense that you will manage it day to day — that is IT's job. But you need to be able to navigate it during commissioning, interpret what you see, and communicate clearly with IT when something requires their attention. An integrator who has never opened TAC and an integrator who knows exactly what to look for are going to have very different commissioning conversations.
+
+---
+
+## Navigating to the Right Sections
+
+The Teams Admin Center lives at admin.teams.microsoft.com. Access requires a Microsoft 365 account with Teams Administrator, Teams Device Administrator, or Global Administrator role. During commissioning, the client's IT administrator either provides a temporary read-only account or is present alongside you to run the verification steps. Either way, you need to know where to look.
+
+The sections relevant to AV integrators are:
+
+**Devices → Teams Rooms on Windows (or Teams Rooms on Android):** This is the primary view for MTR device management. It shows every enrolled Teams Rooms device in the tenant, its online/offline status, its health state, its last activity time, its current app version, and the resource account it is signed into. This is where you confirm the device is healthy after commissioning.
+
+**Users:** This section lists all users in the tenant, including resource accounts. You can search for the room resource account here to verify its license assignment, its assigned meeting policy, and its account status. This is how you confirm from the TAC side that the resource account is correctly licensed and configured.
+
+**Meetings → Meeting Policies:** This section shows all meeting policies defined in the tenant. You can inspect individual policies to understand what they allow or restrict — content sharing, lobby settings, recording, and other behaviors that affect how the room functions in meetings.
+
+**Analytics & Reports:** Call quality data and device usage reports. Less relevant during initial commissioning but important for managed services and ongoing support work.
+
+{/* MEDIA: Annotated screenshot of the Teams Admin Center left navigation panel showing the four relevant sections highlighted: Devices → Teams Rooms on Windows, Users, Meetings → Meeting Policies, and Analytics & Reports. Callout labels identify each section and its purpose for AV integrators. Filename: p1-t1-m2-l3-tac-navigation.png */}
+
+---
+
+## Device Health in TAC
+
+When an MTR device is signed in and connected to the network, it registers with Microsoft's cloud services and appears in the TAC Devices section. The device detail page shows everything you need for a post-installation health check. Here is what each indicator means:
+
+**Device status (Healthy / Critical / Non-urgent / Offline):** Healthy means the device is online, all recognized peripherals are functioning, and the app is running. Critical or Non-urgent indicates a problem — TAC will show which specific issue triggered the status. Offline means the device has not checked in with Microsoft's cloud services recently — typically a network issue or the device is powered off.
+
+**Peripheral health (Camera, Microphone, Speaker):** TAC separately reports the health of each peripheral category. A green indicator means the device is recognized and functioning. A red or warning indicator means TAC cannot verify that peripheral. Camera unhealthy usually indicates a USB connection issue, driver problem, or that the camera is not on the certified list. Audio unhealthy may indicate an incorrect default device assignment in the Teams Rooms app settings or a USB enumeration failure.
+
+**App version:** The current version of the Teams Rooms application running on the device. Confirm this matches the expected current release — a significantly out-of-date version may indicate that app auto-update is blocked or that the device has not had network connectivity recently.
+
+**Last activity:** The timestamp of the last time the device checked in with Microsoft's services. A last activity time that is several hours or days old when the device is supposed to be online suggests a network connectivity issue or that the device was offline.
+
+<Callout type="info">
+  TAC peripheral health reports what the Teams Rooms application reports to Microsoft — it
+  is based on the app's internal device detection, not on a direct hardware test. A camera
+  that appears "healthy" in TAC is recognized and communicating with the app; a camera that
+  appears "unhealthy" is either not recognized or reporting an error state. TAC is the first
+  diagnostic checkpoint — not the definitive hardware test.
+</Callout>
+
+{/* MEDIA: Annotated TAC device detail page screenshot showing: device status indicator (Healthy), peripheral health tiles (Camera, Microphone, Speaker — each with status), app version field, OS version field, last activity timestamp, and resource account UPN. Callout labels identify each field and its diagnostic significance. Filename: p1-t1-m2-l3-tac-device-detail.png */}
+
+---
+
+## Interpreting Peripheral Health Problems
+
+When TAC shows an unhealthy peripheral, the path to diagnosis follows a consistent pattern. Start with the physical connection, then move to USB enumeration, then to device recognition by the Teams Rooms app.
+
+For a camera showing unhealthy: check that the USB cable is firmly seated at both the camera and the compute unit. If the cable is secure, check the Windows Device Manager (accessible via a keyboard and mouse connected to the compute unit during commissioning) to see if the camera appears as a recognized USB device. If it does not appear, try a different USB port. If it appears with an error flag, a driver issue or USB power management setting may be the cause. If the camera appears in Device Manager but is still unhealthy in TAC, the issue may be that the camera is not on the certified list for this specific compute unit combination.
+
+For audio showing unhealthy: verify the audio device's USB connection. Then check the Teams Rooms app settings (accessible via the admin PIN on the touch console) to confirm the correct microphone and speaker are selected as the default devices. Occasionally after a device restart, the app selects a different default audio device — verifying this in the app settings is quick and resolves a significant proportion of audio health issues.
+
+For a device showing offline: confirm the network connection (Ethernet cable or wireless connection), verify the device has obtained an IP address (check the network settings in the Teams Rooms app or via Windows Settings), and confirm that the firewall allows outbound connections to Microsoft 365 endpoints. The Microsoft 365 endpoint documentation lists the specific URLs and IP ranges that must be accessible.
+
+---
+
+## Meeting Policies and Their Effect on Rooms
+
+Meeting policies in Teams Admin Center govern what meeting participants can do. When a policy is assigned to the room's resource account, it controls the room's behavior in meetings — including what it can present, who it can admit, and whether recording is allowed. Integrators do not typically create or modify meeting policies, but understanding what policies do and how to identify which policy a resource account has prevents a category of support call where a room "doesn't work" when in fact it is functioning exactly as its policy dictates.
+
+Common policy settings that affect rooms: the lobby setting (who is admitted automatically versus held in the lobby), content sharing permissions (whether the room can present), recording permissions (whether recording can be initiated from the room), and whether external users can be admitted. A room that consistently holds external participants in the lobby, or that cannot initiate a recording despite the client expecting it to, typically has a restrictive meeting policy assigned — not a hardware problem.
+
+To check a resource account's policy assignment: in TAC, go to Users, search for the resource account by UPN, open the account details, and look at the assigned policies section. The meeting policy name will be listed there. Cross-reference that policy name against the Meetings → Meeting Policies section to see what the policy allows. If the policy is too restrictive for the room's intended use, the IT administrator needs to assign a more permissive policy to the resource account — this is not an integrator task but an IT configuration item to document in your handoff notes.
+
+<Callout type="warning">
+  Never modify meeting policies in TAC without explicit authorization from the client's IT
+  team. Meeting policies are tenant-wide settings that may affect many users beyond the
+  room resource account. Policy changes require IT administrator authority and should be
+  documented. If a policy needs to change for a room, flag it to IT and document the
+  request — do not make the change yourself.
+</Callout>
+
+---
+
+## Configuration Profiles (Pro License)
+
+Teams Rooms Pro licenses unlock configuration profiles in TAC — a structured way to push device settings to one or many rooms without manual XML file deployment. Configuration profiles can set display configuration, meeting defaults, device settings, and themes. For integrators managing large deployments or offering managed services, configuration profiles significantly reduce the per-device configuration time.
+
+Understanding that configuration profiles exist and what they can manage is important at the Foundation level even if you are not yet deploying them. Clients with Pro licenses may ask why their IT team is using TAC profiles versus XML files, or may ask which settings are managed through which mechanism. The short answer: configuration profiles handle a subset of settings accessible through TAC; the full XML configuration schema handles a broader range of device settings and is typically the method used for detailed, room-specific configuration during initial deployment.
+
+---
+
+## Hands-On Exercise
+
+The TAC Lab Report template guides you through a structured TAC navigation exercise. Using either a demo tenant (provided by your organization or a Microsoft demo environment) or a detailed screenshot walkthrough, you will locate a specific room device, read its peripheral health status, identify its assigned meeting policy, and record its current app version. The report template provides the structure for documenting your findings.
+
+<DownloadButton
+  file="p1-t1-m2-l3-tac-lab-report.pdf"
+  label="TAC Lab Report Template"
+  sizeKb={75}
+  description="Structured lab report for the TAC navigation exercise. Records device health, peripheral status, app version, and policy assignment for one device."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t1-m2-l3-kc">
+  <Question>
+    After commissioning an MTR Windows room, you check TAC and find the camera peripheral
+    health showing as unhealthy. All other peripherals show healthy. What is the most
+    appropriate first diagnostic step?
+  </Question>
+  <Answer>Replace the camera with a spare unit</Answer>
+  <Answer>Restart the MTR device and check TAC again</Answer>
+  <Answer correct>Check the USB cable connection at both the camera and the compute unit, and verify the camera appears in Windows Device Manager</Answer>
+  <Answer>Check the Teams Admin Center analytics reports for call quality data</Answer>
+  <Explanation>
+    TAC reports what the Teams Rooms app detects. A camera showing unhealthy typically
+    indicates a USB connection or device recognition issue. The first step is to verify
+    physical connection, then check Device Manager to see if the OS recognizes the camera
+    as a USB device. Restarting may help if the camera was not connected when the device
+    booted, but checking the connection first is faster and more informative.
+  </Explanation>
+
+  <Question>
+    An MTR room consistently holds external meeting participants in the lobby instead of
+    admitting them automatically. The hardware, network, and resource account are all
+    correctly configured. What is the most likely cause?
+  </Question>
+  <Answer>External participants cannot join Teams meetings from MTR rooms</Answer>
+  <Answer correct>The meeting policy assigned to the resource account has a restrictive lobby setting that holds external participants for organizer admission</Answer>
+  <Answer>The Teams Rooms Pro license is required to admit external participants</Answer>
+  <Answer>Proximity join must be disabled to allow external participant admission</Answer>
+  <Explanation>
+    Lobby behavior is controlled by meeting policy settings assigned to the resource account.
+    A policy that holds external (non-tenant) participants in the lobby is a common default
+    security setting. This is not a hardware or licensing issue — it is a policy configuration
+    that the IT administrator can adjust by modifying the meeting policy or assigning a
+    different policy to the resource account.
+  </Explanation>
+
+  <Question>
+    Where in the Teams Admin Center would you find the meeting policy assigned to a specific
+    room resource account?
+  </Question>
+  <Answer>Devices → Teams Rooms → device detail page</Answer>
+  <Answer correct>Users → search for resource account UPN → account details → assigned policies</Answer>
+  <Answer>Meetings → Meeting Policies → policy list</Answer>
+  <Answer>Analytics & Reports → device usage</Answer>
+  <Explanation>
+    Meeting policy assignments to specific accounts are found in the Users section. Search
+    for the resource account by its UPN (email address), open the account, and look at the
+    assigned policies section. The Meetings → Meeting Policies section shows the policy
+    definitions but not which accounts they are assigned to. Device details show device
+    health but not policy assignments.
+  </Explanation>
+
+  <Question>
+    A client with Teams Rooms Pro licenses asks about the difference between using TAC
+    configuration profiles versus XML files for device configuration. Which response is
+    most accurate?
+  </Question>
+  <Answer>Configuration profiles and XML files configure the same settings — they are interchangeable</Answer>
+  <Answer>XML files are being deprecated and all configuration should use TAC profiles</Answer>
+  <Answer correct>Configuration profiles manage a subset of settings through TAC and are good for fleet management; XML files cover a broader range of device-specific settings and are typically used for detailed initial deployment configuration</Answer>
+  <Answer>TAC configuration profiles require a Global Administrator role while XML files can be deployed by the integrator</Answer>
+  <Explanation>
+    TAC configuration profiles (Pro license feature) manage a defined set of settings
+    through a GUI interface and can be pushed to many devices simultaneously — valuable for
+    fleet management. The XML configuration file schema covers a broader range of device
+    settings, including some not yet available in TAC profiles, and is typically the primary
+    configuration method for initial deployment. Both mechanisms can coexist; IT teams
+    often use profiles for fleet-wide settings and XML for room-specific customization.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Navigate TAC for commissioning:** admin.teams.microsoft.com → Devices → Teams Rooms to find the device. Users → search resource account to verify license and policy assignment.
+- **Interpret device health:** Healthy means online with all peripherals functional. Peripheral-specific unhealthy indicators point to USB, driver, or device recognition issues that follow a consistent diagnostic path.
+- **Understand policy implications:** Meeting behavior (lobby, content sharing, recording) is governed by the meeting policy assigned to the resource account — not hardware. Policy issues are IT configuration items, not integrator fixes.
+- **Know the limits of your role in TAC:** Verify and document during commissioning; do not modify policies or tenant settings without explicit IT authorization.
+
+---
+
+## What's Next
+
+The final lesson in Module 1.2 goes deep on resource accounts — the Exchange Online configuration behind the scenes, the PowerShell commands used to verify correct setup, and the most common misconfigurations that prevent rooms from working.
+
+[Resource Accounts Explained — Mailbox Configuration and Policy Assignment →](/programs/mtr-foundations/tracks/mtr-ecosystem/modules/teams-fundamentals-for-av/lessons/resource-accounts-explained/)

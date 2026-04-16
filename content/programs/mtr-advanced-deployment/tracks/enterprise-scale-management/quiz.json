@@ -1,0 +1,128 @@
+{
+  "trackSlug": "enterprise-scale-management",
+  "trackTitle": "Enterprise-Scale Management",
+  "programSlug": "mtr-advanced-deployment",
+  "passingScore": 8,
+  "questions": [
+    {
+      "id": 1,
+      "text": "An enterprise has 200 MTR for Windows devices across 15 sites. The security team requires all MTR devices to run only Microsoft-approved applications and have BitLocker enabled. What Intune policy type is used to enforce these requirements?",
+      "answers": [
+        "Intune App Protection Policy applied to the Teams Rooms app.",
+        "Intune Compliance Policy with rules for BitLocker encryption and a corresponding Conditional Access policy that blocks non-compliant devices.",
+        "An Azure AD group policy object (GPO) pushed via Intune.",
+        "A Teams Admin Center Configuration Profile with the 'Secure Mode' toggle enabled."
+      ],
+      "correct": 1,
+      "explanation": "Intune Compliance Policies define the security requirements (such as BitLocker enabled, minimum OS version) that a device must meet. Combined with a Conditional Access policy that blocks non-compliant devices from accessing Microsoft 365 resources, this enforces the security posture across the MTR fleet."
+    },
+    {
+      "id": 2,
+      "text": "An administrator needs to control when Windows Updates are applied to MTR devices to avoid disruptions during business hours. Which Intune configuration achieves this?",
+      "answers": [
+        "Set the MTR devices to 'Windows Update for Business' deferred channel via an Intune Update Ring policy, with active hours defined to exclude business hours.",
+        "Disable Windows Update entirely on all MTR devices using a registry key deployed via Intune.",
+        "Configure Windows Update in Teams Admin Center under the Devices section.",
+        "Manually approve updates for each device in the Microsoft Update Catalog."
+      ],
+      "correct": 0,
+      "explanation": "Intune Windows Update Rings allow administrators to defer updates, define active hours (when the device is in use), and set maintenance windows. This ensures MTR devices update outside business hours without disabling updates entirely, which would create security vulnerabilities."
+    },
+    {
+      "id": 3,
+      "text": "A PowerShell script needs to create 50 MTR resource accounts in bulk. Which PowerShell modules are required, and what is the correct creation sequence?",
+      "answers": [
+        "Only the AzureAD module is needed; run New-AzureADUser for each account.",
+        "MicrosoftTeams and ExchangeOnlineManagement modules; create the Exchange Online room mailbox first, then assign the Teams Rooms licence, then configure CalendarProcessing.",
+        "ExchangeOnlineManagement only; the Teams Rooms app automatically creates accounts when it first boots.",
+        "MSOnline and MicrosoftTeams; create the Azure AD user account first, convert it to a room mailbox, then assign licences."
+      ],
+      "correct": 1,
+      "explanation": "Bulk resource account creation requires both the MicrosoftTeams and ExchangeOnlineManagement modules. The recommended sequence is: create the room mailbox (New-Mailbox -Room), assign the Teams Rooms licence, then configure CalendarProcessing settings. The correct module pairing and sequence prevents dependency failures."
+    },
+    {
+      "id": 4,
+      "text": "What is the purpose of device tags and grouping in Teams Admin Center, and how do they assist enterprise-scale management?",
+      "answers": [
+        "Tags are used to assign Teams meeting policies directly to individual devices.",
+        "Tags and groups allow administrators to organise devices by site, room type, or deployment status, enabling bulk configuration profile assignments, filtered views, and targeted update management across large fleets.",
+        "Tags encrypt device communication to prevent eavesdropping on management traffic.",
+        "Groups in Teams Admin Center sync with Active Directory OUs to inherit Group Policy settings."
+      ],
+      "correct": 1,
+      "explanation": "Device tags and groups in Teams Admin Center are organisational tools that allow administrators to categorise devices (e.g., by site, room type, or status), apply configuration profiles to a group simultaneously, filter the device inventory, and manage update schedules — essential for operating a fleet of hundreds of rooms."
+    },
+    {
+      "id": 5,
+      "text": "The Teams Rooms Pro Management agent must be installed on MTR Windows devices for the Pro Management portal to function. Under what condition is this agent typically already present?",
+      "answers": [
+        "The agent is pre-installed on all Windows 11 devices regardless of whether they are MTR devices.",
+        "The agent is bundled with the Teams Rooms app on MTR for Windows devices with a Teams Rooms Pro licence assigned.",
+        "The agent must always be manually downloaded and installed from the Microsoft Download Center.",
+        "The agent is only available for Android-based MTR devices, not Windows."
+      ],
+      "correct": 1,
+      "explanation": "The Teams Rooms Pro Management agent is bundled with the Teams Rooms for Windows application. When a Teams Rooms Pro licence is assigned to the resource account, the agent activates and begins reporting device health and telemetry to the Pro Management portal automatically."
+    },
+    {
+      "id": 6,
+      "text": "An enterprise wants to use Microsoft Endpoint Configuration Manager (MECM/SCCM) alongside Intune for MTR Windows devices. What is the term for this deployment model, and what is the key consideration?",
+      "answers": [
+        "Hybrid Azure AD Join; MTR devices must be domain-joined to on-premises AD before Intune can manage them.",
+        "Co-management; the administrator must carefully define which management authority (MECM or Intune) controls which workloads (compliance, apps, updates) to avoid conflicting policies.",
+        "Dual-enrolment; each MTR device is enrolled twice — once in MECM and once in Intune — and policies are merged automatically.",
+        "Cloud-only management; MECM cannot be used with Intune-enrolled MTR devices and must be decommissioned."
+      ],
+      "correct": 1,
+      "explanation": "Co-management allows devices to be managed simultaneously by both MECM and Intune. The critical configuration is workload management: administrators must define which platform controls which policy areas (e.g., compliance, device configuration, software updates) to prevent conflicting settings and unpredictable behaviour on MTR devices."
+    },
+    {
+      "id": 7,
+      "text": "An organisation operates offices in five countries with strict data residency requirements. When configuring Conditional Access Named Locations for MTR devices, what security benefit does this provide?",
+      "answers": [
+        "Named Locations encrypt all traffic from the specified IP ranges before it reaches Microsoft 365.",
+        "Named Locations allow Conditional Access policies to permit MTR resource account sign-ins only from known office network IP addresses, reducing the risk of account compromise from external locations.",
+        "Named Locations automatically apply QoS DSCP markings to traffic from registered IP ranges.",
+        "Named Locations synchronise time zones to MTR devices in each country."
+      ],
+      "correct": 1,
+      "explanation": "Configuring Conditional Access Named Locations with the office IP address ranges allows policies to restrict MTR resource account sign-ins to those known locations. Any attempt to sign in from an unrecognised location (e.g., an attacker using stolen credentials remotely) would be blocked."
+    },
+    {
+      "id": 8,
+      "text": "An enterprise XML profile management strategy for MTR for Windows involves storing master SkypeSettings.xml files in a central repository and distributing updates via Intune. Which approach best ensures devices receive updated configuration without requiring manual reboots for routine changes?",
+      "answers": [
+        "Store the XML in an Azure Blob Storage container and configure each MTR device to poll for updates using a scheduled PowerShell script deployed via Intune.",
+        "Email the updated XML to the on-site IT contact at each location to manually deploy.",
+        "Rely on the Teams Rooms app automatic update process to pull configuration changes from Microsoft's servers.",
+        "Require each room to be factory reset whenever configuration changes are needed."
+      ],
+      "correct": 0,
+      "explanation": "A scalable approach is to store the master XML in Azure Blob Storage (or a similar accessible repository) and deploy a scheduled Intune PowerShell task that periodically checks for and applies updated XML files. This enables configuration drift detection and remediation without site visits or device reboots for supported settings."
+    },
+    {
+      "id": 9,
+      "text": "After a large-scale Intune configuration profile deployment to 200 MTR devices, a compliance report shows 15 devices are still reporting as 'Non-compliant' 48 hours later. What is the most systematic first step to diagnose this?",
+      "answers": [
+        "Rebuild all 15 devices from scratch as they are likely hardware failures.",
+        "Review the Intune device compliance details for the affected devices to identify which specific compliance rule is failing, then check device check-in status and sync logs to determine if the profile was received.",
+        "Increase the compliance policy grace period to 7 days to allow more time.",
+        "Escalate all 15 devices to Microsoft support immediately."
+      ],
+      "correct": 1,
+      "explanation": "The correct first step is to review the specific compliance failure reason in Intune for each affected device, then check whether the devices have successfully checked in and received the policy. Common causes include devices being offline during the deployment window, sync failures, or a specific policy setting that the device's OS version does not support."
+    },
+    {
+      "id": 10,
+      "text": "Which Teams Admin Center feature allows an administrator to identify all MTR devices that have not checked in within the last 7 days across a 300-room estate?",
+      "answers": [
+        "The Teams Admin Center does not support this query; a separate SIEM tool is required.",
+        "The 'Update' section of Teams Admin Center, filtered by firmware version.",
+        "The Devices inventory with the 'Last seen' column filtered to the desired date range, or the Teams Rooms Pro Management portal's health dashboard for enrolled devices.",
+        "The Exchange Online Admin Center room mailbox audit log."
+      ],
+      "correct": 2,
+      "explanation": "Teams Admin Center's Devices inventory includes a 'Last seen' timestamp for each device. Filtering or sorting by this column identifies offline or unreported devices. For Pro-licenced rooms, the Teams Rooms Pro Management portal provides more detailed health dashboards with automated alerts for offline devices."
+    }
+  ]
+}

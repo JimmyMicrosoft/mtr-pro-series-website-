@@ -1,0 +1,396 @@
+---
+id: "p3-t1-m2-l2"
+slug: "itsm-integration-pro-management"
+title: "ITSM Integration — ServiceNow and Jira"
+shortTitle: "ITSM Integration"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 2
+moduleSlug: "pro-management-enterprise"
+moduleTitle: "Pro Management at Enterprise Scale"
+
+lessonIndex: 2
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Configure a Pro Management webhook and map its payload fields to ServiceNow incident creation fields, including severity-to-priority mapping and room data to CMDB CI linkage"
+  - "Set up a Pro Management webhook integration with Jira and configure issue creation from alert payloads"
+  - "Design a deduplication strategy for Pro Management webhooks to prevent multiple ITSM tickets being created for the same room event"
+
+prerequisites:
+  - "p3-t1-m2-l1"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "support"
+  - "architect"
+
+topicTags:
+  - "pro-management"
+  - "itsm-integration"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m2-l1"
+  - "p3-t1-m2-l3"
+
+metaDescription: "Configure Teams Rooms Pro Management webhooks to integrate with ServiceNow and Jira: payload mapping, severity translation, CMDB linkage, deduplication, and resolution sync."
+
+keywords:
+  - "Teams Rooms Pro Management ServiceNow integration"
+  - "Pro Management webhook ITSM"
+  - "MTR Pro Management Jira integration"
+  - "Teams Rooms incident ticketing automation"
+  - "Pro Management alert webhook configuration"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Teams Rooms Pro Management generates incidents when room health degrades, but most enterprise organizations already have an established ITSM platform — ServiceNow, Jira Service Management, or similar — as the system of record for IT incidents. Operating two parallel incident systems creates split attention, missed SLAs, and reporting inconsistency. Integrating Pro Management with your ITSM via webhooks routes Pro Management alerts directly into the platform your support team already works in. This lesson covers the complete webhook configuration in Pro Management, the payload structure you will receive, and how to map that payload into ServiceNow and Jira incidents — including the deduplication problem that affects nearly every production webhook deployment.
+
+---
+
+## Pro Management Webhook Configuration
+
+Pro Management sends webhook notifications when alert rules fire. The webhook is configured per alert rule, not globally — this means each alert rule can route to a different endpoint, enabling fine-grained routing (Critical alerts → ServiceNow, Warning alerts → Jira board, Maintenance alerts → Slack).
+
+**To configure a webhook on an alert rule:**
+
+Navigate to: Pro Management portal → Settings → Alert rules → select or create a rule → Notifications → Add webhook
+
+**Required fields:**
+
+| Field | Description |
+|-------|-------------|
+| **Webhook URL** | The HTTPS endpoint that will receive the POST request |
+| **Authentication** | None, Basic Auth (username + password), or custom header (e.g., `Authorization: Bearer <token>`) |
+| **HTTP method** | POST (fixed — Pro Management only supports POST) |
+| **Retry behavior** | Pro Management retries failed webhook deliveries up to 3 times with exponential backoff; no dead-letter queue |
+
+<Callout type="warning">
+Pro Management requires the webhook endpoint to respond with HTTP 200 within 10 seconds. If your ITSM endpoint takes longer to create a ticket (common with on-premise ServiceNow instances on slow network links), use an intermediary — Azure Logic Apps, Power Automate, or a lightweight Azure Function — to accept the webhook immediately, return 200, and then process the ticket creation asynchronously.
+</Callout>
+
+**Webhook payload structure:**
+
+Pro Management sends a JSON payload for each alert. The structure varies slightly by alert type, but the core fields are consistent:
+
+```json
+{
+  "alertId": "a7f3c2d1-4e8b-4a1f-9c3d-2b5e6f7a8b9c",
+  "alertType": "RoomOffline",
+  "severity": "Critical",
+  "timestamp": "2026-04-13T09:14:32Z",
+  "roomId": "room-uuid-here",
+  "roomDisplayName": "London CW - Conf Room 4B",
+  "buildingId": "building-uuid-here",
+  "buildingName": "EMEA — London — Canary Wharf",
+  "resourceAccountUpn": "conf-cw-4b@contoso.com",
+  "tags": {
+    "region": "EMEA",
+    "site": "london-cw",
+    "floor": "4",
+    "room-type": "medium",
+    "support-team": "london-av"
+  },
+  "details": {
+    "description": "Room has not reported health status for 15 minutes",
+    "affectedComponent": "Device",
+    "previousStatus": "Healthy"
+  },
+  "portalUrl": "https://portal.rooms.microsoft.com/rooms/room-uuid-here"
+}
+```
+
+Key fields to use in ITSM mapping:
+- `alertId` — unique identifier for this specific alert event; use as the external reference key for deduplication
+- `severity` — `Critical`, `Important`, or `Warning`
+- `roomDisplayName` and `buildingName` — human-readable location for the ticket description
+- `resourceAccountUpn` — the UPN can be used to look up the CMDB CI in ServiceNow if your CMDB is keyed on the resource account UPN
+- `tags` — use for routing, assignment group selection, or labeling in ITSM
+- `portalUrl` — deep link back to the room in Pro Management; include this in the ITSM ticket description
+
+---
+
+## ServiceNow Integration
+
+ServiceNow's inbound REST integration accepts webhook payloads and creates incidents via the Table API or through a dedicated Inbound REST endpoint configured by your ServiceNow administrator.
+
+**Integration architecture:**
+
+```
+Pro Management → HTTPS POST → ServiceNow Inbound REST API
+                              → Scripted REST Resource
+                              → Incident table (incident.list)
+                              → CMDB lookup (cmdb_ci_computer)
+```
+
+**Step 1: Create a ServiceNow integration user**
+- Create a dedicated ServiceNow service account for Pro Management integration (e.g., `svc-pro-mgmt-integration`)
+- Assign roles: `rest_api_explorer`, `itil` (minimum for incident creation)
+- Do not use a named user account — service accounts survive staff turnover
+
+**Step 2: Configure the inbound endpoint**
+For ServiceNow instances with a Scripted REST API:
+
+```javascript
+// ServiceNow Scripted REST API — Pro Management webhook handler
+(function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
+  var payload = JSON.parse(request.body.dataString);
+
+  // Severity to priority mapping
+  var priorityMap = {
+    "Critical": "1",   // Critical → P1
+    "Important": "2",  // Important → P2
+    "Warning": "3"     // Warning → P3
+  };
+
+  // Look up CMDB CI by resource account UPN
+  var ciSysId = "";
+  var cmdbGr = new GlideRecord("cmdb_ci_computer");
+  cmdbGr.addQuery("u_resource_account_upn", payload.resourceAccountUpn);
+  cmdbGr.query();
+  if (cmdbGr.next()) {
+    ciSysId = cmdbGr.sys_id.toString();
+  }
+
+  // Create incident
+  var incGr = new GlideRecord("incident");
+  incGr.initialize();
+  incGr.short_description = payload.roomDisplayName + " — " + payload.alertType;
+  incGr.description = payload.details.description
+    + "\n\nBuilding: " + payload.buildingName
+    + "\nRoom: " + payload.roomDisplayName
+    + "\nAlert ID: " + payload.alertId
+    + "\nPro Management link: " + payload.portalUrl;
+  incGr.priority = priorityMap[payload.severity] || "3";
+  incGr.cmdb_ci = ciSysId;
+  incGr.u_pro_mgmt_alert_id = payload.alertId;  // Custom field for deduplication
+  incGr.assignment_group = resolveAssignmentGroup(payload.tags["support-team"]);
+  var sysId = incGr.insert();
+
+  response.setStatus(200);
+  response.setBody({ "incidentSysId": sysId });
+})(request, response);
+```
+
+**Severity to ServiceNow priority mapping:**
+
+| Pro Management Severity | ServiceNow Priority | Business Meaning |
+|------------------------|--------------------|--------------------|
+| Critical | P1 — Critical | Room completely unavailable; meeting disruption occurring or imminent |
+| Important | P2 — High | Degraded functionality (e.g., camera or audio fault); room usable but impaired |
+| Warning | P3 — Moderate | Peripheral warning or minor health issue; room functional |
+
+**CMDB CI linkage:** The value of linking a Pro Management incident to a ServiceNow CMDB CI is that the incident can inherit the CI's assignment group, support contract, and location data automatically. To enable this, your CMDB records for MTR devices should include a custom field containing the Teams resource account UPN (`u_resource_account_upn`). This field is populated during device onboarding and serves as the join key between Pro Management's `resourceAccountUpn` and the CMDB.
+
+---
+
+## Jira Service Management Integration
+
+For teams using Jira Service Management (JSM) as their ITSM, the integration follows the same webhook-to-REST-API pattern but uses Jira's REST API.
+
+**Integration architecture:**
+
+```
+Pro Management → HTTPS POST → Azure Logic App / Power Automate
+                              → Jira REST API (POST /rest/api/3/issue)
+                              → JSM project queue
+```
+
+Using an intermediary (Logic App or Power Automate) is recommended for Jira because it handles the `200 OK` response immediately, manages authentication token refresh, and provides a visual flow editor that non-developers on the team can maintain.
+
+**Jira issue creation payload:**
+
+```json
+{
+  "fields": {
+    "project": { "key": "MTR" },
+    "summary": "{{roomDisplayName}} — {{alertType}}",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [{
+        "type": "paragraph",
+        "content": [{
+          "type": "text",
+          "text": "Building: {{buildingName}}\nRoom: {{roomDisplayName}}\nSeverity: {{severity}}\nAlert ID: {{alertId}}\nPortal: {{portalUrl}}"
+        }]
+      }]
+    },
+    "issuetype": { "name": "Incident" },
+    "priority": { "name": "{{jiraPriority}}" },
+    "labels": ["pro-management", "{{tags.region}}", "{{tags.room-type}}"],
+    "customfield_10100": "{{alertId}}"
+  }
+}
+```
+
+**Priority mapping for Jira:**
+
+| Pro Management Severity | Jira Priority |
+|------------------------|--------------|
+| Critical | Highest |
+| Important | High |
+| Warning | Medium |
+
+**Jira-specific considerations:**
+- Store the Pro Management `alertId` in a custom Jira field (e.g., `customfield_10100`) — this is the deduplication key
+- Use Jira Automation to auto-assign issues to the correct team based on the `labels` field values mapping to support team tags
+- Configure the JSM project's SLA rules to use Jira priority fields that now reflect Pro Management severity
+
+---
+
+## Deduplication: Preventing Duplicate ITSM Tickets
+
+The most common production issue with Pro Management webhook integrations is **duplicate ticket creation**. Pro Management can fire multiple alerts for the same room in rapid succession — for example, when a room goes offline, it may fire a `RoomOffline` alert, a `PeripheralOffline` alert for the camera, and another for the microphone, all within minutes. Without deduplication, your ITSM receives three separate webhook calls and creates three tickets for what is operationally one event (the room is offline).
+
+**Deduplication strategies:**
+
+**Strategy 1: Alert type filtering (simplest)**
+Configure Pro Management alert rules to only send webhooks for `RoomOffline` (Critical) alerts. Peripheral-level alerts (camera offline, microphone offline) are suppressed from webhook delivery and remain visible only in Pro Management. This is appropriate when your ITSM process is room-level (one ticket per room) and field technicians use Pro Management for component-level detail.
+
+**Strategy 2: ITSM-side deduplication by room identifier**
+Before creating a new ticket, query the ITSM for open tickets for the same room (matched by `resourceAccountUpn` or `roomDisplayName`). If an open ticket already exists, add a comment/work note to the existing ticket rather than creating a new one.
+
+```javascript
+// ServiceNow — check for existing open incident before creating
+var existingGr = new GlideRecord("incident");
+existingGr.addQuery("cmdb_ci", ciSysId);
+existingGr.addQuery("state", "IN", "1,2,3"); // New, In Progress, On Hold
+existingGr.orderByDesc("sys_created_on");
+existingGr.setLimit(1);
+existingGr.query();
+
+if (existingGr.next()) {
+  // Add work note to existing incident
+  existingGr.work_notes = "Additional Pro Management alert: "
+    + payload.alertType + " at " + payload.timestamp;
+  existingGr.update();
+} else {
+  // Create new incident
+  // ... (creation logic as above)
+}
+```
+
+**Strategy 3: Time-window deduplication in intermediary**
+In an Azure Logic App or Power Automate flow, use a cache (Azure Cache for Redis or a SharePoint list) to record each `alertId` with a TTL of 15 minutes. If the same room generates a new webhook within the TTL window, append to the existing ticket rather than creating a new one.
+
+<Callout type="tip">
+For most organizations, Strategy 1 (alert type filtering) combined with Strategy 2 (ITSM-side deduplication by room) is sufficient. Strategy 3 is worth implementing only if your business requires all alert types to create ITSM visibility and you have the middleware infrastructure to support it.
+</Callout>
+
+---
+
+## Resolution State Sync Back to Pro Management
+
+Pro Management does not currently offer an inbound webhook or REST API to receive incident resolution state from ITSM systems. Resolution sync is therefore **unidirectional** in the current product version: Pro Management pushes events to ITSM, but ITSM cannot push resolution events back to Pro Management.
+
+**Operational implications and workarounds:**
+
+1. **Pro Management incidents close automatically** when the underlying health condition resolves. If a room comes back online, Pro Management marks the incident as auto-resolved. Your ITSM process should account for this — a ServiceNow incident may remain "In Progress" while the Pro Management alert has already auto-resolved.
+
+2. **Manual resolution workflow:** When a field technician resolves the ITSM ticket, include a step in the closure procedure to open the linked Pro Management portal URL and manually close the corresponding Pro Management incident if it has not auto-resolved.
+
+3. **Monitoring resolution lag:** Track cases where ITSM tickets are closed but the corresponding Pro Management incidents remain open (indicating the underlying issue was not fully resolved). This discrepancy is a signal worth monitoring in weekly operations reviews.
+
+---
+
+## Testing Webhook Integration
+
+Before deploying to production, validate the webhook integration end-to-end:
+
+**1. Use a webhook inspection tool for initial testing**
+Services like Webhook.site provide a temporary HTTPS endpoint that captures incoming payloads without any processing. Configure your Pro Management alert rule to send to this URL and trigger a test alert by powering off a test MTR device. Inspect the captured payload to verify all fields are present and correctly formatted.
+
+**2. Validate the complete ITSM flow in a test/dev environment**
+Configure the webhook to point at your ServiceNow dev instance or Jira sandbox. Trigger test alerts across all three severity levels (Critical, Important, Warning) and verify:
+- Tickets are created with correct priority
+- CMDB CI is correctly linked (or gracefully handles a missing CI)
+- Assignment group is correctly set based on room tags
+- `alertId` is stored in the deduplication field
+
+**3. Simulate the deduplication scenario**
+Put a test room into a state that generates multiple alerts within a short window and confirm that your deduplication logic prevents multiple tickets being created.
+
+**4. Verify the 10-second response window**
+Under load (multiple simultaneous alerts), confirm your ITSM endpoint or intermediary responds within 10 seconds. Use Azure Logic App run history or ServiceNow performance analytics to measure processing time.
+
+---
+
+<KnowledgeCheck id="p3-t1-m2-l2-kc">
+  <Question>
+    After deploying a Pro Management webhook to ServiceNow, your service desk
+    reports that when a room goes offline they frequently receive 3–4 separate
+    P1 incidents in ServiceNow for the same room within a 5-minute window.
+    Investigation shows that Pro Management is firing RoomOffline, CameraOffline,
+    MicrophoneOffline, and DisplayOffline alerts simultaneously when the device
+    loses power. What is the most operationally appropriate fix?
+  </Question>
+  <Answer>Disable the webhook integration for Warning-level alerts and only route Critical alerts to ServiceNow — this will reduce ticket volume without losing P1 incidents</Answer>
+  <Answer correct>Implement ITSM-side deduplication: before creating a new ServiceNow incident, query for any open incidents with the same CMDB CI (matched by resource account UPN). If an open incident exists, add a work note to it instead of creating a new incident. Optionally, also configure the Pro Management alert rule to only send webhooks for the RoomOffline (room-level) alert type rather than individual peripheral alerts, since peripheral offline events are a consequence of the room losing power and do not require separate ITSM tickets</Answer>
+  <Answer>Increase the Pro Management webhook retry interval to 30 minutes so that duplicate alerts are suppressed before reaching ServiceNow</Answer>
+  <Answer>Configure ServiceNow to automatically merge incidents from the same assignment group created within 5 minutes of each other</Answer>
+  <Explanation>
+    The root cause is that Pro Management correctly fires multiple alert types
+    when a room goes offline — one for the device itself and one for each
+    peripheral that stops reporting. This is accurate behavior, not a bug.
+    The fix is in the integration layer, not in Pro Management. ITSM-side
+    deduplication (checking for an existing open ticket for the same room
+    before creating a new one) is the most robust approach because it handles
+    any combination of alert types from the same room. Restricting webhook
+    delivery to RoomOffline alerts only is also valid as a complementary
+    measure — it reduces signal noise since peripheral alerts during a full
+    room offline are redundant. Simply routing only Critical alerts would
+    miss the scenario where a peripheral fails independently (room stays
+    online but camera goes offline) which is a legitimate P2 scenario.
+    Pro Management webhook retry behavior cannot be configured — it uses
+    fixed exponential backoff and is not the cause of the duplicate tickets.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Webhook configuration:** per alert rule, not global; requires HTTPS endpoint responding within 10 seconds; supports Basic Auth and custom header authentication.
+- **Payload key fields:** `alertId` (deduplication key), `severity` (Critical/Important/Warning), `resourceAccountUpn` (CMDB CI lookup), `tags` (assignment routing), `portalUrl` (deep link).
+- **ServiceNow:** use Scripted REST API or Table API; map `severity` to priority (Critical→P1, Important→P2, Warning→P3); link CMDB CI via `resourceAccountUpn` custom field.
+- **Jira:** use Logic App or Power Automate intermediary for reliable async processing; store `alertId` in custom field; use labels for team routing.
+- **Deduplication:** combine alert type filtering (webhook only on RoomOffline) with ITSM-side duplicate check before ticket creation.
+- **Resolution sync:** currently unidirectional — Pro Management auto-resolves conditions but cannot receive resolution state from ITSM; build manual closure step into technician workflow.
+
+---
+
+## What's Next
+
+[Advanced Alert Engineering →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/pro-management-enterprise/lessons/advanced-alert-engineering/)

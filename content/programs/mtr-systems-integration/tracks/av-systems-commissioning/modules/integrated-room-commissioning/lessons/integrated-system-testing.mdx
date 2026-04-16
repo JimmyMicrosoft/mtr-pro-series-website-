@@ -1,0 +1,267 @@
+---
+id: "p2-t3-m3-l3"
+slug: "integrated-system-testing"
+title: "Integrated System Testing and Scenario Validation"
+shortTitle: "Integrated Testing"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 3
+moduleSlug: "integrated-room-commissioning"
+moduleTitle: "Integrated Room Systems and Commissioning Sign-Off"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "evaluate"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Design an integrated test plan that validates all room systems together under realistic meeting scenarios"
+  - "Execute the standard MTR meeting scenario test sequence and document pass/fail results"
+  - "Identify and escalate issues discovered during integrated testing before the client handover"
+
+prerequisites:
+  - "p2-t3-m3-l2"
+
+technologyTags:
+  - "mtr-windows"
+  - "mtr-android"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "commissioning"
+  - "testing"
+
+vendorTags:
+  - "microsoft"
+
+downloads:
+  - file: "p2-t3-m3-l3-integrated-test-plan.xlsx"
+    label: "Integrated Room System Test Plan"
+    sizeKb: 55
+
+relatedLessons:
+  - "p2-t3-m3-l2"
+  - "p2-t3-m3-l4"
+
+metaDescription: "Integrated system testing for Teams Rooms MTR — meeting scenario test plan, subsystem integration tests (audio+video+control+network), failure documentation, escalation procedures, and pre-handover validation."
+
+keywords:
+  - "Teams Rooms integrated testing"
+  - "MTR commissioning test plan"
+  - "conference room system testing"
+  - "MTR integrated validation"
+  - "AV commissioning test scenarios"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Individual subsystem testing (audio acceptance testing, camera framing verification, network validation) confirms that each system works in isolation. Integrated system testing confirms that all systems work together correctly under the realistic conditions of an actual meeting. It is at this stage that interdependency failures emerge — the camera framing test passed, the audio test passed, the network test passed, but when all three run simultaneously with real participants, a problem surfaces. Integrated testing is the final gate before client handover.
+
+---
+
+## The Test Approach: Scenario-Based Testing
+
+Integrated testing is organized around meeting scenarios — realistic use cases that exercise all systems together:
+
+| Scenario | Systems Exercised |
+|----------|------------------|
+| Standard videoconference — local team + remote participants | MTR app, audio (mic + speaker), camera, network, displays, control system automation |
+| Content sharing — local presenter shares laptop screen | HDMI ingest, display switching, Teams content share, audio |
+| Guest join — remote-only participant dials in | MTR meeting join, audio, video codec, network QoS |
+| Room combines — two rooms joined for a larger meeting | Multi-room audio, camera coordination, display behavior |
+| Room vacancy — meeting ends, room automation | Control system, display power-off, lighting standby, occupancy |
+| Emergency scenario — network drops during meeting | MTR failover behavior, recovery after network restoration |
+
+Test each scenario with people physically present in the room — not just from the commissioning technician's laptop.
+
+---
+
+## Pre-Test System State Verification
+
+Before running integrated scenarios, confirm the starting state of all systems:
+
+**MTR device:**
+- [ ] Teams Rooms app version confirmed; no pending updates
+- [ ] Room resource account signed in and meeting calendar visible on home screen
+- [ ] Correct MTR device configuration profile applied (audio device, camera, content camera if applicable)
+- [ ] Pro Management portal shows room as Healthy (if Pro licensed)
+
+**Audio system:**
+- [ ] DSP configuration loaded and saved; not in factory default state
+- [ ] All microphone channels active and visible in DSP software
+- [ ] Speaker system powered and producing output (test tone at commissioning level)
+- [ ] USB Audio device recognized by MTR Windows — correct device selected in Teams Rooms app settings
+
+**Video system:**
+- [ ] Camera recognized by MTR Windows — correct camera selected in Teams Rooms app settings
+- [ ] Displays powered on, correct input selected
+- [ ] Dual display mode configured correctly (if applicable)
+- [ ] PTZ presets programmed (if applicable)
+
+**Network:**
+- [ ] MTR device on correct VLAN (MTR room VLAN, not user VLAN)
+- [ ] Connectivity to Teams endpoints confirmed (UDP 3478–3481 reachable)
+- [ ] QoS DSCP marking active (verify pre-call if possible)
+- [ ] Pro Management shows room Online
+
+**Control system:**
+- [ ] All devices responding to control system commands (display RS-232 response, lighting, shading)
+- [ ] Control program loaded to processor; no errors
+- [ ] Touch panel connected and displaying correct interface
+
+---
+
+## Scenario 1: Standard Videoconference
+
+**Setup:** 2–4 people physically present in the room. One remote participant (another office or remote location, not on the same LAN) joins the meeting. The remote participant should be using a standard Teams client (desktop or mobile), not another MTR room.
+
+**Test steps and pass criteria:**
+
+| Step | Expected Result | Pass/Fail |
+|------|----------------|-----------|
+| Start meeting from room touch panel (ad hoc or scheduled) | Meeting starts; display shows meeting view | |
+| Remote participant joins | Remote participant thumbnail visible on display | |
+| Local participant speaks at normal conversational volume | Remote participant hears clearly, no echo, no excessive background noise | |
+| Remote participant speaks | Room speakers reproduce audio at adequate volume; all seat positions can hear clearly | |
+| Local participant moves to end of table and speaks | Remote participant hears adequate level (no significant drop) | |
+| Remote participant asks: "is there echo?" | Far-end reports no echo | |
+| Local participant holds a physical document up to camera | Remote participant can identify the document (camera focus, exposure) | |
+| PTZ preset activated (if applicable) | Camera moves to preset and remote participant sees updated framing | |
+| Control system: meeting started trigger | Displays are on; lighting in meeting scene; shades lowered (if automated) | |
+
+---
+
+## Scenario 2: Content Sharing via HDMI Ingest
+
+**Setup:** One person at the table connects a laptop to the HDMI ingest cable.
+
+| Step | Expected Result | Pass/Fail |
+|------|----------------|-----------|
+| Laptop HDMI connected to table cable | MTR home screen shows "Someone connected a cable" or similar notification | |
+| Presenter taps "Present" on touch panel | Laptop content appears on room display; remote participants see content | |
+| Presenter scrolls through a PowerPoint with text | Text is legible on room display from all seat positions; remote participants can read text | |
+| Presenter stops sharing | Room display returns to participant video view | |
+| Audio continues during content share | No audio interruption during share start/stop | |
+
+---
+
+## Scenario 3: Room Automation
+
+**Setup:** Meeting ends and room becomes unoccupied.
+
+| Step | Expected Result | Pass/Fail |
+|------|----------------|-----------|
+| Meeting ends; participants leave room | Occupancy sensor detects vacancy after timeout period | |
+| Room automation triggers standby | Displays power off; lighting transitions to standby scene; shades return to default position | |
+| Verify displays powered off (not just sleep) | RS-232 power-off command confirmed; display shows no light from edges | |
+| Verify lighting level | Standby scene active at specified low level | |
+| Test automatic wake: new participant enters room | Occupancy sensor triggers room wakeup | |
+| Meeting booked 5 minutes from now | Displays power on ahead of meeting start; MTR shows upcoming meeting | |
+
+---
+
+## Scenario 4: Failure and Recovery
+
+**Setup:** Simulate a device failure to validate recovery behavior.
+
+| Failure Type | Recovery Test |
+|-------------|---------------|
+| Network disconnection (unplug Ethernet for 2 minutes, reconnect) | MTR reconnects to Teams; call can be placed within 60 seconds of network restoration |
+| Camera disconnect (unplug USB camera, reconnect) | Teams Rooms detects camera reconnect; camera available without app restart |
+| Display control failure (RS-232 command fails) | Participants can manually power on display; room still functions without automation |
+| DSP USB Audio disconnect (unplug USB from DSP, reconnect) | Teams Rooms detects audio device reconnect; audio available without restart |
+
+---
+
+## Issue Documentation and Escalation
+
+All issues found during integrated testing must be documented before sign-off:
+
+**Issue log format:**
+- Issue number (sequential)
+- Scenario in which the issue was found
+- Description of observed behavior vs. expected behavior
+- Severity (Blocking — prevents use of the room; Non-blocking — degrades experience but room is usable; Cosmetic — aesthetic or minor)
+- System(s) involved (MTR, audio, video, control, network, lighting)
+- Assigned party (integrator AV team, IT team, control system programmer, client)
+- Resolution status and date
+
+**Blocking issues must be resolved before sign-off.** Non-blocking and cosmetic issues may be documented as open items with a committed resolution date and do not prevent sign-off at the integrator's discretion and client agreement.
+
+<DownloadButton
+  file="p2-t3-m3-l3-integrated-test-plan.xlsx"
+  label="Integrated Room System Test Plan"
+  sizeKb={55}
+  description="Excel test plan template for MTR integrated room commissioning — all scenario test steps with pass/fail columns, issue log sheet, pre-test state checklist, and summary sign-off page. Covers standard videoconference, content sharing, room automation, and failure recovery scenarios."
+/>
+
+---
+
+<KnowledgeCheck id="p2-t3-m3-l3-kc">
+  <Question>
+    During integrated testing of Scenario 1 (Standard Videoconference), the
+    remote participant reports that audio sounds fine for the first 5 minutes
+    of the meeting but then becomes noticeably noisy (background hiss increases
+    and voice quality degrades) and stays degraded for the rest of the call.
+    All individual audio subsystem tests (RT60, STI, noise gate calibration)
+    passed prior to integrated testing. What is the most likely cause?
+  </Question>
+  <Answer>The DSP noise reduction setting is too aggressive and is causing artifacts after warm-up</Answer>
+  <Answer>The room RT60 is too high and is degrading over time as the room warms up acoustically</Answer>
+  <Answer correct>The progressive audio degradation starting after 5 minutes is consistent with thermal-driven noise — most likely the HVAC system completing a startup cycle and reaching full airflow, or a piece of AV equipment (amplifier, compute unit) fan ramping up as it warms to operating temperature. Individual subsystem tests conducted at room startup may not capture the steady-state noise floor. The correct investigation is to measure the room background noise level (NC) after the room and equipment have been running for 15+ minutes, then compare to the pre-test measurement. If the noise floor has increased significantly, identify the source (HVAC airflow, equipment fan) and adjust the DSP noise gate threshold accordingly, or investigate the noise source</Answer>
+  <Answer>The network bandwidth is saturating after 5 minutes and causing codec quality reduction</Answer>
+  <Explanation>
+    Integrated testing reveals conditions that subsystem testing misses.
+    Individual subsystem tests are often conducted shortly after equipment
+    powers on — before the room and equipment reach thermal equilibrium.
+    HVAC systems often cycle on fully after a few minutes of operation; some
+    AV equipment has variable-speed fans that increase speed as components
+    warm up. The progressive (not sudden) audio degradation after 5 minutes
+    is characteristic of a thermal-driven noise source rather than a network
+    issue (which would show as compression artifacts) or AEC failure (which
+    would show as echo). The fix is to re-measure the noise floor at steady
+    state, identify the source, and either address it (HVAC duct work, equipment
+    cooling) or adjust the DSP noise gate threshold to compensate.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Scenario-based:** Test the complete room under realistic meeting conditions — not just individual subsystems.
+- **Key scenarios:** Standard videoconference, content sharing, room automation (vacancy/wake), failure and recovery.
+- **Pre-test state:** Verify all systems in correct starting state before beginning scenario tests.
+- **Issue documentation:** Log all issues with severity, system, and responsible party; blocking issues must be resolved before sign-off.
+
+---
+
+## What's Next
+
+[AV Commissioning Sign-Off and Documentation →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/integrated-room-commissioning/lessons/commissioning-sign-off/)

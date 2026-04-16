@@ -1,0 +1,243 @@
+---
+id: "p1-t3-m2-l3"
+slug: "oem-admin-interfaces"
+title: "OEM Admin Interfaces and Device Management Portals"
+shortTitle: "OEM Admin Interfaces"
+
+program: 1
+programSlug: "mtr-foundations"
+programTitle: "MTR Foundations"
+
+track: 3
+trackSlug: "device-configuration"
+trackTitle: "Device Configuration Essentials"
+
+module: 2
+moduleSlug: "mtr-android-initial-setup"
+moduleTitle: "MTR Android — Initial Setup"
+
+lessonIndex: 3
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "beginner"
+bloomLevel: "apply"
+
+personas:
+  - "alex"
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Access the OEM admin interface for major Android MTR platforms and navigate to key device settings"
+  - "Perform common post-installation configuration tasks in the OEM admin interface"
+  - "Register a device with its OEM cloud portal and describe the ongoing management capabilities available"
+
+prerequisites:
+  - "p1-t3-m2-l2"
+
+technologyTags:
+  - "mtr-android"
+  - "teams-admin-center"
+
+roleTags:
+  - "installer"
+  - "support"
+
+topicTags:
+  - "android-oem"
+  - "oem-management"
+  - "ntp"
+  - "firmware"
+
+vendorTags:
+  - "poly"
+  - "yealink"
+  - "logitech"
+  - "neat"
+
+downloads:
+  - file: "p1-t3-m2-l3-oem-portal-guide.pdf"
+    label: "OEM Management Portal Quick Start Guide"
+    sizeKb: 65
+
+relatedLessons:
+  - "p1-t3-m2-l2"
+  - "p1-t3-m2-l4"
+
+metaDescription: "Android MTR OEM admin interfaces and cloud management portals — local web interface access, NTP configuration, firmware management, OEM portal registration, and dual TAC/OEM management approach."
+
+keywords:
+  - "Yealink MeetingBar admin interface"
+  - "Poly Studio web interface"
+  - "Logitech Sync portal"
+  - "Neat Pulse device management"
+  - "MTR Android OEM management"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Android MTR devices have two management layers beyond the Teams application itself: the OEM admin interface (a local web interface or device touchscreen admin menu) and the OEM cloud management portal. These are not optional extras — they are the access points for configuration settings that are not available in the Teams app, the tools for fleet-wide firmware management, and the visibility layer for hardware health issues that TAC does not surface. Integrators who know only Teams Admin Center are missing half of the management picture for Android deployments.
+
+---
+
+## Local Web Interface (LWI) Access
+
+Most Android MTR OEMs provide a browser-based admin interface accessible by entering the device's IP address in a browser on the same network. This interface provides access to hardware settings that are below the Teams application layer.
+
+**Accessing the LWI:**
+
+1. From the device's Teams app admin settings (or OEM admin menu), find the device's IP address
+2. Enter `http://[device-IP]` or `https://[device-IP]` in a browser on a computer on the same network
+3. Log in with the OEM admin credentials (username and password)
+
+Default credentials by OEM:
+
+| OEM | Default Username | Default Password |
+|-----|-----------------|-----------------|
+| Poly | admin | Printed on device label |
+| Yealink | admin | admin |
+| Logitech | admin | Documented in setup guide |
+| Neat | N/A | Admin via touchscreen menu only |
+| DTEN | admin | Documented in setup guide |
+
+**Change all default credentials during initial setup** — this is required before the device leaves the installation team's hands. Document the new credentials in the project's secure documentation.
+
+---
+
+## Key LWI Configuration Items
+
+**NTP (Network Time Protocol) configuration:** NTP synchronization is critical for OAuth token authentication. The Teams Rooms application authenticates against Entra ID using OAuth 2.0 tokens, and token validation requires the device's clock to be within 5 minutes of the actual time. If NTP is misconfigured or the NTP server is unreachable, the device's clock will drift, eventually causing authentication token validation to fail and the device to sign out automatically.
+
+Configure NTP in the LWI under the network or time settings section. For enterprise deployments, use the organization's internal NTP server or a reliable public NTP source (time.windows.com, pool.ntp.org). Verify that the configured NTP server is accessible from the device's network segment — blocked NTP is a common enterprise firewall issue.
+
+**Network configuration:** Verify IP address, subnet mask, gateway, and DNS settings in the LWI. For static IP deployments, confirm the settings match the planned configuration from the as-built documentation. For DHCP, confirm the device has received the expected IP (matching a DHCP reservation if configured).
+
+**Audio DSP settings (OEM-dependent):** Some OEM admin interfaces provide access to audio processing parameters — equalizer settings, gain structure, noise suppression thresholds. Poly's Web Interface has the most comprehensive audio parameter access among the major OEMs. These settings are pre-tuned by the OEM for typical room environments and should not be modified without an audio specialist assessment. However, reviewing these settings and confirming they are at factory defaults is appropriate during commissioning verification.
+
+**Firmware version and status:** The LWI typically shows the currently installed firmware version and may provide a manual firmware update trigger. Compare the installed version against the current production firmware from the OEM's release notes. If the device is running an older version (possible if the OOBE firmware update did not install the absolute latest), initiate an update from the LWI.
+
+---
+
+## OEM Cloud Management Portals
+
+OEM cloud portals extend management beyond what is possible locally. Registration is done during or after OOBE through the device's admin menu.
+
+**Poly Lens:** Poly's cloud management portal for Studio X and other Poly devices. Provides device health monitoring, remote reboot, firmware update scheduling, and configuration profile deployment. Particularly valuable for managed services — Poly Lens enables remote troubleshooting without site visits for a significant proportion of support issues.
+
+**Logitech Sync:** Logitech's cloud management portal for Rally Bar and other Logitech devices. Clean, intuitive interface. Provides device status, firmware management, and insights on device usage. Good choice for clients where IT will manage the portal directly — the simplicity is appropriate for non-specialist IT administrators.
+
+**Yealink Management Cloud Service (YMCS):** Yealink's fleet management portal. Strong batch management capabilities for large deployments — firmware updates, configuration templates, and device grouping across many devices simultaneously. The strongest fleet management option among the major OEMs for very large deployments.
+
+**Neat Pulse:** Neat's cloud management platform. Provides device health, remote reboot, and firmware management. The primary admin interface for Neat devices since Neat does not have a local web UI.
+
+---
+
+## Dual Management — TAC and OEM Portal
+
+Android MTR devices appear in both Teams Admin Center and the OEM cloud portal. These two views are complementary — they report different aspects of the same device's health.
+
+**Teams Admin Center** shows: Teams-specific health (meeting quality, connectivity, resource account), peripheral health as reported by the Teams app, app version, and meeting activity. TAC is the Microsoft-side view.
+
+**OEM cloud portal** shows: hardware health (temperatures, component status), firmware version and update status, OEM-specific device metrics, and configuration profile compliance. The OEM portal is the hardware-side view.
+
+Integrators providing managed services should monitor both portals. A device that appears healthy in TAC may have an OEM-reported hardware issue (camera heating issue, firmware anomaly) visible only in the OEM portal. A device that TAC reports as offline may have its network IP visible in the OEM portal, which helps distinguish between a Teams service connectivity issue and a complete network outage.
+
+<Callout type="tip">
+  When handing over a deployment to a client's IT team, train them on both portals
+  — not just TAC. Clients who only know TAC will miss OEM-side issues that affect
+  long-term reliability and will not be able to schedule firmware updates proactively.
+</Callout>
+
+<DownloadButton
+  file="p1-t3-m2-l3-oem-portal-guide.pdf"
+  label="OEM Management Portal Quick Start Guide"
+  sizeKb={65}
+  description="Quick start guide for OEM cloud portal registration and navigation — covers Poly Lens, Logitech Sync, YMCS, and Neat Pulse, with device registration steps and key management functions for each."
+/>
+
+---
+
+<KnowledgeCheck id="p1-t3-m2-l3-kc">
+  <Question>
+    An Android MTR device was working correctly for three months and then began signing
+    out spontaneously every few days. The IT team has not changed any account policies.
+    Which LWI configuration item is most likely related to this behavior?
+  </Question>
+  <Answer>The OEM admin password has expired and must be renewed</Answer>
+  <Answer>The HDMI connection settings need to be reconfigured</Answer>
+  <Answer correct>NTP configuration — if the NTP server is no longer accessible or the time sync has failed, the device's clock may have drifted beyond the 5-minute tolerance for OAuth token validation, causing periodic authentication failures</Answer>
+  <Answer>The Teams app version needs to be updated via the LWI</Answer>
+  <Explanation>
+    Spontaneous sign-outs on an Android MTR device that was previously stable are a classic
+    symptom of NTP drift. OAuth token validation fails when the device's clock differs
+    from actual time by more than 5 minutes. Clock drift accumulates over time if the
+    NTP server is unreachable or misconfigured. Check the LWI's time settings, verify the
+    current device time is correct, and confirm the NTP server is accessible and the
+    sync interval is functioning.
+  </Explanation>
+
+  <Question>
+    A Yealink MeetingBar device's local web interface shows firmware version 137.320.0.5.
+    The Yealink release notes show the current production firmware is 137.320.0.20. What
+    should you do?
+  </Question>
+  <Answer>Leave the current version — firmware updates should only be applied by Yealink support</Answer>
+  <Answer>Factory reset the device and run OOBE again to install the latest firmware</Answer>
+  <Answer correct>Update the firmware to the current production version via the LWI manual update trigger or through YMCS, after verifying the update notes for any breaking changes</Answer>
+  <Answer>The firmware version difference is minor and does not require action</Answer>
+  <Explanation>
+    Keeping Android MTR devices on current production firmware is important for security
+    patches, Teams feature enablement (Android feature availability depends on OEM firmware),
+    and stability fixes. The LWI provides a firmware update trigger, or the update can
+    be scheduled through YMCS for fleet management. Before applying, review the release
+    notes for any known issues or breaking changes, then proceed with the update during
+    a maintenance window.
+  </Explanation>
+
+  <Question>
+    Why should integrators providing managed services monitor both Teams Admin Center
+    and the OEM cloud portal, rather than relying only on TAC?
+  </Question>
+  <Answer>OEM portals provide direct phone support access that TAC does not</Answer>
+  <Answer correct>TAC shows Teams-specific health (meetings, connectivity, app version) while the OEM portal shows hardware health, firmware status, and OEM-specific device metrics — issues visible in one may not appear in the other</Answer>
+  <Answer>Teams Admin Center and OEM portals show identical information — monitoring both is redundant</Answer>
+  <Answer>OEM portals are required for billing and license management that TAC does not handle</Answer>
+  <Explanation>
+    TAC and OEM portals have complementary but non-overlapping visibility. TAC shows
+    Teams-layer health: meeting quality, resource account status, app version, peripheral
+    health as reported by the Teams app. The OEM portal shows hardware-layer health:
+    device temperatures, firmware version and compliance, OEM-specific component status.
+    An OEM-reported hardware issue (e.g., camera approaching thermal limit) will not
+    appear in TAC. Both views are needed for complete device health visibility.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+By completing this lesson, you can now:
+
+- **Access the LWI:** Browser to device IP, OEM credentials (change from default at setup); Neat uses touchscreen admin menu only.
+- **Configure NTP:** Required for OAuth token validation; use enterprise NTP server or time.windows.com; verify accessibility from the device network.
+- **Use OEM cloud portals:** Registration during OOBE; Poly Lens / Logitech Sync / YMCS / Neat Pulse each provide firmware management, health monitoring, and remote management.
+- **Monitor both layers:** TAC for Teams health; OEM portal for hardware health — complementary, not redundant.
+
+---
+
+## What's Next
+
+The final lesson in Module 3.2 covers the current state of feature parity between MTR Android and MTR Windows — what is available on both platforms, what is Windows-only, and how to communicate this accurately to clients.
+
+[Feature Parity Comparison — MTR Android vs. MTR Windows →](/programs/mtr-foundations/tracks/device-configuration/modules/mtr-android-initial-setup/lessons/android-windows-feature-parity/)

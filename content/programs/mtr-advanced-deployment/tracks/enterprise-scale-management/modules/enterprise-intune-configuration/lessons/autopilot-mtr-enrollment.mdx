@@ -1,0 +1,250 @@
+---
+id: "p3-t1-m1-l1"
+slug: "autopilot-mtr-enrollment"
+title: "Windows Autopilot for MTR Enrollment at Scale"
+shortTitle: "Autopilot Enrollment"
+
+program: 3
+programSlug: "mtr-advanced-deployment"
+programTitle: "MTR Advanced Deployment"
+
+track: 1
+trackSlug: "enterprise-scale-management"
+trackTitle: "Enterprise-Scale Management"
+
+module: 1
+moduleSlug: "enterprise-intune-configuration"
+moduleTitle: "Enterprise Intune and Configuration Management"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 30
+videoDuration: 0
+
+difficulty: "advanced"
+bloomLevel: "apply"
+
+personas:
+  - "morgan"
+
+objectives:
+  - "Register MTR devices with Windows Autopilot using hash-based enrollment and OEM pre-registration"
+  - "Configure an Autopilot deployment profile for MTR that applies the correct configuration without user interaction"
+  - "Design an Autopilot enrollment workflow for a large multi-site MTR deployment"
+
+prerequisites:
+  - "p2-t3-m3-l4"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "architect"
+  - "support"
+
+topicTags:
+  - "intune"
+  - "autopilot"
+  - "enrollment"
+
+vendorTags:
+  - "microsoft"
+
+relatedLessons:
+  - "p3-t1-m1-l2"
+
+metaDescription: "Windows Autopilot for MTR enrollment at enterprise scale — hardware hash registration, OEM pre-registration, Autopilot deployment profiles for MTR, enrollment status page, and multi-site enrollment workflow design."
+
+keywords:
+  - "Windows Autopilot MTR enrollment"
+  - "Teams Rooms Intune Autopilot"
+  - "MTR enterprise enrollment"
+  - "Autopilot deployment profile Teams Rooms"
+  - "MTR Intune enrollment scale"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+Manually enrolling MTR devices into Intune one by one is viable for small deployments; at scale it becomes a logistics problem. Windows Autopilot automates the process — a device is registered before it ships, and when it is first powered on at the site, it automatically enrolls into Intune, receives its configuration, and configures itself without any technician involvement. For large MTR deployments, Autopilot reduces on-site enrollment time from 30–60 minutes per device to near-zero.
+
+---
+
+## How Autopilot Works for MTR
+
+Autopilot identifies a device by its hardware hash — a unique fingerprint generated from the device's hardware (serial number, TPM, network adapter). When a hash-registered device connects to the internet for the first time, Windows detects the Autopilot registration and redirects the OOBE (Out-of-Box Experience) to the organization's Autopilot deployment profile rather than the consumer setup flow.
+
+For MTR devices, the Autopilot profile configures:
+1. Device joins Azure AD (not traditional Active Directory)
+2. Device enrolls in Intune automatically
+3. Intune Enrollment Status Page (ESP) holds the device until all assigned apps and configurations are applied
+4. MTR-specific applications and configuration profiles are delivered
+5. Device reaches the Teams Rooms sign-in screen ready for the resource account to be entered
+
+---
+
+## Hardware Hash Registration
+
+**Method 1 — OEM pre-registration:**
+The preferred method for large deployments. During the purchasing process, the MTR OEM (Lenovo, Dell, HP, Crestron) registers the device hardware hashes directly to the organization's Intune tenant before shipment.
+
+*Process:*
+1. Provide the OEM with the organization's Microsoft tenant ID during order placement
+2. OEM submits device hashes to the Microsoft Autopilot service
+3. Devices appear in Intune → Devices → Enroll Devices → Windows Enrollment → Devices before they arrive on-site
+4. Assign the Autopilot profile to the devices (or to the group the devices will be added to)
+5. Devices are shipped to the site and are Autopilot-ready on first power-on
+
+**Method 2 — Hash extraction from existing devices:**
+For devices already deployed or not purchased through OEM pre-registration:
+
+```powershell
+# Run on the MTR device during initial setup (before Intune enrollment)
+# Or on any Windows device to extract its hash
+
+Install-Script -Name Get-WindowsAutopilotInfo -Force
+Get-WindowsAutopilotInfo -OutputFile C:\autopilot-hash.csv
+```
+
+The CSV contains the device's hardware hash, serial number, and product ID. Upload to Intune → Enroll Devices → Windows Enrollment → Devices → Import.
+
+**Method 3 — Partner/reseller registration:**
+Microsoft CSP partners can register device hashes via Partner Center. Useful when purchasing through a reseller who manages the Autopilot registration as part of device provisioning services.
+
+---
+
+## Autopilot Deployment Profile for MTR
+
+Create a dedicated Autopilot deployment profile for MTR devices. In Intune → Enroll Devices → Windows Enrollment → Deployment Profiles → Create:
+
+**Profile settings for MTR:**
+
+| Setting | Value | Reason |
+|---------|-------|--------|
+| Deployment mode | Self-deploying | MTR devices have no user; no user interaction during enrollment |
+| Join to Azure AD as | Azure AD joined | MTR requires Azure AD join (not hybrid) |
+| OOBE settings: Skip End User License Agreement | Yes | No user present to accept |
+| OOBE settings: Skip privacy settings | Yes | Room device, not user device |
+| OOBE settings: Skip account setup | Yes | Self-deploying handles enrollment without user credentials |
+| Apply device name template | Yes | e.g., `MTR-%(SERIAL)%` — gives device a meaningful name |
+
+**Self-deploying mode requirement:**
+Self-deploying mode uses the device's TPM to authenticate to Azure AD without user credentials. This requires the device to have a TPM 2.0 chip. All current MTR Windows compute units (Intel NUC-based, Lenovo ThinkSmart, HP devices) have TPM 2.0. Verify before specifying Autopilot for any older or non-standard hardware.
+
+---
+
+## Enrollment Status Page (ESP)
+
+The ESP holds the device at a "Setting up your device" screen until all assigned applications and configuration profiles are applied. For MTR devices, the ESP ensures the device is fully configured before reaching the Teams Rooms sign-in screen.
+
+**ESP configuration for MTR:**
+- Block device use until all apps and profiles are installed: **Yes**
+- Show error if installation takes longer than X minutes: 60 minutes (MTR app + required policies may take 20–45 minutes)
+- Allow user to collect logs on error: Yes (helps diagnose enrollment failures)
+
+**What the ESP waits for:**
+- Intune configuration profiles (Windows Update settings, security baseline, MTR-specific settings)
+- Win32 app deployments (if any apps are pushed to the device)
+- PowerShell scripts (if enrollment scripts are assigned)
+
+*Note:* The Microsoft Teams Rooms app itself does not need to be deployed via Intune — it is pre-installed on certified MTR devices. However, any supplementary software (OEM management agents, DSP software, certificate deployments) should be assigned to the device group and will be installed during ESP.
+
+---
+
+## Device Group Targeting Strategy
+
+Create a dynamic Azure AD device group for MTR Windows devices for Autopilot profile and policy targeting:
+
+```
+Group name: MTR-Windows-Autopilot
+Group type: Dynamic Device
+Membership rule:
+  (device.devicePhysicalIds -any _ -contains "[OrderID]:MTR-WINDOWS")
+```
+
+If using OEM-tagged orders, the OEM can apply an OrderID tag during pre-registration that the dynamic group rule matches. Alternatively, use the device name template and a device name prefix rule:
+
+```
+(device.displayName -startsWith "MTR-")
+```
+
+This group receives:
+- The MTR Autopilot deployment profile
+- MTR Intune configuration policies (next lesson)
+- MTR compliance policies
+
+---
+
+## Multi-Site Enrollment Workflow
+
+For a multi-site deployment (deploying 10–200 devices across multiple locations simultaneously):
+
+**Pre-deployment:**
+1. Purchase all devices with OEM pre-registration; verify all hashes appear in Intune before devices ship
+2. Assign Autopilot profile to device group (dynamic group includes all registered MTR hashes)
+3. Assign all required configuration policies and apps to the device group
+4. Prepare site checklist: VLAN configuration verified, DHCP scope set, DNS functional, UDP 3478–3481 open, NTP synchronized
+
+**On-site enrollment:**
+1. Unbox device and connect to room network (wired Ethernet preferred for enrollment — Wi-Fi may require credentials not yet configured)
+2. Power on — Autopilot runs automatically; no technician interaction required during enrollment (30–45 minutes)
+3. Device reaches Teams Rooms sign-in screen when enrollment completes
+4. Technician enters resource account credentials
+5. Verify room appears in TAC and Pro Management
+6. Document serial number, asset tag, and room assignment in the equipment schedule
+
+**Common enrollment failure points:**
+- Device does not appear in Intune: OEM pre-registration not completed → manually import hash
+- ESP times out: Check Intune assignment for the device group; verify no required app is failing to install
+- Self-deploying mode fails: TPM not enrolled or unhealthy → run `TPMTool.exe getDeviceInformation` on the device to verify TPM state
+
+---
+
+<KnowledgeCheck id="p3-t1-m1-l1-kc">
+  <Question>
+    A 150-device MTR deployment is planned across 12 sites. The procurement
+    team has already ordered the devices and is preparing to ship them directly
+    to the sites. OEM pre-registration was not arranged at time of order.
+    What is the most efficient method to register all devices with Autopilot
+    before they ship?
+  </Question>
+  <Answer>Autopilot registration must be done on-site after the devices are powered on for the first time</Answer>
+  <Answer>Request that the OEM register the devices retrospectively — this is possible for any device regardless of order timing</Answer>
+  <Answer correct>If the OEM supports retrospective hash submission (many OEMs do for up to 30 days post-shipment), request it immediately with the tenant ID and device serial numbers. If not available, the hardware hashes can be extracted using the Get-WindowsAutopilotInfo script run during a staging session before devices ship to site. Stage all 150 devices at the warehouse or staging facility, run the script on each device, collect the CSV, upload to Intune, and then ship the pre-registered devices to the sites. This eliminates on-site enrollment work and enables zero-touch deployment at the sites</Answer>
+  <Answer>Assign a technician to each of the 12 sites to perform manual hash extraction during on-site deployment</Answer>
+  <Explanation>
+    The goal is to minimize on-site enrollment effort for a large multi-site
+    deployment. Having technicians extract hashes on-site defeats the Autopilot
+    benefit. The two practical paths for late-registration are: (1) OEM
+    retrospective registration if available — the simplest option, no staging
+    needed; (2) Pre-ship staging — all devices are briefly powered on at a
+    central staging location, hashes are extracted, uploaded to Intune, and
+    then devices ship to sites pre-registered. This adds a staging step but
+    enables zero-touch on-site deployment. Choosing between these depends on
+    whether the OEM supports retrospective registration and the project timeline.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Autopilot flow:** Device registered by hash → first power-on detects registration → self-deploying profile runs → ESP waits for all policies → Teams Rooms sign-in screen.
+- **Hash registration:** OEM pre-registration (preferred), hash extraction script, or partner/CSP registration.
+- **MTR profile:** Self-deploying mode (requires TPM 2.0); skip all OOBE user prompts; apply device name template.
+- **ESP:** Block device use until all profiles/apps installed; 60-minute timeout for MTR.
+- **Multi-site:** Pre-register all hashes before devices ship; verify VLAN/network readiness at each site before device arrival.
+
+---
+
+## What's Next
+
+[Configuration Policy Architecture for MTR Fleets →](/programs/mtr-advanced-deployment/tracks/enterprise-scale-management/modules/enterprise-intune-configuration/lessons/intune-configuration-policy-architecture/)

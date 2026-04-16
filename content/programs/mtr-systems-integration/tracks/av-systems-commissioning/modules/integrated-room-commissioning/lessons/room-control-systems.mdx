@@ -1,0 +1,214 @@
+---
+id: "p2-t3-m3-l1"
+slug: "room-control-systems"
+title: "Room Control Systems"
+shortTitle: "Room Control"
+
+program: 2
+programSlug: "mtr-systems-integration"
+programTitle: "MTR Systems Integration"
+
+track: 3
+trackSlug: "av-systems-commissioning"
+trackTitle: "AV Systems Commissioning"
+
+module: 3
+moduleSlug: "integrated-room-commissioning"
+moduleTitle: "Integrated Room Systems and Commissioning Sign-Off"
+
+lessonIndex: 1
+
+type: "lesson"
+contentTypes:
+  - "reading"
+duration: 25
+videoDuration: 0
+
+difficulty: "intermediate"
+bloomLevel: "understand"
+
+personas:
+  - "jordan"
+  - "morgan"
+
+objectives:
+  - "Describe the role of a room control system in an MTR room and identify the devices it typically controls"
+  - "Explain the difference between a control system-managed room and a Teams Rooms native control approach"
+  - "Identify the integration points between a room control system and the MTR device"
+
+prerequisites:
+  - "p2-t3-m2-l4"
+
+technologyTags:
+  - "mtr-windows"
+
+roleTags:
+  - "av-technician"
+  - "architect"
+
+topicTags:
+  - "control-systems"
+  - "room-integration"
+
+vendorTags:
+  - "crestron"
+  - "extron"
+  - "amx"
+  - "q-sys"
+
+relatedLessons:
+  - "p2-t3-m3-l2"
+  - "p2-t3-m3-l3"
+
+metaDescription: "Room control systems in MTR conference rooms — role of control processors (Crestron, Extron, AMX), devices controlled, integration with Teams Rooms via API and room sensors, and when a control system is needed vs. MTR native control."
+
+keywords:
+  - "room control system Teams Rooms"
+  - "Crestron MTR integration"
+  - "conference room control processor"
+  - "MTR room automation"
+  - "Teams Rooms room control"
+
+published: true
+lastUpdated: "2026-04-13"
+version: "1.0"
+authorId: "instructor-001"
+reviewDue: "2026-10-13"
+---
+
+## Overview
+
+A room control system is a dedicated processor that automates and coordinates the operation of room technology — displays, projectors, lighting, shading, audio, HVAC, and access control — based on inputs from occupancy sensors, touch panels, schedule data, and API triggers. In simple MTR rooms, the Teams Rooms app itself provides enough control capability. In complex or multi-function rooms, a room control system provides the automation layer that makes the room usable without technical intervention.
+
+---
+
+## What a Room Control System Does
+
+A control system responds to events (room occupied, meeting started, button pressed, schedule trigger) by executing programmed actions across multiple systems:
+
+**Typical controlled devices in an MTR conference room:**
+- **Displays:** Power on/off, input selection, brightness
+- **Projector:** Power on/off, input selection, screen raise/lower
+- **Video matrix switcher:** Input routing (MTR → displays, guest laptop → displays)
+- **Audio system / DSP:** Volume control, microphone muting, input selection
+- **Lighting:** Scene selection (meeting mode, presentation mode, standby)
+- **Window shading/blinds:** Lower for presentation mode, raise for meeting end
+- **HVAC:** Occupancy-based setpoint adjustment (optional, requires HVAC BACnet/IP integration)
+- **Room booking display:** Display outside the room showing meeting schedule
+
+**Example automated workflow — "Meeting Starts":**
+1. Calendar event triggers meeting start (Teams integration)
+2. Control system: Displays power on, inputs select to MTR
+3. Lighting transitions to "Meeting" scene (appropriate level, no glare on display)
+4. Shades lower if window backlight detected (if shade automation installed)
+5. MTR device wakes from sleep and displays meeting home screen
+
+**Example automated workflow — "Room Goes Vacant":**
+1. Occupancy sensor detects no motion for 10 minutes
+2. Control system: Displays power off
+3. Lighting transitions to "Standby" (low level)
+4. Shades return to default position
+5. MTR device enters sleep mode
+
+---
+
+## Control System Platforms
+
+**Crestron:**
+The dominant platform in enterprise AV. Crestron provides control processors (Crestron CP4, UC-Engines for MTR), touch panels (TSW series), and a dedicated MTR integration through the Crestron Flex platform. Crestron Flex integrates the MTR compute unit inside or alongside a Crestron-managed system — all AV control, scheduling, and device management goes through Crestron.
+
+*Crestron Flex MTR:* Crestron offers MTR-certified compute units (UC-B140-T, UC-M150-T, etc.) that pair with Crestron room control hardware. The Crestron control processor manages displays, audio, and room systems while the MTR software runs on the integrated compute unit.
+
+**Extron:**
+Extron provides control processors (Extron IPCP Pro series), touch panels, and strong integration with their own signal distribution products (matrix switchers, scalers). Extron GlobalViewer provides room monitoring and management. Less common than Crestron for new MTR installations but widely deployed in existing estates.
+
+**AMX (Harman):**
+AMX provides control processors (NX series) and touch panels. Similar capability to Crestron; less common in new North American enterprise installations but has strong market presence in some verticals (education, government).
+
+**QSC Q-SYS:**
+Q-SYS is primarily an audio DSP platform but includes full room control capabilities via its Control module. Used in rooms where a Q-SYS DSP is already part of the audio system and extending to room control avoids a second control processor. Strong choice for rooms where audio complexity justifies a Q-SYS DSP.
+
+---
+
+## When a Control System is Needed
+
+Not every MTR room needs a third-party control system. Evaluate based on room complexity:
+
+| Scenario | Control Approach |
+|----------|-----------------|
+| Simple room — 1 display, MTR compute unit, soundbar | MTR native control (RS-232 display power on wake, display off on sleep) |
+| Medium room — 2 displays, ceiling mics, ceiling speakers, DSP | MTR native display control + DSP control from MTR (USB); manual PTZ if needed |
+| Complex room — dual displays, matrix switcher, PTZ, room lighting, shading, booking display | Room control system required; too many devices and automations for MTR native control |
+| Multi-function room (conference + presentation + training) | Room control system required; multiple operating modes with different device configurations |
+| Crestron/AMX estate already deployed | Match existing platform for management consistency |
+
+**MTR native control capabilities (without a separate control system):**
+- Display power on/off via RS-232 or LAN (built into Teams Rooms app)
+- Volume control via USB to DSP or HDMI/DP audio
+- Meeting start/end events trigger display state changes automatically
+- No native support for: lighting, shading, matrix switcher routing, multi-device automation
+
+---
+
+## Teams Rooms and Control System Integration Points
+
+When a room control system is present, it integrates with the MTR device at several points:
+
+**Touch panel integration:**
+In Crestron Flex rooms, the Crestron touch panel IS the Teams Rooms touch controller — the Teams UI runs on the Crestron TSW touch panel. In non-Flex configurations, the control system touch panel may provide supplementary room control buttons (volume, lighting, shading) alongside the Teams Rooms touch panel.
+
+**API integration:**
+Microsoft provides the Teams Rooms API (part of the Teams Rooms Resource Manager) that allows control systems to:
+- Query the MTR device state (in a call, idle, content sharing)
+- Send commands to the MTR device (start a scheduled meeting, end a call)
+- Receive meeting start/end events for triggering room automation
+
+Not all control systems implement the Teams Rooms API — verify API integration capability during specification.
+
+**Occupancy sensor integration:**
+Most control systems integrate with occupancy sensors (PIR, dual-technology, CO2) to determine room occupancy. This data can also be passed to Teams Rooms via room sensor integration — Teams Rooms can use occupancy data for "hot desk" and room booking integration, and for Pro Management occupancy analytics.
+
+---
+
+<KnowledgeCheck id="p2-t3-m3-l1-kc">
+  <Question>
+    A client is commissioning a 12-person boardroom with dual displays, a PTZ
+    camera with auto-tracking, a Dante-based ceiling microphone and speaker
+    system (Biamp Tesira DSP), automated lighting scenes, and motorized window
+    shades. The project budget is constrained and the client asks whether a
+    room control system is strictly necessary, or whether the Teams Rooms device
+    can manage everything. What is the appropriate response?
+  </Question>
+  <Answer>The Teams Rooms device can manage all of these systems — no control system needed</Answer>
+  <Answer>A control system is required only because of the Dante audio system — the other systems could be managed by Teams Rooms natively</Answer>
+  <Answer correct>A room control system is warranted for this room. Teams Rooms natively handles display power control (via RS-232/LAN) but does not natively control: lighting scenes, motorized shades, PTZ camera presets via touch panel, or video matrix switching (if needed for dual displays with separate content input). The combination of multiple automated systems (lighting, shading, displays, PTZ) responding to meeting events and occupancy requires a control processor. Teams Rooms native control would only handle part of the room automation — users would have to manually manage lighting, shading, and camera from separate controls, which is a poor experience in a high-value boardroom. For a constrained budget, the client should decide whether the automated room experience justifies the control system cost, not whether it is technically possible to omit it</Answer>
+  <Answer>A control system is required because the Biamp Tesira DSP cannot connect to the Teams Rooms device without one</Answer>
+  <Explanation>
+    Teams Rooms has genuine native control capabilities — it can power displays
+    on and off via RS-232 or LAN, and the Biamp Tesira DSP connects via USB
+    Audio directly to the MTR compute unit without a control system. However,
+    lighting scenes, motorized shades, and PTZ camera control via a unified
+    touch panel require a control processor. The question is whether the
+    budget constraint justifies a degraded room experience (manual lighting
+    and shading, no unified touch panel for camera presets) versus investing
+    in the control system that delivers the intended experience. This is a
+    business decision for the client — the integrator's job is to accurately
+    describe what is and isn't possible without the control system, not to
+    technically oversimplify.
+  </Explanation>
+</KnowledgeCheck>
+
+---
+
+## Summary
+
+- **Role:** Control systems coordinate multi-device room automation — displays, audio, lighting, shading, switchers — responding to meeting events and occupancy.
+- **Platforms:** Crestron (dominant, Flex MTR integration), Extron, AMX, QSC Q-SYS (audio-primary).
+- **When needed:** Simple rooms can use MTR native control; complex rooms with lighting, shading, PTZ, or matrix switching require a control system.
+- **Integration:** Touch panel, API (meeting state events), and occupancy sensor are the three main integration points between the control system and MTR.
+
+---
+
+## What's Next
+
+[Lighting and Shading for Video Conferencing →](/programs/mtr-systems-integration/tracks/av-systems-commissioning/modules/integrated-room-commissioning/lessons/lighting-shading-video-conferencing/)

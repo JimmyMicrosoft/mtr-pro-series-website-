@@ -104,8 +104,8 @@ function infoBox(paragraphs: Paragraph[]) {
       bottom: { style: BorderStyle.SINGLE, size: 4, color: ACCENT },
       left: { style: BorderStyle.SINGLE, size: 4, color: ACCENT },
       right: { style: BorderStyle.SINGLE, size: 4, color: ACCENT },
-      insideH: { style: BorderStyle.NONE },
-      insideV: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE },
+      insideVertical: { style: BorderStyle.NONE },
     },
     rows: [
       new TableRow({

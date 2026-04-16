@@ -7,7 +7,7 @@ import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { BookOpen } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard'
@@ -126,5 +126,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense>
+      <LoginForm />
+    </React.Suspense>
   )
 }

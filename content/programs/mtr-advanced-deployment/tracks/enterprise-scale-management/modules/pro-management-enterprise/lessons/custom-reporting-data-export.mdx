@@ -152,7 +152,7 @@ Days since update:  =TODAY() - [Last Patch Date]
 
 At-risk flag:       =IF(OR([Days since update]>45,
                           [Compliance Status]="Not compliant",
-                          [Meeting Quality Rate]<0.70),
+                          [Meeting Quality Rate]&lt;0.70),
                        "At Risk", "OK")
 ```
 

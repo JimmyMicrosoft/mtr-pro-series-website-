@@ -267,7 +267,7 @@ Teams applications validate the TLS certificates presented by Microsoft endpoint
 
 Provide the following exact instruction:
 
-> "Microsoft Teams performs certificate validation for its core service endpoints and will reject connections where the certificate chain does not lead to a trusted public CA. The following Microsoft 365 Optimize FQDNs must be excluded from SSL inspection: `*.teams.microsoft.com`, `*.skype.com`, `*.microsoft.com`, and the ranges listed in the Microsoft 365 Optimize endpoint list. For the full, current list, retrieve from: https://endpoints.office.com/endpoints/worldwide?clientrequestid=<GUID>&format=CSV and filter for category=Optimize."
+> "Microsoft Teams performs certificate validation for its core service endpoints and will reject connections where the certificate chain does not lead to a trusted public CA. The following Microsoft 365 Optimize FQDNs must be excluded from SSL inspection: `*.teams.microsoft.com`, `*.skype.com`, `*.microsoft.com`, and the ranges listed in the Microsoft 365 Optimize endpoint list. For the full, current list, retrieve from: https://endpoints.office.com/endpoints/worldwide?clientrequestid=&lt;GUID&gt;&format=CSV and filter for category=Optimize."
 
 The network team's next action is to add these FQDNs to the SSL inspection bypass list on the firewall.
 

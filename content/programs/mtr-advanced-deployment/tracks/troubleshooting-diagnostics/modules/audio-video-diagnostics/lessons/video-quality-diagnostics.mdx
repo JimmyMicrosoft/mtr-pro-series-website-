@@ -144,12 +144,12 @@ CQD is the primary tool for confirming whether a reported video quality issue ha
 
 | Metric | Target | Concern Threshold | Action if Exceeded |
 |---|---|---|---|
-| `VideoFrameRateAvg` | ≥30 fps (HD); ≥7 fps minimum | <7 fps | Investigate network bandwidth or USB/driver issue |
-| `VideoLocalFrameLossPercentageAvg` | <1% | >5% | Network packet loss — investigate with Wireshark |
-| `VideoPacketLossRate` | <0.5% | >1% | Network path issue — check DSCP, switch, WAN |
-| `VideoPostFECPacketLossRate` | <0.5% | >1% | Packet loss after forward error correction — significant network problem |
-| `VideoBitRateAvg` | 500–4000 kbps (varies by resolution) | Sustained <500 kbps | Bandwidth constraint or adaptive bitrate reduction |
-| `RoundTripTime` | <100 ms | >150 ms | Network path latency — investigate routing |
+| `VideoFrameRateAvg` | ≥30 fps (HD); ≥7 fps minimum | &lt;7 fps | Investigate network bandwidth or USB/driver issue |
+| `VideoLocalFrameLossPercentageAvg` | &lt;1% | >5% | Network packet loss — investigate with Wireshark |
+| `VideoPacketLossRate` | &lt;0.5% | >1% | Network path issue — check DSCP, switch, WAN |
+| `VideoPostFECPacketLossRate` | &lt;0.5% | >1% | Packet loss after forward error correction — significant network problem |
+| `VideoBitRateAvg` | 500–4000 kbps (varies by resolution) | Sustained &lt;500 kbps | Bandwidth constraint or adaptive bitrate reduction |
+| `RoundTripTime` | &lt;100 ms | >150 ms | Network path latency — investigate routing |
 
 **Reading CQD video stream direction:**
 
@@ -287,7 +287,7 @@ This indicates the AI is detecting an object in the wrong area of the frame (a w
 
 - **Layer mapping:** Camera hardware → USB connection → Teams video codec → network path → far-end display. Symptom type determines the starting layer.
 - **Symptom differentiation:** Pixelation/macroblocking = network/codec; blur = camera focus/lighting; freeze = USB/driver or network (pattern distinguishes which); color issues = camera settings.
-- **CQD video metrics:** `VideoFrameRateAvg` target ≥7 fps; `VideoLocalFrameLossPercentageAvg` target <5%; `VideoPacketLossRate` target <1%. Check both the sending and receiving streams to determine the affected direction.
+- **CQD video metrics:** `VideoFrameRateAvg` target ≥7 fps; `VideoLocalFrameLossPercentageAvg` target &lt;5%; `VideoPacketLossRate` target &lt;1%. Check both the sending and receiving streams to determine the affected direction.
 - **Camera health:** Device Manager confirms camera presence and driver state; USB Root Hub power tab and USB Tree View quantify bandwidth allocation; intermittent appearance in Device Manager confirms a USB disconnect cycle.
 - **Network testing during a call:** netstat confirms active UDP media connections; Wireshark IO Graph shows real-time bitrate variation to distinguish healthy codec ramp-up from congestion-driven drops.
 - **IntelliFrame:** The four most common failure causes are insufficient lighting, narrow FOV, participants outside camera range, and the feature being disabled in settings. Verify lux levels at the seating area first.

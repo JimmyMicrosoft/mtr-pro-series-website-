@@ -90,11 +90,11 @@ Alert fatigue is not a perception problem — it is a measurable operational fai
 
 | Metric | Definition | Target |
 |--------|-----------|--------|
-| Alert volume | Total alerts generated per month per 100 rooms | <150 alerts requiring review |
+| Alert volume | Total alerts generated per month per 100 rooms | &lt;150 alerts requiring review |
 | Action rate | % of alerts that required a field or remote action | >40% |
 | Auto-resolve rate | % of alerts that closed without any action | Should not exceed 30% for Critical |
 | Acknowledgment within SLA | % of Critical alerts acknowledged within 30 min | >95% |
-| Mean time to acknowledge (MTTA) | Average time from alert creation to first acknowledgment | Critical: <15 min |
+| Mean time to acknowledge (MTTA) | Average time from alert creation to first acknowledgment | Critical: &lt;15 min |
 
 An action rate below 20% is a strong indicator of alert fatigue — more than 80% of alerts are noise and should be suppressed, filtered, or reclassified.
 
@@ -122,7 +122,7 @@ A well-designed alert rule set routes the right alert to the right person at the
 | Camera offline, room in use | Important | ITSM ticket + team channel | Remote troubleshoot, may dispatch |
 | Microphone offline, room in use | Important | ITSM ticket + team channel | Remote troubleshoot, may dispatch |
 | Display offline | Important | ITSM ticket | Remote troubleshoot |
-| Room offline <15 min, auto-resolved | Warning | Log only (no notification) | Review in weekly report |
+| Room offline &lt;15 min, auto-resolved | Warning | Log only (no notification) | Review in weekly report |
 | Software update available | Warning | Email digest (daily) | Schedule update window |
 | Teams app restart (single) | Warning | Log only | Review if recurring |
 | Teams app crash (3+ in 1 hour) | Important | ITSM ticket | Investigate app stability |
@@ -246,8 +246,8 @@ Building a good alert rule set is not a one-time activity. Alert rules require t
 | Metric | How to Measure | Tuning Action If Off-Target |
 |--------|---------------|---------------------------|
 | Alert volume per 100 rooms | Count incidents in Pro Management for the month | >300/month: review Warning rules; reduce peripheral sensitivity |
-| Action rate | ITSM tickets closed with "resolved by action" / total tickets | <30%: too many auto-resolving alerts being sent to ITSM |
-| Acknowledgment rate within 30 min | % of Critical alerts acknowledged within 30 min | <90%: review on-call notification delivery; check escalation chain |
+| Action rate | ITSM tickets closed with "resolved by action" / total tickets | &lt;30%: too many auto-resolving alerts being sent to ITSM |
+| Acknowledgment rate within 30 min | % of Critical alerts acknowledged within 30 min | &lt;90%: review on-call notification delivery; check escalation chain |
 | Noise alert rate | Alerts auto-resolved within 15 min with no ITSM ticket | >20% of total: apply time-delay to alert firing (only fire if condition persists >15 min) |
 | Suppression effectiveness | Alerts fired during active suppression windows | Any: suppression windows not applied correctly; audit configuration |
 
@@ -258,7 +258,7 @@ At the end of each month, run the following analysis against the previous 30 day
 1. **Export all incidents** from Pro Management (Analytics → Export)
 2. **Sort by alert type:** identify the top 5 alert types by volume
 3. **For each high-volume alert type:** calculate what percentage resulted in a technician action
-4. **Action rate <20%:** consider either raising the threshold for this alert type (e.g., require condition to persist for 20 minutes before firing) or reclassifying it to Warning/log-only
+4. **Action rate &lt;20%:** consider either raising the threshold for this alert type (e.g., require condition to persist for 20 minutes before firing) or reclassifying it to Warning/log-only
 5. **Review all "Warning" alerts:** if any Warning alert has never triggered an action in 30 days, evaluate whether it provides value and consider disabling
 
 **Tuning log:** maintain a change log of alert rule modifications with date, rationale, and expected impact. This enables you to correlate changes in alert volume/quality to specific rule changes and revert modifications that produce unintended results.

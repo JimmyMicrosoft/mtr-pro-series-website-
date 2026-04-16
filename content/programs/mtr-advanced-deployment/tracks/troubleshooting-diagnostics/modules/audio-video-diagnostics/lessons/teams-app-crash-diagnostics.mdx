@@ -286,7 +286,7 @@ C:\Tools\procdump64.exe -ma -e SkypeRoomSystem.exe C:\Temp\MTRDumps
 tasklist | findstr SkypeRoom
 
 # Then capture a full dump of the hung process
-C:\Tools\procdump64.exe -ma <PID> C:\Temp\MTRDumps\mtr-hang-dump.dmp
+C:\Tools\procdump64.exe -ma &lt;PID&gt; C:\Temp\MTRDumps\mtr-hang-dump.dmp
 ```
 
 Provide the resulting `.dmp` file to Microsoft support along with the `Report.wer` file from the crash, the Teams Rooms app version, and the Windows build version.
@@ -377,7 +377,7 @@ The app will start fresh without cached state. It will require re-authentication
 - **Crash patterns:** Startup crashes (corrupted XML or app state); call crashes (codec fault or memory issue); post-update crashes (version incompatibility or missing prerequisite).
 - **Event Log:** Event ID 1000 (Application Error) identifies the faulting module and exception code; Event ID 1001 (WER) provides the crash report directory path; Event ID 1074 (System) identifies intentional restarts.
 - **Escalation threshold:** More than once per week warrants investigation and Microsoft escalation with dump files; continuous crash loop warrants immediate App State Reset.
-- **ProcDump:** Use `-ma -e` to capture automatically on next unhandled exception; use `-ma <PID>` to capture a hung process on demand.
+- **ProcDump:** Use `-ma -e` to capture automatically on next unhandled exception; use `-ma &lt;PID&gt;` to capture a hung process on demand.
 - **App State Reset:** Clear the LocalState directory, restore a valid `SkypeSettings.xml`, restart app, re-authenticate — resolves persistent crash-on-start without factory reset.
 
 ---

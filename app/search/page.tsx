@@ -80,7 +80,7 @@ function SearchResults({ query }: { query: string }) {
   )
 }
 
-export default function SearchPage() {
+function SearchInner() {
   const searchParams = useSearchParams()
   const [query, setQuery] = React.useState(searchParams.get('q') ?? '')
 
@@ -98,9 +98,15 @@ export default function SearchPage() {
           autoFocus
         />
       </div>
-      <React.Suspense>
-        <SearchResults query={query} />
-      </React.Suspense>
+      <SearchResults query={query} />
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <React.Suspense>
+      <SearchInner />
+    </React.Suspense>
   )
 }

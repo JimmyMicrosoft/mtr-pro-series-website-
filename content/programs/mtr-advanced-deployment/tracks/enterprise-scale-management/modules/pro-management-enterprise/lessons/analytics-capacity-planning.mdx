@@ -118,7 +118,7 @@ Sort buildings by average utilization rate over the trailing 90 days. A typical 
 | >75% | **Bottleneck** | Demand exceeds supply; users cannot book rooms when needed; add capacity |
 | 50–75% | **Healthy** | Well-utilized; no immediate action required |
 | 25–50% | **Moderate** | Some underutilization; investigate before acting |
-| <25% | **Underutilized** | Low demand; candidate for repurposing or right-sizing |
+| &lt;25% | **Underutilized** | Low demand; candidate for repurposing or right-sizing |
 
 <Callout type="warning">
 A 25% utilization rate does not automatically mean the room should be repurposed. Low utilization may reflect poor discoverability (room is not bookable through the directory), a recent building move where employees have not yet adapted their booking habits, or seasonal factors. Always investigate cause before recommending decommission.
@@ -230,16 +230,16 @@ One of the most actionable combinations in Pro Management analytics is correlati
 | Utilization | Quality | Classification | Priority Action |
 |------------|---------|---------------|----------------|
 | High (>60%) | High (>90% good) | Healthy + High-Use | Maintain; protect from unplanned maintenance |
-| High (>60%) | Low (<70% good) | **Critical — High Use, Poor Quality** | Immediate AV upgrade priority; users are experiencing poor quality in a high-demand room |
-| Low (<30%) | High (>90% good) | Healthy but Underused | Investigate discoverability; check booking policy |
-| Low (<30%) | Low (<70% good) | Declining room | Investigate cause; low use may partly reflect users avoiding a poor-quality room |
+| High (>60%) | Low (&lt;70% good) | **Critical — High Use, Poor Quality** | Immediate AV upgrade priority; users are experiencing poor quality in a high-demand room |
+| Low (&lt;30%) | High (>90% good) | Healthy but Underused | Investigate discoverability; check booking policy |
+| Low (&lt;30%) | Low (&lt;70% good) | Declining room | Investigate cause; low use may partly reflect users avoiding a poor-quality room |
 
 **Practical quality correlation workflow:**
 
 1. Export the 90-day utilization report (CSV) — room name, building, utilization rate
 2. Export the 90-day quality report (CSV) — room name, building, meeting quality rate, incident count
 3. Join on room name in Excel; add a column: `= IF(util>0.6, "High-Use", IF(util>0.3, "Medium-Use", "Low-Use"))`
-4. Add a column: `= IF(quality<0.7, "Poor-Quality", IF(quality<0.85, "Moderate-Quality", "Good-Quality"))`
+4. Add a column: `= IF(quality&lt;0.7, "Poor-Quality", IF(quality&lt;0.85, "Moderate-Quality", "Good-Quality"))`
 5. Filter for `High-Use + Poor-Quality` — this is your AV upgrade priority list
 6. Sort by utilization rate descending within the High-Use + Poor-Quality filter
 
@@ -286,7 +286,7 @@ UNDERUTILIZED BUILDINGS (Optimization Opportunity)
 
 AV UPGRADE PRIORITIES (Quality + Utilization Data)
 Four rooms in NYC-HQ and two in London-CW are in the High-Use/Poor-Quality
-category — utilization >65%, meeting quality rate <68%. Users are scheduling
+category — utilization >65%, meeting quality rate &lt;68%. Users are scheduling
 these rooms in high numbers despite poor AV performance. Recommend priority
 AV refresh for these 6 rooms before Q4 high-demand period.
 ```
@@ -329,7 +329,7 @@ When presenting capacity planning data to real estate stakeholders, lead with bu
 ## Summary
 
 - **Utilization metrics:** utilization rate measures time, not occupancy; set business hours per building in local time zone before analyzing; require minimum 4 weeks of data.
-- **Utilization tiers:** >75% = bottleneck (add capacity), 50–75% = healthy, 25–50% = investigate, <25% = candidate for repurposing (with additional analysis).
+- **Utilization tiers:** >75% = bottleneck (add capacity), 50–75% = healthy, 25–50% = investigate, &lt;25% = candidate for repurposing (with additional analysis).
 - **Day-of-week analysis:** hybrid work creates strong Tuesday–Thursday peaks; use median peak-day utilization, not weekly average, for capacity decisions.
 - **Seasonal patterns:** Q4 = high demand (protect rooms from maintenance), Q3 = low demand (ideal for large-scale upgrades), plan Q3 completions by Sep 15 for Q4 readiness.
 - **Quality-utilization matrix:** High-Use + Poor-Quality rooms are the highest-priority AV upgrade candidates — high user demand combined with poor technical performance.

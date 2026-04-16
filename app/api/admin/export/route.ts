@@ -75,7 +75,7 @@ function inlineRuns(raw: string): TextRun[] {
     .replace(/<[^>]+>/g, '')
 
   const runs: TextRun[] = []
-  const pattern = /(\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+?)`)/gs
+  const pattern = /(\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+?)`)/g
   let lastIdx = 0
   let m: RegExpExecArray | null
 
@@ -411,9 +411,9 @@ function parseBody(mdx: string, lessonId: string): (Paragraph | Table)[] {
           .replace(/\{\/\*\s*/g, '')
           .replace(/\*\/\}/g, '')
           .replace(/MEDIA:\s*[\w-]+\s*[—–-]?\s*/i, '')
-          .replace(/Width:\s*\d+px.*$/si, '')
-          .replace(/Filename:\s*\S+.*$/si, '')
-          .replace(/Format:\s*\w+.*$/si, '')
+          .replace(/Width:\s*\d+px.*$/i, '')
+          .replace(/Filename:\s*\S+.*$/i, '')
+          .replace(/Format:\s*\w+.*$/i, '')
           .replace(/\s+/g, ' ')
           .trim()
         if (isVideo) {

@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id'
 import Credentials from 'next-auth/providers/credentials'
 import { createClient } from '@supabase/supabase-js'
+import { authConfig } from './auth.config'
 
 function getAnonClient() {
   return createClient(
@@ -12,6 +13,7 @@ function getAnonClient() {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     MicrosoftEntraID({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
@@ -43,23 +45,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-
-  session: { strategy: 'jwt' },
-
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) token.userId = user.id
-      return token
-    },
-    session({ session, token }) {
-      if (token.userId) (session.user as { id: string }).id = token.userId as string
-      return session
-    },
-  },
-
-  pages: {
-    signIn: '/login',
-    newUser: '/register',
-    error: '/login',
-  },
 })

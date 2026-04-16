@@ -1,6 +1,9 @@
-import { auth } from '@/auth'
+import NextAuth from 'next-auth'
+import { authConfig } from './auth.config'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+const { auth } = NextAuth(authConfig)
 
 const PROTECTED_PREFIXES = ['/dashboard']
 const ADMIN_PREFIXES = ['/admin', '/api/admin']
@@ -16,7 +19,6 @@ export default auth((req: NextRequest & { auth: unknown }) => {
   if (isAdminRoute) {
     const isApiRoute = pathname.startsWith('/api/admin')
 
-    // Not authenticated
     if (!isAuthenticated) {
       if (isApiRoute) {
         return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,7 +28,6 @@ export default auth((req: NextRequest & { auth: unknown }) => {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Authenticated but not admin email
     const userEmail = session?.user?.email ?? ''
     const adminEmail = process.env.ADMIN_EMAIL ?? ''
     if (!adminEmail || userEmail !== adminEmail) {

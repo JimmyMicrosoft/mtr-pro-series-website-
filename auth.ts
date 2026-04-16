@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth'
-import AzureAD from 'next-auth/providers/azure-ad'
+import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id'
 import Credentials from 'next-auth/providers/credentials'
 import { createClient } from '@supabase/supabase-js'
 
@@ -13,10 +13,10 @@ function getAnonClient() {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    AzureAD({
+    MicrosoftEntraID({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID ?? 'common',
+      issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID ?? 'common'}/v2.0`,
     }),
     Credentials({
       credentials: {

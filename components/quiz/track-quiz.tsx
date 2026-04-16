@@ -116,7 +116,7 @@ export function TrackQuiz({
         <div className="flex flex-wrap gap-3 justify-center">
           {nextTrackHref && (
             <Button
-              variant={passed ? 'default' : 'secondary'}
+              variant={passed ? 'primary' : 'secondary'}
               onClick={() => router.push(nextTrackHref)}
             >
               {passed ? 'Continue to Next Track' : 'Continue Anyway'}

@@ -48,7 +48,7 @@ export function getAllPrograms(): Program[] {
     .map((slug) => {
       const file = readMdx(path.join(programsDir, slug, 'index.mdx'))
       if (!file) return null
-      return { ...(file.frontmatter as ProgramFrontmatter), slug } as Program
+      return { ...(file.frontmatter as unknown as ProgramFrontmatter), slug } as Program
     })
     .filter(Boolean) as Program[]
 
@@ -58,7 +58,7 @@ export function getAllPrograms(): Program[] {
 export function getProgram(programSlug: string): Program | null {
   const file = readMdx(path.join(CONTENT_ROOT, 'programs', programSlug, 'index.mdx'))
   if (!file) return null
-  return { ...(file.frontmatter as ProgramFrontmatter), slug: programSlug } as Program
+  return { ...(file.frontmatter as unknown as ProgramFrontmatter), slug: programSlug } as Program
 }
 
 // ─── Tracks ──────────────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ export function getAllTracks(programSlug: string): Track[] {
     .map((slug) => {
       const file = readMdx(path.join(tracksDir, slug, 'index.mdx'))
       if (!file) return null
-      return { ...(file.frontmatter as TrackFrontmatter), slug, programSlug } as Track
+      return { ...(file.frontmatter as unknown as TrackFrontmatter), slug, programSlug } as Track
     })
     .filter(Boolean) as Track[]
 
@@ -87,7 +87,7 @@ export function getTrack(programSlug: string, trackSlug: string): Track | null {
     path.join(CONTENT_ROOT, 'programs', programSlug, 'tracks', trackSlug, 'index.mdx')
   )
   if (!file) return null
-  return { ...(file.frontmatter as TrackFrontmatter), slug: trackSlug, programSlug } as Track
+  return { ...(file.frontmatter as unknown as TrackFrontmatter), slug: trackSlug, programSlug } as Track
 }
 
 // ─── Modules ─────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ export function getAllModules(programSlug: string, trackSlug: string): Module[] 
       const file = readMdx(path.join(modulesDir, slug, 'index.mdx'))
       if (!file) return null
       return {
-        ...(file.frontmatter as ModuleFrontmatter),
+        ...(file.frontmatter as unknown as ModuleFrontmatter),
         slug,
         programSlug,
         trackSlug,
@@ -130,7 +130,7 @@ export function getModule(
   )
   if (!file) return null
   return {
-    ...(file.frontmatter as ModuleFrontmatter),
+    ...(file.frontmatter as unknown as ModuleFrontmatter),
     slug: moduleSlug,
     programSlug,
     trackSlug,
@@ -161,7 +161,7 @@ export function getAllLessons(
       const file = readMdx(path.join(lessonsDir, filename))
       if (!file) return null
       return {
-        ...(file.frontmatter as LessonFrontmatter),
+        ...(file.frontmatter as unknown as LessonFrontmatter),
         slug,
         programSlug,
         trackSlug,
@@ -205,7 +205,7 @@ export async function getLesson(
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : undefined
 
   return {
-    ...(file.frontmatter as LessonFrontmatter),
+    ...(file.frontmatter as unknown as LessonFrontmatter),
     slug: lessonSlug,
     programSlug,
     trackSlug,
